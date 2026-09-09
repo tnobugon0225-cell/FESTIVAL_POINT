@@ -206,14 +206,8 @@ app.post('/api/login', loginGuard('participant'), async (req, res) => {
     ? db.prepare('SELECT * FROM users WHERE public_code=?').get(loginId)
     : db.prepare('SELECT * FROM users WHERE username=?').get(loginId);
   if (!user || !(await bcrypt.compare(password, user.password_hash))) { failAttempt(req); return res.status(401).json({ error: 'IDまたはパスワードが違います' }); }
-  let deviceId = user.device_id;
-  if (!deviceId) {
-    const candidate = getOrCreateDeviceId(req, res);
-    const occupied = db.prepare('SELECT id FROM users WHERE device_id=? AND id<>?').get(candidate, user.id);
-    if (!occupied) { db.prepare('UPDATE users SET device_id=? WHERE id=?').run(candidate, user.id); deviceId = candidate; }
-    else { deviceId = newDeviceId(); db.prepare('UPDATE users SET device_id=? WHERE id=?').run(deviceId, user.id); }
-  }
-  bindDeviceCookie(res, deviceId);
+  // 参加者アカウントはスタッフのみ発行するため、端末識別Cookieは使用しない。
+  // スタッフログインと同じシンプルなセッション方式に統一する。
   await regenerate(req);
   req.session.userId = user.id;
   await saveSession(req);
