@@ -200,9 +200,11 @@ app.post('/api/register', (req, res) => {
 });
 
 app.post('/api/login', loginGuard('participant'), async (req, res) => {
-  const username = cleanName(req.body.username), password = String(req.body.password || '');
-  const user = db.prepare('SELECT * FROM users WHERE username=?').get(username);
-  if (!user || !(await bcrypt.compare(password, user.password_hash))) { failAttempt(req); return res.status(401).json({ error: 'ニックネームまたはパスワードが違います' }); }
+  const loginId = cleanName(req.body.loginId || req.body.username), password = String(req.body.password || '');
+  const user = /^\d{4}$/.test(loginId)
+    ? db.prepare('SELECT * FROM users WHERE public_code=?').get(loginId)
+    : db.prepare('SELECT * FROM users WHERE username=?').get(loginId);
+  if (!user || !(await bcrypt.compare(password, user.password_hash))) { failAttempt(req); return res.status(401).json({ error: 'IDまたはパスワードが違います' }); }
   let deviceId = user.device_id;
   if (!deviceId) {
     const candidate = getOrCreateDeviceId(req, res);
