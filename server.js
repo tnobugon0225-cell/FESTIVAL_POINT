@@ -131,7 +131,7 @@ function bindDeviceCookie(res, deviceId) {
 function requireUser(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ error: '参加者ログインが必要です' });
   const u = db.prepare('SELECT id FROM users WHERE id=?').get(req.session.userId);
-  if (!u) { req.session.userId = null; return res.status(410).json({ error: 'このアカウントは退場済みです' }); }
+  if (!u) { req.session.userId = null; return req.session.save(() => res.status(401).json({ error: 'ログイン情報が古くなっています。もう一度ログインしてください' })); }
   next();
 }
 function requireStaff(req, res, next) {
@@ -208,11 +208,14 @@ app.post('/api/login', loginGuard('participant'), async (req, res) => {
   if (!user || !(await bcrypt.compare(password, user.password_hash))) { failAttempt(req); return res.status(401).json({ error: 'IDまたはパスワードが違います' }); }
   // 参加者アカウントはスタッフのみ発行するため、端末識別Cookieは使用しない。
   // スタッフログインと同じシンプルなセッション方式に統一する。
+  // 古い退場済みセッションを完全に破棄してから、新しい参加者セッションを作る。
   await regenerate(req);
   req.session.userId = user.id;
+  req.session.staffId = null;
   await saveSession(req);
   clearAttempt(req);
-  res.json({ ok: true });
+  const freshUser = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE id=?').get(user.id);
+  res.json({ ok: true, user: freshUser });
 });
 app.post('/api/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
 

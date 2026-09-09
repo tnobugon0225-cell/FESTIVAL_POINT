@@ -77,7 +77,12 @@ npm start
 - ログイン直後にセッション確認に失敗した場合、画面上にメッセージを表示。
 
 
-## v3.9 修正
+## v4.0 修正
 - 参加者ログインから不要になった端末識別Cookie処理を削除し、スタッフと同じセッション方式に統一。
 - `/api/me` の認証確認とランキング・履歴・QR取得を分離。補助機能の取得失敗でログイン画面へ戻らないよう修正。
 - ログイン失敗時はサーバーから返った実際のエラー理由を表示。
+
+
+## v4.0 login fix
+- Clears stale eliminated participant sessions on login.
+- Login response includes the fresh participant record, so the participant screen switches immediately without a second /api/me race.
