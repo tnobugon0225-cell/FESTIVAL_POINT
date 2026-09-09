@@ -1,98 +1,81 @@
-NEXUS POINT ARENA v3.4
+# NEXUS POINT ARENA v5.0
 
-# NEXUS POINT ARENA v3.1
+## v5.0 の大きな変更
 
-学祭向けの参加者同士ポイント対戦Webアプリです。
+- SQLite を廃止し PostgreSQL (`DATABASE_URL`) を使用
+- Webサービス再起動・再デプロイで参加者/ポイント/履歴が消えない構成
+- スタッフのセッションも PostgreSQL に保存
+- 新規参加者のパスワードを暗号化して保存
+- ADMIN 権限だけが参加者の保存済みパスワードを表示可能
+- ADMIN 権限で参加者パスワードを再設定可能
+- 既存機能（10pt開始、4桁ID、ポイント譲渡、履歴、ランキング、GAME OVER、5秒削除など）は維持
 
-## v3 の追加機能
+## 必須の環境変数
 
-- 参加者ごとに **4桁のお客様番号**（0000〜9999）を発行
-- 参加者同士で、相手の4桁番号を入力してポイント譲渡
-- 譲渡時は理由の入力が必須
-- 新規参加者は初期 10pt（環境変数 `STARTING_POINTS` で変更可能）
-- 残高が 0pt になると自動的に退場し、参加者アカウントを削除
-- 管理者（admin）のみ参加者を手動削除可能
-- スタッフの加減算・ポイント移動でも0ptになれば自動退場
-- 参加者間のポイント譲渡も履歴に記録
-- NEXUS POINT ARENA風の明るい大会UIへ全面変更
-- 旧v2の英数字参加者コードは起動時に4桁番号へ自動移行
+Render の Web Service > Environment に設定してください。
 
-## 起動
+- `DATABASE_URL` : Render PostgreSQL の接続URL
+- `SESSION_SECRET` : 十分長いランダム文字列
+- `PASSWORD_ENCRYPTION_KEY` : パスワード表示用の暗号化キー。十分長いランダム文字列
 
-```bash
+任意:
+
+- `STARTING_POINTS=10`
+- `ADMIN_USERNAME=admin`
+- `ADMIN_PASSWORD=change-me-now`（初回DB作成時だけ使用。本番は必ず変更）
+- `BASE_URL=https://あなたのサイト.onrender.com`
+
+### 重要
+
+`PASSWORD_ENCRYPTION_KEY` を後から変更すると、それ以前に保存した参加者パスワードを復号できなくなります。
+本番運用中は同じ値を維持してください。
+
+## Render での移行手順
+
+1. Render Dashboard で `New` > `Postgres` を作成
+2. Web Service と同じ Region にする
+3. 作成後、Postgres の Internal Database URL を確認
+4. Web Service の Environment で `DATABASE_URL` にそのURLを設定
+5. `SESSION_SECRET` と `PASSWORD_ENCRYPTION_KEY` も設定
+6. GitHub を v5.0 に更新し Render を再デプロイ
+7. 起動ログに `Database: PostgreSQL` が出れば成功
+8. `/admin` に入り、新しい参加者を1人作る
+9. 参加者でログインし、ポイント変更後に再デプロイしてもデータが残ることを確認
+
+## パスワード表示について
+
+参加者作成時のパスワードは以下の2種類で保存します。
+
+- ログイン確認用: bcrypt ハッシュ（元に戻せない）
+- 管理者確認用: AES-256-GCM 暗号化（`PASSWORD_ENCRYPTION_KEY` が必要）
+
+管理者画面で参加者を検索すると、ADMIN にのみ以下が表示されます。
+
+- パスワード表示
+- パスワード再設定
+
+旧SQLite版ですでに作成済みだったアカウントについては、元パスワードを復元できません。
+PostgreSQL版で新規作成するか、管理者からパスワード再設定してください。
+
+## ローカル起動
+
+PostgreSQLが必要です。
+
+Windows cmd の例:
+
+```bat
+set DATABASE_URL=postgresql://user:password@localhost:5432/festival_points
+set SESSION_SECRET=your-long-secret
+set PASSWORD_ENCRYPTION_KEY=another-long-secret
 npm install
 npm start
 ```
 
-参加者: http://localhost:3000
+参加者: http://localhost:3000/
+
 スタッフ: http://localhost:3000/admin
 
-## 初期管理者
+## 注意
 
-- ID: `admin`
-- Password: `change-me-now`
-
-本番では必ず変更してください。
-
-## 環境変数
-
-- `SESSION_SECRET`: セッション署名用。公開時は長いランダム文字列を設定
-- `ADMIN_USERNAME`: 初回DB作成時の管理者ID
-- `ADMIN_PASSWORD`: 初回DB作成時の管理者パスワード
-- `STARTING_POINTS`: 新規登録時の初期ポイント。デフォルト `10`
-- `BASE_URL`: QRで使用する公開URL。未設定ならアクセス元URLを自動利用
-- `PORT`: ポート番号。デフォルト `3000`
-
-## 0pt退場について
-
-ポイントが0になった参加者は、参加者一覧・ランキングから削除され、同じアカウントではログインできなくなります。
-相手側の譲渡履歴では、削除済み参加者の名前だけは履歴表示用に保持します。
-
-## Renderについて
-
-現在のDBはSQLiteです。Renderの無料Web Serviceではローカルファイルが永続化されないため、再起動・再デプロイ等でデータが消える可能性があります。
-学祭本番前にはPostgreSQL等の永続DBへ移行することを強く推奨します。
-
-
-## v3.4 変更点
-- 既存の「ノノンガ」アカウントが10pt未満なら10ptに補正
-- スタッフ画面を5秒ごとに自動更新（入力中は更新を一時スキップ）
-- GAME OVER画面の削除待ちを 5 → 4 → 3 → 2 → 1 のカウントダウン表示に変更
-
-## v3.6 changes
-- 参加者画面から新規登録を廃止し、ログイン専用に変更
-- スタッフ画面から参加者アカウントを発行（初期10pt、4桁ID自動発行）
-- 0pt退場後はスタッフが同じ参加者名で再発行でき、再挑戦可能
-- スタッフの「参加者を呼び出す」は検索未入力時に一覧を表示せず、検索した参加者のみ表示
-
-
-## v3.8
-- 参加者ログインを4桁ID + パスワード方式に変更。
-- 互換性のため参加者名でもログイン可能。
-
-
-## v3.8 修正
-- 参加者/スタッフのログイン成功時にセッション保存完了を待ってから応答するよう修正。
-- ブラウザ側のAPI通信で同一サイトCookie送信を明示。
-- ログイン直後にセッション確認に失敗した場合、画面上にメッセージを表示。
-
-
-## v4.0 修正
-- 参加者ログインから不要になった端末識別Cookie処理を削除し、スタッフと同じセッション方式に統一。
-- `/api/me` の認証確認とランキング・履歴・QR取得を分離。補助機能の取得失敗でログイン画面へ戻らないよう修正。
-- ログイン失敗時はサーバーから返った実際のエラー理由を表示。
-
-
-## v4.0 login fix
-- Clears stale eliminated participant sessions on login.
-- Login response includes the fresh participant record, so the participant screen switches immediately without a second /api/me race.
-
-
-## v4.2 修正
-参加者認証でBearerトークンを最優先にし、古いセッションCookieが残っていても12秒更新でログアウトされないよう修正しました。
-
-
-## v4.4
-- 参加者画面のAPI取得を no-store に変更
-- サーバーの /api 応答にもキャッシュ禁止ヘッダーを追加
-- 12秒自動更新 / 今すぐ更新でポイント・履歴・ランキングを常に再取得
+SQLite の `festival.db` を自動移行する機能は含めていません。
+テスト用データは PostgreSQL 側で作り直してください。
