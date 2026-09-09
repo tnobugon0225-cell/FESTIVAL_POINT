@@ -63,6 +63,7 @@ function ensureColumn(table, column, ddl) {
 }
 ensureColumn('users', 'public_code', 'public_code TEXT');
 ensureColumn('users', 'device_id', 'device_id TEXT');
+ensureColumn('users', 'auth_token_hash', 'auth_token_hash TEXT');
 db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_device ON users(device_id) WHERE device_id IS NOT NULL`);
 ensureColumn('point_history', 'action_type', "action_type TEXT NOT NULL DEFAULT 'adjust'");
 ensureColumn('point_history', 'counterpart_user_id', 'counterpart_user_id INTEGER');
@@ -128,11 +129,18 @@ function bindDeviceCookie(res, deviceId) {
   if (!deviceId) return;
   res.cookie('festival.device', deviceId, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 365 });
 }
+function hashToken(token) { return crypto.createHash('sha256').update(token).digest('hex'); }
+function getBearer(req) { const h=String(req.headers.authorization||''); return h.startsWith('Bearer ')?h.slice(7).trim():''; }
 function requireUser(req, res, next) {
-  if (!req.session.userId) return res.status(401).json({ error: '参加者ログインが必要です' });
-  const u = db.prepare('SELECT id FROM users WHERE id=?').get(req.session.userId);
-  if (!u) { req.session.userId = null; return req.session.save(() => res.status(401).json({ error: 'ログイン情報が古くなっています。もう一度ログインしてください' })); }
-  next();
+  let userId = req.session.userId || null;
+  if (!userId) {
+    const token=getBearer(req);
+    if (token) { const row=db.prepare('SELECT id FROM users WHERE auth_token_hash=?').get(hashToken(token)); if(row) userId=row.id; }
+  }
+  if (!userId) return res.status(401).json({ error: '参加者ログインが必要です' });
+  const u = db.prepare('SELECT id FROM users WHERE id=?').get(userId);
+  if (!u) { if(req.session) req.session.userId=null; return res.status(401).json({ error: 'ログイン情報が古くなっています。もう一度ログインしてください' }); }
+  req.userId=userId; next();
 }
 function requireStaff(req, res, next) {
   if (!req.session.staffId) return res.status(403).json({ error: 'スタッフ権限が必要です' });
@@ -162,9 +170,9 @@ function clearAttempt(req) { attempts.delete(req.rateKey); }
 // 参加者同士のポイント譲渡の軽い連打対策（1アカウントにつき2秒に1回）
 const transferCooldown = new Map();
 function userTransferGuard(req, res, next) {
-  const now = Date.now(), last = transferCooldown.get(req.session.userId) || 0;
+  const now = Date.now(), last = transferCooldown.get(req.userId) || 0;
   if (now - last < 2000) return res.status(429).json({ error: 'ポイント譲渡が早すぎます。2秒ほど待ってください' });
-  transferCooldown.set(req.session.userId, now); next();
+  transferCooldown.set(req.userId, now); next();
 }
 
 function preserveCounterpartName(userId, username) {
@@ -212,24 +220,26 @@ app.post('/api/login', loginGuard('participant'), async (req, res) => {
   await regenerate(req);
   req.session.userId = user.id;
   req.session.staffId = null;
+  const authToken=crypto.randomBytes(32).toString('hex');
+  db.prepare('UPDATE users SET auth_token_hash=? WHERE id=?').run(hashToken(authToken), user.id);
   await saveSession(req);
   clearAttempt(req);
   const freshUser = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE id=?').get(user.id);
-  res.json({ ok: true, user: freshUser });
+  res.json({ ok: true, user: freshUser, authToken });
 });
-app.post('/api/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
+app.post('/api/logout', requireUser, (req, res) => { db.prepare('UPDATE users SET auth_token_hash=NULL WHERE id=?').run(req.userId); req.session.destroy(() => res.json({ ok: true })); });
 
 app.get('/api/me', requireUser, (req, res) => {
-  const u = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE id=?').get(req.session.userId);
+  const u = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE id=?').get(req.userId);
   res.json(u);
 });
 app.get('/api/my-history', requireUser, (req, res) => {
   res.json(db.prepare(`SELECT h.id,h.delta,h.reason,h.action_type,h.created_at,COALESCE(c.username,h.counterpart_name) counterpart
     FROM point_history h LEFT JOIN users c ON c.id=h.counterpart_user_id
-    WHERE h.user_id=? ORDER BY h.id DESC LIMIT 40`).all(req.session.userId));
+    WHERE h.user_id=? ORDER BY h.id DESC LIMIT 40`).all(req.userId));
 });
 app.get('/api/my-qr', requireUser, async (req, res) => {
-  const u = db.prepare('SELECT public_code FROM users WHERE id=?').get(req.session.userId);
+  const u = db.prepare('SELECT public_code FROM users WHERE id=?').get(req.userId);
   const requestBase = `${req.protocol}://${req.get('host')}`;
   const base = (BASE_URL || requestBase).replace(/\/$/, '');
   const payload = `${base}/admin?code=${encodeURIComponent(u.public_code)}`;
@@ -248,7 +258,7 @@ app.post('/api/transfer', requireUser, userTransferGuard, (req, res) => {
   if (!/^\d{4}$/.test(toCode)) return res.status(400).json({ error: '相手のIDを4桁で入力してください' });
   if (!Number.isInteger(amount) || amount < 1 || amount > 100000) return res.status(400).json({ error: '譲渡ポイントは1〜100,000の整数で入力してください' });
   if (reason.length < 2) return res.status(400).json({ error: '譲渡理由を2文字以上で入力してください' });
-  const from = db.prepare('SELECT id,username,public_code,points FROM users WHERE id=?').get(req.session.userId);
+  const from = db.prepare('SELECT id,username,public_code,points FROM users WHERE id=?').get(req.userId);
   const to = db.prepare('SELECT id,username,public_code,points FROM users WHERE public_code=? AND points>0').get(toCode);
   if (!to) return res.status(404).json({ error: 'そのIDの参加者は見つかりません' });
   if (from.points <= 0) return res.status(410).json({ error: 'このアカウントは退場処理中です' });
