@@ -86,3 +86,7 @@ npm start
 ## v4.0 login fix
 - Clears stale eliminated participant sessions on login.
 - Login response includes the fresh participant record, so the participant screen switches immediately without a second /api/me race.
+
+
+## v4.2 修正
+参加者認証でBearerトークンを最優先にし、古いセッションCookieが残っていても12秒更新でログアウトされないよう修正しました。

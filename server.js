@@ -132,15 +132,25 @@ function bindDeviceCookie(res, deviceId) {
 function hashToken(token) { return crypto.createHash('sha256').update(token).digest('hex'); }
 function getBearer(req) { const h=String(req.headers.authorization||''); return h.startsWith('Bearer ')?h.slice(7).trim():''; }
 function requireUser(req, res, next) {
-  let userId = req.session.userId || null;
-  if (!userId) {
-    const token=getBearer(req);
-    if (token) { const row=db.prepare('SELECT id FROM users WHERE auth_token_hash=?').get(hashToken(token)); if(row) userId=row.id; }
+  // 参加者はBearerトークンを最優先で認証する。
+  // 古いセッションCookieが残っていても、有効なトークンがあればそちらを使う。
+  let userId = null;
+  const token = getBearer(req);
+  if (token) {
+    const row = db.prepare('SELECT id FROM users WHERE auth_token_hash=?').get(hashToken(token));
+    if (row) userId = row.id;
   }
+
+  // トークンがない／無効な場合だけセッションへフォールバックする。
+  if (!userId && req.session && req.session.userId) {
+    const sessionUser = db.prepare('SELECT id FROM users WHERE id=?').get(req.session.userId);
+    if (sessionUser) userId = sessionUser.id;
+    else req.session.userId = null;
+  }
+
   if (!userId) return res.status(401).json({ error: '参加者ログインが必要です' });
-  const u = db.prepare('SELECT id FROM users WHERE id=?').get(userId);
-  if (!u) { if(req.session) req.session.userId=null; return res.status(401).json({ error: 'ログイン情報が古くなっています。もう一度ログインしてください' }); }
-  req.userId=userId; next();
+  req.userId = userId;
+  next();
 }
 function requireStaff(req, res, next) {
   if (!req.session.staffId) return res.status(403).json({ error: 'スタッフ権限が必要です' });

@@ -1,9 +1,11 @@
 {
   "name": "festival-points",
-  "version": "3.0.0",
+  "version": "4.2.0",
   "private": true,
   "type": "commonjs",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js"
+  },
   "dependencies": {
     "better-sqlite3": "^11.7.0",
     "bcryptjs": "^2.4.3",
