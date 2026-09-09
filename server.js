@@ -6,6 +6,7 @@ const Database = require('better-sqlite3');
 const QRCode = require('qrcode');
 const path = require('path');
 const fs = require('fs');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -26,6 +27,7 @@ CREATE TABLE IF NOT EXISTS users (
   public_code TEXT UNIQUE NOT NULL,
   username TEXT UNIQUE NOT NULL COLLATE NOCASE,
   password_hash TEXT NOT NULL,
+  device_id TEXT,
   points INTEGER NOT NULL DEFAULT 10 CHECK(points >= 0),
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -60,6 +62,8 @@ function ensureColumn(table, column, ddl) {
   if (!cols.includes(column)) db.exec(`ALTER TABLE ${table} ADD COLUMN ${ddl}`);
 }
 ensureColumn('users', 'public_code', 'public_code TEXT');
+ensureColumn('users', 'device_id', 'device_id TEXT');
+db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_device ON users(device_id) WHERE device_id IS NOT NULL`);
 ensureColumn('point_history', 'action_type', "action_type TEXT NOT NULL DEFAULT 'adjust'");
 ensureColumn('point_history', 'counterpart_user_id', 'counterpart_user_id INTEGER');
 ensureColumn('point_history', 'counterpart_name', 'counterpart_name TEXT');
@@ -104,6 +108,26 @@ app.use(session({
 
 function cleanName(v) { return String(v || '').trim().replace(/\s+/g, ' '); }
 function cleanReason(v) { return cleanName(v).slice(0, 80); }
+function readCookie(req, name) {
+  const raw = String(req.headers.cookie || '');
+  for (const part of raw.split(';')) {
+    const i = part.indexOf('=');
+    if (i < 0) continue;
+    if (part.slice(0, i).trim() === name) return decodeURIComponent(part.slice(i + 1).trim());
+  }
+  return '';
+}
+function newDeviceId() { return crypto.randomBytes(24).toString('hex'); }
+function getOrCreateDeviceId(req, res) {
+  let id = readCookie(req, 'festival.device');
+  if (!/^[a-f0-9]{48}$/.test(id)) id = newDeviceId();
+  res.cookie('festival.device', id, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 365 });
+  return id;
+}
+function bindDeviceCookie(res, deviceId) {
+  if (!deviceId) return;
+  res.cookie('festival.device', deviceId, { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', maxAge: 1000 * 60 * 60 * 24 * 365 });
+}
 function requireUser(req, res, next) {
   if (!req.session.userId) return res.status(401).json({ error: '参加者ログインが必要です' });
   const u = db.prepare('SELECT id FROM users WHERE id=?').get(req.session.userId);
@@ -171,26 +195,22 @@ function maybeEliminate(userId) {
   return { eliminated: false };
 }
 
-app.post('/api/register', loginGuard('participant'), async (req, res) => {
-  const username = cleanName(req.body.username), password = String(req.body.password || '');
-  if (username.length < 2 || username.length > 20) return res.status(400).json({ error: 'ニックネームは2〜20文字で入力してください' });
-  if (!/^[^<>]{2,20}$/.test(username)) return res.status(400).json({ error: 'ニックネームに使用できない文字が含まれています' });
-  if (password.length < 6 || password.length > 72) return res.status(400).json({ error: 'パスワードは6〜72文字で入力してください' });
-  try {
-    const hash = await bcrypt.hash(password, 12), code = makeCode();
-    const info = db.prepare('INSERT INTO users (public_code,username,password_hash,points) VALUES (?,?,?,?)').run(code, username, hash, STARTING_POINTS);
-    await regenerate(req); req.session.userId = Number(info.lastInsertRowid); clearAttempt(req);
-    res.json({ ok: true, code, startingPoints: STARTING_POINTS });
-  } catch (e) {
-    if (String(e.message).includes('UNIQUE')) return res.status(409).json({ error: 'そのニックネームはすでに使われています' });
-    console.error(e); res.status(500).json({ error: '登録に失敗しました' });
-  }
+app.post('/api/register', (req, res) => {
+  res.status(403).json({ error: '参加者アカウントはスタッフのみ作成できます' });
 });
 
 app.post('/api/login', loginGuard('participant'), async (req, res) => {
   const username = cleanName(req.body.username), password = String(req.body.password || '');
   const user = db.prepare('SELECT * FROM users WHERE username=?').get(username);
   if (!user || !(await bcrypt.compare(password, user.password_hash))) { failAttempt(req); return res.status(401).json({ error: 'ニックネームまたはパスワードが違います' }); }
+  let deviceId = user.device_id;
+  if (!deviceId) {
+    const candidate = getOrCreateDeviceId(req, res);
+    const occupied = db.prepare('SELECT id FROM users WHERE device_id=? AND id<>?').get(candidate, user.id);
+    if (!occupied) { db.prepare('UPDATE users SET device_id=? WHERE id=?').run(candidate, user.id); deviceId = candidate; }
+    else { deviceId = newDeviceId(); db.prepare('UPDATE users SET device_id=? WHERE id=?').run(deviceId, user.id); }
+  }
+  bindDeviceCookie(res, deviceId);
   await regenerate(req); req.session.userId = user.id; clearAttempt(req); res.json({ ok: true });
 });
 app.post('/api/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
@@ -200,7 +220,7 @@ app.get('/api/me', requireUser, (req, res) => {
   res.json(u);
 });
 app.get('/api/my-history', requireUser, (req, res) => {
-  res.json(db.prepare(`SELECT h.delta,h.reason,h.action_type,h.created_at,COALESCE(c.username,h.counterpart_name) counterpart
+  res.json(db.prepare(`SELECT h.id,h.delta,h.reason,h.action_type,h.created_at,COALESCE(c.username,h.counterpart_name) counterpart
     FROM point_history h LEFT JOIN users c ON c.id=h.counterpart_user_id
     WHERE h.user_id=? ORDER BY h.id DESC LIMIT 40`).all(req.session.userId));
 });
@@ -258,12 +278,28 @@ app.get('/api/staff/status', (req, res) => {
   res.json({ loggedIn: !!(s && s.active), staff: s && s.active ? s : null });
 });
 app.get('/api/staff/users', requireStaff, (req, res) => {
-  const q = cleanName(req.query.q), code = String(req.query.code || '').trim();
+  const q = cleanName(req.query.q), code = String(req.query.code || '').trim(), all = String(req.query.all || '') === '1';
   let rows;
   if (code) rows = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE public_code=? LIMIT 1').all(code);
   else if (q) rows = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE username LIKE ? OR public_code LIKE ? ORDER BY points DESC LIMIT 100').all(`%${q}%`,`%${q}%`);
-  else rows = db.prepare('SELECT id,public_code,username,points,created_at FROM users ORDER BY id DESC LIMIT 100').all();
+  else if (all) rows = db.prepare('SELECT id,public_code,username,points,created_at FROM users ORDER BY username COLLATE NOCASE ASC LIMIT 10000').all();
+  else rows = [];
   res.json(rows);
+});
+
+app.post('/api/staff/participants', requireStaff, async (req, res) => {
+  const username = cleanName(req.body.username), password = String(req.body.password || '');
+  if (username.length < 2 || username.length > 20) return res.status(400).json({ error: '参加者名は2〜20文字で入力してください' });
+  if (!/^[^<>]{2,20}$/.test(username)) return res.status(400).json({ error: '参加者名に使用できない文字が含まれています' });
+  if (password.length < 6 || password.length > 72) return res.status(400).json({ error: '参加者パスワードは6〜72文字で入力してください' });
+  try {
+    const hash = await bcrypt.hash(password, 12), code = makeCode();
+    const info = db.prepare('INSERT INTO users (public_code,username,password_hash,points,device_id) VALUES (?,?,?,?,NULL)').run(code, username, hash, STARTING_POINTS);
+    res.json({ ok: true, id: Number(info.lastInsertRowid), username, code, startingPoints: STARTING_POINTS });
+  } catch (e) {
+    if (String(e.message).includes('UNIQUE')) return res.status(409).json({ error: 'その参加者名は現在使用中です' });
+    console.error(e); return res.status(500).json({ error: '参加者アカウント作成に失敗しました' });
+  }
 });
 
 app.post('/api/staff/users/:id/points', requireStaff, (req, res) => {
