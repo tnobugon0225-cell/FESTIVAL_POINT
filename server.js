@@ -147,9 +147,21 @@ function deleteUserHard(userId) {
   db.prepare('DELETE FROM users WHERE id=?').run(u.id);
   return u;
 }
+const eliminationTimers = new Map();
+function scheduleElimination(userId) {
+  if (eliminationTimers.has(userId)) return;
+  const timer = setTimeout(() => {
+    eliminationTimers.delete(userId);
+    try {
+      const u = db.prepare('SELECT id,points FROM users WHERE id=?').get(userId);
+      if (u && u.points === 0) db.transaction(() => deleteUserHard(userId))();
+    } catch (e) { console.error('Delayed elimination failed:', e); }
+  }, 5000);
+  eliminationTimers.set(userId, timer);
+}
 function maybeEliminate(userId) {
   const u = db.prepare('SELECT id,username,points FROM users WHERE id=?').get(userId);
-  if (u && u.points === 0) { deleteUserHard(userId); return { eliminated: true, username: u.username }; }
+  if (u && u.points === 0) { scheduleElimination(userId); return { eliminated: true, username: u.username }; }
   return { eliminated: false };
 }
 
@@ -195,7 +207,7 @@ app.get('/api/my-qr', requireUser, async (req, res) => {
   res.json({ code: u.public_code, dataUrl, url: payload });
 });
 app.get('/api/ranking', (req, res) => {
-  res.json(db.prepare('SELECT username,points FROM users ORDER BY points DESC,id ASC LIMIT 100').all());
+  res.json(db.prepare('SELECT username,points FROM users WHERE points > 0 ORDER BY points DESC,id ASC LIMIT 100').all());
 });
 
 // 参加者 → 参加者 の自主ポイント譲渡
@@ -203,12 +215,13 @@ app.post('/api/transfer', requireUser, userTransferGuard, (req, res) => {
   const toCode = String(req.body.toCode || '').trim();
   const amount = Number(req.body.amount);
   const reason = cleanReason(req.body.reason);
-  if (!/^\d{4}$/.test(toCode)) return res.status(400).json({ error: '相手のお客様番号を4桁で入力してください' });
+  if (!/^\d{4}$/.test(toCode)) return res.status(400).json({ error: '相手のIDを4桁で入力してください' });
   if (!Number.isInteger(amount) || amount < 1 || amount > 100000) return res.status(400).json({ error: '譲渡ポイントは1〜100,000の整数で入力してください' });
   if (reason.length < 2) return res.status(400).json({ error: '譲渡理由を2文字以上で入力してください' });
   const from = db.prepare('SELECT id,username,public_code,points FROM users WHERE id=?').get(req.session.userId);
-  const to = db.prepare('SELECT id,username,public_code,points FROM users WHERE public_code=?').get(toCode);
-  if (!to) return res.status(404).json({ error: 'そのお客様番号の参加者は見つかりません' });
+  const to = db.prepare('SELECT id,username,public_code,points FROM users WHERE public_code=? AND points>0').get(toCode);
+  if (!to) return res.status(404).json({ error: 'そのIDの参加者は見つかりません' });
+  if (from.points <= 0) return res.status(410).json({ error: 'このアカウントは退場処理中です' });
   if (from.id === to.id) return res.status(400).json({ error: '自分自身には送れません' });
   if (from.points < amount) return res.status(400).json({ error: '所持ポイントを超える譲渡はできません' });
   const senderWillBeEliminated = from.points === amount;
@@ -217,11 +230,10 @@ app.post('/api/transfer', requireUser, userTransferGuard, (req, res) => {
     db.prepare('UPDATE users SET points=points+? WHERE id=?').run(amount, to.id);
     db.prepare(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES(?,?,?,?,?,?)`).run(from.id,-amount,reason,'participant_transfer_out',to.id,to.username);
     db.prepare(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES(?,?,?,?,?,?)`).run(to.id,amount,reason,'participant_transfer_in',from.id,from.username);
-    if (senderWillBeEliminated) deleteUserHard(from.id);
+    if (senderWillBeEliminated) scheduleElimination(from.id);
   })();
   if (senderWillBeEliminated) {
-    req.session.userId = null;
-    return res.json({ ok: true, eliminated: true, message: `${amount.toLocaleString()}ptを${to.username}へ譲渡し、残高0ptのため退場しました。` });
+    return res.json({ ok: true, eliminated: true, message: 'GAME OVER', deleteAfterMs: 5000 });
   }
   const updated = db.prepare('SELECT points FROM users WHERE id=?').get(from.id);
   res.json({ ok: true, eliminated: false, to: to.username, amount, points: updated.points });
@@ -258,7 +270,7 @@ app.post('/api/staff/users/:id/points', requireStaff, (req, res) => {
   db.transaction(() => {
     db.prepare('UPDATE users SET points=points+? WHERE id=?').run(delta,id);
     db.prepare(`INSERT INTO point_history(user_id,delta,reason,action_type,staff_id) VALUES(?,?,?,?,?)`).run(id,delta,reason||null,'adjust',req.staff.id);
-    if (becomesZero) deleteUserHard(id);
+    if (becomesZero) scheduleElimination(id);
   })();
   if (becomesZero) return res.json({ id,username:u.username,points:0,eliminated:true });
   res.json({ ...db.prepare('SELECT id,username,points FROM users WHERE id=?').get(id), eliminated:false });
@@ -277,7 +289,7 @@ app.post('/api/staff/transfer', requireStaff, (req, res) => {
     db.prepare('UPDATE users SET points=points+? WHERE id=?').run(amount, toId);
     db.prepare(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name,staff_id) VALUES(?,?,?,?,?,?,?)`).run(fromId,-amount,reason||null,'transfer_out',toId,to.username,req.staff.id);
     db.prepare(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name,staff_id) VALUES(?,?,?,?,?,?,?)`).run(toId,amount,reason||null,'transfer_in',fromId,from.username,req.staff.id);
-    if (eliminateFrom) deleteUserHard(fromId);
+    if (eliminateFrom) scheduleElimination(fromId);
   })();
   res.json({ ok:true, eliminated:eliminateFrom, from:{ id:from.id,username:from.username,points:Math.max(0,from.points-amount) }, to:db.prepare('SELECT id,username,points FROM users WHERE id=?').get(toId) });
 });
