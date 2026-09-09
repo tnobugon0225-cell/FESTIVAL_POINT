@@ -1,4 +1,4 @@
-NEXUS POINT ARENA v3.3
+NEXUS POINT ARENA v3.4
 
 # NEXUS POINT ARENA v3.1
 
@@ -52,3 +52,9 @@ npm start
 
 現在のDBはSQLiteです。Renderの無料Web Serviceではローカルファイルが永続化されないため、再起動・再デプロイ等でデータが消える可能性があります。
 学祭本番前にはPostgreSQL等の永続DBへ移行することを強く推奨します。
+
+
+## v3.4 変更点
+- 既存の「ノノンガ」アカウントが10pt未満なら10ptに補正
+- スタッフ画面を5秒ごとに自動更新（入力中は更新を一時スキップ）
+- GAME OVER画面の削除待ちを 5 → 4 → 3 → 2 → 1 のカウントダウン表示に変更

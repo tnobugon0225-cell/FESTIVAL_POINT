@@ -78,6 +78,12 @@ for (const u of db.prepare(`SELECT id FROM users WHERE public_code IS NULL OR pu
   db.prepare('UPDATE users SET public_code=? WHERE id=?').run(makeCode(), u.id);
 }
 
+// 既存の『ノノンガ』アカウントは最低10ptにそろえる（10pt以上は変更しない）
+const nononga = db.prepare('SELECT id,points FROM users WHERE username=? COLLATE NOCASE').get('ノノンガ');
+if (nononga && nononga.points < 10) {
+  db.prepare('UPDATE users SET points=10 WHERE id=?').run(nononga.id);
+}
+
 if (!db.prepare('SELECT id FROM staff LIMIT 1').get()) {
   const hash = bcrypt.hashSync(ADMIN_PASSWORD, 12);
   db.prepare('INSERT INTO staff (username, password_hash, role) VALUES (?, ?, ?)').run(ADMIN_USERNAME, hash, 'admin');
