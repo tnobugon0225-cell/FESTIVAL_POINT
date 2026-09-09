@@ -144,6 +144,7 @@ function requireAdmin(req, res, next) {
   requireStaff(req, res, () => req.staff.role === 'admin' ? next() : res.status(403).json({ error: '管理者権限が必要です' }));
 }
 function regenerate(req) { return new Promise((resolve, reject) => req.session.regenerate(e => e ? reject(e) : resolve())); }
+function saveSession(req) { return new Promise((resolve, reject) => req.session.save(e => e ? reject(e) : resolve())); }
 
 const attempts = new Map();
 function loginGuard(scope) {
@@ -213,7 +214,11 @@ app.post('/api/login', loginGuard('participant'), async (req, res) => {
     else { deviceId = newDeviceId(); db.prepare('UPDATE users SET device_id=? WHERE id=?').run(deviceId, user.id); }
   }
   bindDeviceCookie(res, deviceId);
-  await regenerate(req); req.session.userId = user.id; clearAttempt(req); res.json({ ok: true });
+  await regenerate(req);
+  req.session.userId = user.id;
+  await saveSession(req);
+  clearAttempt(req);
+  res.json({ ok: true });
 });
 app.post('/api/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
 
@@ -271,7 +276,11 @@ app.post('/api/staff/login', loginGuard('staff'), async (req, res) => {
   const username = cleanName(req.body.username), password = String(req.body.password || '');
   const s = db.prepare('SELECT * FROM staff WHERE username=? AND active=1').get(username);
   if (!s || !(await bcrypt.compare(password, s.password_hash))) { failAttempt(req); return res.status(401).json({ error: 'スタッフIDまたはパスワードが違います' }); }
-  await regenerate(req); req.session.staffId = s.id; clearAttempt(req); res.json({ ok: true, username: s.username, role: s.role });
+  await regenerate(req);
+  req.session.staffId = s.id;
+  await saveSession(req);
+  clearAttempt(req);
+  res.json({ ok: true, username: s.username, role: s.role });
 });
 app.post('/api/staff/logout', (req, res) => req.session.destroy(() => res.json({ ok: true })));
 app.get('/api/staff/status', (req, res) => {
