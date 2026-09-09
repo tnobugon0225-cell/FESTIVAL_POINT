@@ -131,24 +131,55 @@ function bindDeviceCookie(res, deviceId) {
 }
 function hashToken(token) { return crypto.createHash('sha256').update(token).digest('hex'); }
 function getBearer(req) { const h=String(req.headers.authorization||''); return h.startsWith('Bearer ')?h.slice(7).trim():''; }
+function b64url(input) { return Buffer.from(input).toString('base64url'); }
+function issueParticipantToken(userId) {
+  const payload = JSON.stringify({ uid: Number(userId), exp: Date.now() + 1000 * 60 * 60 * 12 });
+  const body = b64url(payload);
+  const sig = crypto.createHmac('sha256', SESSION_SECRET).update(body).digest('base64url');
+  return `${body}.${sig}`;
+}
+function verifyParticipantToken(token) {
+  try {
+    const [body, sig] = String(token || '').split('.');
+    if (!body || !sig) return null;
+    const expected = crypto.createHmac('sha256', SESSION_SECRET).update(body).digest('base64url');
+    const a = Buffer.from(sig); const b = Buffer.from(expected);
+    if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
+    const data = JSON.parse(Buffer.from(body, 'base64url').toString('utf8'));
+    if (!data.uid || !data.exp || Date.now() > Number(data.exp)) return null;
+    return Number(data.uid);
+  } catch { return null; }
+}
+function getParticipantToken(req) {
+  return String(req.headers['x-participant-token'] || getBearer(req) || '');
+}
 function requireUser(req, res, next) {
-  // 参加者はBearerトークンを最優先で認証する。
-  // 古いセッションCookieが残っていても、有効なトークンがあればそちらを使う。
   let userId = null;
-  const token = getBearer(req);
-  if (token) {
-    const row = db.prepare('SELECT id FROM users WHERE auth_token_hash=?').get(hashToken(token));
+
+  // 参加者専用の署名トークンを最優先。Render上でもセッションCookieに依存しない。
+  const signedUid = verifyParticipantToken(getParticipantToken(req));
+  if (signedUid) {
+    const row = db.prepare('SELECT id FROM users WHERE id=?').get(signedUid);
     if (row) userId = row.id;
   }
 
-  // トークンがない／無効な場合だけセッションへフォールバックする。
+  // 旧バージョンのBearerトークンとの互換性。
+  if (!userId) {
+    const legacy = getBearer(req);
+    if (legacy && !legacy.includes('.')) {
+      const row = db.prepare('SELECT id FROM users WHERE auth_token_hash=?').get(hashToken(legacy));
+      if (row) userId = row.id;
+    }
+  }
+
+  // 最後にセッションへフォールバック。
   if (!userId && req.session && req.session.userId) {
-    const sessionUser = db.prepare('SELECT id FROM users WHERE id=?').get(req.session.userId);
-    if (sessionUser) userId = sessionUser.id;
+    const row = db.prepare('SELECT id FROM users WHERE id=?').get(req.session.userId);
+    if (row) userId = row.id;
     else req.session.userId = null;
   }
 
-  if (!userId) return res.status(401).json({ error: '参加者ログインが必要です' });
+  if (!userId) return res.status(401).json({ error: '参加者ログインが必要です', code: 'AUTH_REQUIRED' });
   req.userId = userId;
   next();
 }
@@ -230,14 +261,15 @@ app.post('/api/login', loginGuard('participant'), async (req, res) => {
   await regenerate(req);
   req.session.userId = user.id;
   req.session.staffId = null;
-  const authToken=crypto.randomBytes(32).toString('hex');
-  db.prepare('UPDATE users SET auth_token_hash=? WHERE id=?').run(hashToken(authToken), user.id);
+  const authToken = issueParticipantToken(user.id);
+  // 旧トークンは無効化。新方式はDB保存不要。
+  db.prepare('UPDATE users SET auth_token_hash=NULL WHERE id=?').run(user.id);
   await saveSession(req);
   clearAttempt(req);
   const freshUser = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE id=?').get(user.id);
   res.json({ ok: true, user: freshUser, authToken });
 });
-app.post('/api/logout', requireUser, (req, res) => { db.prepare('UPDATE users SET auth_token_hash=NULL WHERE id=?').run(req.userId); req.session.destroy(() => res.json({ ok: true })); });
+app.post('/api/logout', requireUser, (req, res) => { req.session.destroy(() => res.json({ ok: true })); });
 
 app.get('/api/me', requireUser, (req, res) => {
   const u = db.prepare('SELECT id,public_code,username,points,created_at FROM users WHERE id=?').get(req.userId);
