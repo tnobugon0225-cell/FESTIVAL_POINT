@@ -332,9 +332,9 @@ function publicMatch(row, viewerId) {
   return {
     id:Number(row.id), role, status:row.status, wager:Number(row.wager),
     opponentApproved:!!row.opponent_approved, refereeApproved:!!row.referee_approved,
-    challenger:{id:row.challenger_id?Number(row.challenger_id):null,name:row.challenger_name,code:row.challenger_code},
-    opponent:{id:row.opponent_id?Number(row.opponent_id):null,name:row.opponent_name,code:row.opponent_code},
-    referee:{id:row.referee_id?Number(row.referee_id):null,name:row.referee_name,code:row.referee_code},
+    challenger:{id:row.challenger_id?Number(row.challenger_id):null,name:row.challenger_name,code:row.challenger_code,avatarKey:row.challenger_avatar||null},
+    opponent:{id:row.opponent_id?Number(row.opponent_id):null,name:row.opponent_name,code:row.opponent_code,avatarKey:row.opponent_avatar||null},
+    referee:{id:row.referee_id?Number(row.referee_id):null,name:row.referee_name,code:row.referee_code,avatarKey:row.referee_avatar||null},
     winnerUserId:row.winner_user_id?Number(row.winner_user_id):null,winnerName:row.winner_name||null,
     createdAt:row.created_at,matchedAt:row.matched_at,startedAt:row.started_at,completedAt:row.completed_at
   };
@@ -369,8 +369,13 @@ app.post('/api/matches', requireUser, async (req,res,next)=>{
 
 app.get('/api/matches/me', requireUser, async (req,res,next)=>{
   try{
-    let r=await query(`SELECT * FROM matches WHERE (challenger_id=$1 OR opponent_id=$1 OR referee_id=$1) AND status = ANY($2::varchar[]) ORDER BY id DESC LIMIT 1`,[req.userId,ACTIVE_MATCH_STATUSES]);
-    if(!r.rows[0]) r=await query(`SELECT * FROM matches WHERE (challenger_id=$1 OR opponent_id=$1 OR referee_id=$1) AND status='completed' AND completed_at > NOW()-INTERVAL '45 seconds' ORDER BY id DESC LIMIT 1`,[req.userId]);
+    const matchSelect = `SELECT m.*, cu.avatar_key AS challenger_avatar, ou.avatar_key AS opponent_avatar, ru.avatar_key AS referee_avatar
+      FROM matches m
+      LEFT JOIN users cu ON cu.id=m.challenger_id
+      LEFT JOIN users ou ON ou.id=m.opponent_id
+      LEFT JOIN users ru ON ru.id=m.referee_id`;
+    let r=await query(`${matchSelect} WHERE (m.challenger_id=$1 OR m.opponent_id=$1 OR m.referee_id=$1) AND m.status = ANY($2::varchar[]) ORDER BY m.id DESC LIMIT 1`,[req.userId,ACTIVE_MATCH_STATUSES]);
+    if(!r.rows[0]) r=await query(`${matchSelect} WHERE (m.challenger_id=$1 OR m.opponent_id=$1 OR m.referee_id=$1) AND m.status='completed' AND m.completed_at > NOW()-INTERVAL '15 seconds' ORDER BY m.id DESC LIMIT 1`,[req.userId]);
     res.json({match:publicMatch(r.rows[0]||null,req.userId)});
   }catch(e){next(e)}
 });

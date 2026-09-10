@@ -1,3 +1,10 @@
+NEXUS:ZERO v5.13
+
+- 対戦終了後、VICTORY / DEFEAT / RESULT画面を10秒表示してHOMEへ自動遷移
+- 対戦申請の全画面通知に申請者・対戦相手・審判のアバターを表示
+- /match のPLAYER A / PLAYER B / REFEREEに選択アバターを表示
+- HOME復帰後に終了済みマッチへ再転送されないよう調整
+
 # NEXUS:ZERO v5.12
 
 ## UI update

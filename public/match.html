@@ -20,10 +20,13 @@
   </section>
 </main>
 <script>
-const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='';
+const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null;
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const x=new Error('ネットワーク通信に失敗しました');x.status=0;throw x}const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
-function person(p,label){return `<div class="battle-person"><span>${label}</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div>`}
+function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
+function person(p,label){return `<div class="battle-person"><img class="battle-person-avatar" src="${avatarSrc(p.avatarKey)}" alt=""><span>${label}</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div>`}
+function refereeMeta(p){return `<div class="battle-referee-meta"><img src="${avatarSrc(p.avatarKey)}" alt=""><div><span>REFEREE</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div></div>`}
+function startResultReturn(completedAt){if(resultReturnTimer)return;const end=new Date(completedAt).getTime()+10000;const tick=()=>{const remain=Math.max(0,Math.ceil((end-Date.now())/1000));const el=document.querySelector('#resultCountdown');if(el)el.textContent=remain;if(remain<=0){clearInterval(resultCountdownTimer);location.href='/';}};tick();resultCountdownTimer=setInterval(tick,250);resultReturnTimer=setTimeout(()=>location.href='/',Math.max(0,end-Date.now()+80))}
 function setState(cls,kicker,title,subtitle,badge){const s=$('#matchScreen');s.className='match-screen '+cls;$('#stateKicker').textContent=kicker;$('#stateTitle').textContent=title;$('#stateSubtitle').textContent=subtitle;$('#stateBadge').textContent=badge}
 function approval(label,ok){return `<span class="approval-chip ${ok?'approved':'waiting'}">${label} ${ok?'✓':'…'}</span>`}
 async function load(){
@@ -32,7 +35,7 @@ async function load(){
    if(!m){clearInterval(timer);setState('state-idle','NO ACTIVE MATCH','NO ACTIVE BATTLE','進行中の対戦はありません','IDLE');$('#battlePlayers').innerHTML='';$('#battleMeta').innerHTML='';$('#battleControls').innerHTML='';$('#backHome').classList.remove('hidden');return}
    $('#backHome').classList.toggle('hidden',m.status!=='completed');
    $('#battlePlayers').innerHTML=`${person(m.challenger,'PLAYER A')}<div class="battle-vs">VS</div>${person(m.opponent,'PLAYER B')}`;
-   $('#battleMeta').innerHTML=`<div><span>WAGER</span><strong>${Number(m.wager).toLocaleString()} pt</strong></div><div><span>REFEREE</span><strong>${esc(m.referee.name)}</strong><small>ID ${esc(m.referee.code)}</small></div>`;
+   $('#battleMeta').innerHTML=`<div><span>WAGER</span><strong>${Number(m.wager).toLocaleString()} pt</strong></div>${refereeMeta(m.referee)}`;
    if(m.status==='pending'){
      setState('state-pending','MATCHING','MATCHING IN PROGRESS','承認情報を同期しています','WAITING');
      let controls=`<div class="approval-row">${approval('OPPONENT',m.opponentApproved)}${approval('REFEREE',m.refereeApproved)}</div>`;
@@ -51,7 +54,8 @@ async function load(){
      const mine=m.role==='challenger'?m.challenger:m.role==='opponent'?m.opponent:null;const won=mine&&Number(m.winnerUserId)===Number(mine.id);
      if(mine)setState(won?'state-victory':'state-defeat','BATTLE RESULT',won?'VICTORY':'DEFEAT',won?`+${Number(m.wager).toLocaleString()} pt`:`-${Number(m.wager).toLocaleString()} pt`,'COMPLETE');
      else setState('state-complete','BATTLE RESULT','RESULT CONFIRMED',`WINNER : ${m.winnerName}`,'COMPLETE');
-     $('#battleControls').innerHTML=`<div class="winner-line">WINNER <strong>${esc(m.winnerName||'---')}</strong></div>`;
+     $('#battleControls').innerHTML=`<div class="winner-line">WINNER <strong>${esc(m.winnerName||'---')}</strong><div class="result-return">HOMEへ戻るまで <b id="resultCountdown">10</b> 秒</div></div>`;
+     startResultReturn(m.completedAt);
    }
    lastStatus=m.status;
  }catch(e){if(e.status===401||e.status===403){location.href='/';return}$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}
