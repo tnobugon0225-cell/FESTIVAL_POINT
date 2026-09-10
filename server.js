@@ -17,6 +17,11 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-me-now';
 const BASE_URL = process.env.BASE_URL || '';
 const STARTING_POINTS = Math.max(1, Number(process.env.STARTING_POINTS || 10));
+const AVATAR_KEYS = ['avatar-01','avatar-02','avatar-03','avatar-04','avatar-05','avatar-06'];
+function cleanAvatarKey(v) {
+  const key = String(v || '').trim();
+  return AVATAR_KEYS.includes(key) ? key : '';
+}
 
 if (!DATABASE_URL) {
   console.error('DATABASE_URL が設定されていません。PostgreSQLの接続URLをRenderのEnvironmentに設定してください。');
@@ -42,6 +47,7 @@ async function initDb() {
       username VARCHAR(20) NOT NULL,
       password_hash TEXT NOT NULL,
       password_ciphertext TEXT,
+      avatar_key VARCHAR(20),
       points INTEGER NOT NULL DEFAULT 10 CHECK(points >= 0),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
@@ -70,6 +76,7 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE INDEX IF NOT EXISTS idx_history_user ON point_history(user_id, id DESC);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_key VARCHAR(20);
   `);
 
   const existingAdmin = await one('SELECT id FROM staff LIMIT 1');
@@ -241,15 +248,19 @@ app.post('/api/login', loginGuard('participant'), async (req, res, next) => {
       ? await one('SELECT * FROM users WHERE public_code=$1', [loginId])
       : await one('SELECT * FROM users WHERE LOWER(username)=LOWER($1)', [loginId]);
     if (!user || !(await bcrypt.compare(password, user.password_hash))) { failAttempt(req); return res.status(401).json({ error: 'IDまたはパスワードが違います' }); }
+    const avatarKey = cleanAvatarKey(req.body.avatarKey);
+    if (!avatarKey) return res.status(400).json({ error: 'ログインするアイコンを選択してください' });
+    await query('UPDATE users SET avatar_key=$1 WHERE id=$2', [avatarKey, user.id]);
+    user.avatar_key = avatarKey;
     await regenerate(req); req.session.userId = Number(user.id); req.session.staffId = null; await saveSession(req); clearAttempt(req);
     const authToken = issueParticipantToken(user.id);
-    res.json({ ok: true, user: { id:Number(user.id), public_code:user.public_code, username:user.username, points:Number(user.points), created_at:user.created_at }, authToken });
+    res.json({ ok: true, user: { id:Number(user.id), public_code:user.public_code, username:user.username, points:Number(user.points), avatar_key:user.avatar_key, created_at:user.created_at }, authToken });
   } catch (e) { next(e); }
 });
 app.post('/api/logout', requireUser, (req, res) => req.session.destroy(() => res.json({ ok: true })));
 
 app.get('/api/me', requireUser, async (req, res, next) => {
-  try { const u = await one('SELECT id,public_code,username,points,created_at FROM users WHERE id=$1', [req.userId]); res.json({ ...u, id:Number(u.id), points:Number(u.points) }); } catch(e){ next(e); }
+  try { const u = await one('SELECT id,public_code,username,points,avatar_key,created_at FROM users WHERE id=$1', [req.userId]); res.json({ ...u, id:Number(u.id), points:Number(u.points) }); } catch(e){ next(e); }
 });
 app.get('/api/my-history', requireUser, async (req, res, next) => {
   try {
@@ -269,7 +280,7 @@ app.get('/api/my-qr', requireUser, async (req, res, next) => {
   } catch(e){ next(e); }
 });
 app.get('/api/ranking', async (req, res, next) => {
-  try { const r=await query('SELECT public_code,username,points FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 100'); res.json(r.rows.map(x=>({...x,points:Number(x.points)}))); } catch(e){ next(e); }
+  try { const r=await query('SELECT public_code,username,points,avatar_key FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 100'); res.json(r.rows.map(x=>({...x,points:Number(x.points)}))); } catch(e){ next(e); }
 });
 
 app.post('/api/transfer', requireUser, userTransferGuard, async (req, res, next) => {
@@ -312,7 +323,7 @@ app.get('/api/staff/status',async(req,res,next)=>{try{if(!req.session.staffId)re
 app.get('/api/staff/users', requireStaff, async (req,res,next)=>{
   try{
     const q=cleanName(req.query.q), code=String(req.query.code||'').trim(), all=String(req.query.all||'')==='1'; let r;
-    const select=`SELECT id,public_code,username,points,created_at,(password_ciphertext IS NOT NULL) AS password_available FROM users`;
+    const select=`SELECT id,public_code,username,points,avatar_key,created_at,(password_ciphertext IS NOT NULL) AS password_available FROM users`;
     if(code) r=await query(`${select} WHERE public_code=$1 LIMIT 1`,[code]);
     else if(q) r=await query(`${select} WHERE LOWER(username) LIKE LOWER($1) OR public_code LIKE $2 ORDER BY points DESC LIMIT 100`,[`%${q}%`,`%${q}%`]);
     else if(all) r=await query(`${select} ORDER BY LOWER(username) ASC LIMIT 10000`);
@@ -396,6 +407,7 @@ app.post('/api/staff/accounts/:id/toggle', requireAdmin, async (req,res,next)=>{
 
 app.use(express.static(path.join(__dirname,'public')));
 app.get('/admin',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));
+app.get('/ranking',(req,res)=>res.sendFile(path.join(__dirname,'public','ranking.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(err);res.status(500).json({error:'サーバー処理でエラーが発生しました'})});
 
@@ -403,7 +415,7 @@ app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(e
   try{
     await initDb();
     app.listen(PORT,'0.0.0.0',()=>{
-      console.log(`NEXUS:ZERO v5.1: http://localhost:${PORT}`);
+      console.log(`NEXUS:ZERO v5.3: http://localhost:${PORT}`);
       console.log('Database: PostgreSQL');
       console.log(`Starting points: ${STARTING_POINTS}`);
       if(SESSION_SECRET.startsWith('replace-this'))console.log('WARNING: SESSION_SECRETを本番用に変更してください。');
