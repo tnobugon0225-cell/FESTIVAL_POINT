@@ -1,9 +1,22 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#030712"><title>NEXUS:ZERO</title><link rel="stylesheet" href="/style.css"></head><body class="player-page">
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#02050b">
+  <title>NEXUS:ZERO</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
 <nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="#rankingCard" id="navRanking">RANKING</a><a href="/admin">STAFF</a></div></nav>
-<main class="app-shell">
-<section id="auth" class="system-panel auth-panel">
-  <div class="logo-stage"><img src="/nexus-zero-logo.webp" alt="NEXUS:ZERO" class="main-logo"><p class="battle-copy">奪え。守れ。生き残れ。</p></div>
+
+<main class="app-shell arena-shell">
+<section id="auth" class="system-panel auth-panel auth-v52">
+  <div class="hero-lockup">
+    <img src="/nexus-zero-logo.webp" alt="NEXUS:ZERO" class="hero-logo">
+    <p class="hero-copy">奪え。守れ。生き残れ。</p>
+  </div>
   <div class="panel-head"><div><div class="eyebrow">PLAYER ACCESS</div><h1>PLAYER LOGIN</h1></div><span class="status-light">SYSTEM READY</span></div>
   <div class="auth-grid"><div><label>PLAYER ID</label><input id="loginId" maxlength="20" autocomplete="username" inputmode="numeric" placeholder="0427"></div><div><label>PASSWORD</label><input id="password" type="password" maxlength="72" autocomplete="current-password" placeholder="PASSWORD"></div></div>
   <button id="loginBtn" class="primary-action">CONNECT</button>
@@ -11,33 +24,83 @@
 </section>
 
 <section id="account" class="hidden">
-  <section class="logo-header"><img src="/nexus-zero-logo.webp" alt="NEXUS:ZERO"><p>奪え。守れ。生き残れ。</p></section>
+  <section class="hero-lockup account-hero">
+    <img src="/nexus-zero-logo.webp" alt="NEXUS:ZERO" class="hero-logo">
+    <p class="hero-copy">奪え。守れ。生き残れ。</p>
+  </section>
 
-  <div class="player-dashboard system-panel">
+  <section class="system-panel arena-status-panel">
     <div class="player-status-line"><span><i></i> PLAYER STATUS</span><strong>ONLINE</strong></div>
-    <div class="player-grid">
-      <div class="identity-block"><span class="micro-label">PLAYER ID</span><div class="id-display" id="customerCode">----</div><span class="micro-label">PLAYER NAME</span><h1 id="name"></h1></div>
-      <div class="metric-block points-block"><span class="micro-label">TOTAL POINT</span><div id="points" class="points">0 pt</div><div class="metric-grid"></div></div>
-      <div class="metric-block rank-block"><span class="micro-label">RANK</span><div id="rankText" class="rank-display">--</div><span class="live-chip">● LIVE</span></div>
+    <div class="arena-player-grid">
+      <div class="arena-identity">
+        <div class="identity-core" aria-hidden="true"><span>N</span></div>
+        <div class="identity-data">
+          <span class="micro-label">PLAYER ID</span>
+          <div class="id-display" id="customerCode">----</div>
+          <span class="micro-label">PLAYER NAME</span>
+          <h1 id="name"></h1>
+        </div>
+      </div>
+      <div class="metric-block points-block arena-metric">
+        <span class="micro-label">TOTAL POINT</span>
+        <div class="metric-grid"></div>
+        <div id="points" class="points">0 pt</div>
+      </div>
+      <div class="metric-block rank-block arena-metric rank-metric">
+        <span class="micro-label">RANK</span>
+        <div class="rank-orbit" aria-hidden="true"></div>
+        <div id="rankText" class="rank-display">#--</div>
+        <span class="live-chip">● LIVE</span>
+      </div>
     </div>
+  </section>
+
+  <div class="quick-nav" aria-label="クイックメニュー">
+    <button type="button" data-scroll="historyCard">HISTORY<span>履歴</span></button>
+    <button type="button" id="openQrBtn">MY QR<span>QR</span></button>
+    <button type="button" data-scroll="rankingCard">RANKING<span>ランキング</span></button>
   </div>
 
-  <div class="system-panel transfer-card">
-    <div class="panel-head"><div><div class="eyebrow">POINT TRANSFER</div><h2>ポイント譲渡</h2></div><span class="hud-icon">⇄</span></div>
-    <div class="transfer-grid"><div><label>相手ID</label><input id="toCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div><div><label>ポイント</label><input id="sendAmount" type="number" inputmode="numeric" min="1" value="1"></div><div class="wide"><label>理由</label><input id="sendReason" maxlength="80" placeholder="例：対戦結果 / 取引"></div></div>
-    <div class="balance-guide" id="transferLimit">譲渡可能：0 pt</div><button id="sendBtn" class="primary-action">ポイントを渡す</button><p id="sendMsg"></p>
+  <section class="system-panel transfer-card arena-transfer">
+    <div class="panel-head arena-section-head"><div><div class="eyebrow">POINT TRANSFER</div><h2>ポイント譲渡</h2></div><span class="hud-icon">⇄</span></div>
+    <div class="transfer-grid transfer-grid-v52">
+      <div><label>相手ID</label><input id="toCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="IDを入力"></div>
+      <div><label>ポイント</label><input id="sendAmount" type="number" inputmode="numeric" min="1" value="1" placeholder="ポイント数"></div>
+      <div><label>理由</label><input id="sendReason" maxlength="80" placeholder="理由を入力"></div>
+    </div>
+    <div class="balance-guide" id="transferLimit">譲渡可能：0 pt</div>
+    <button id="sendBtn" class="primary-action transfer-action"><span>≫≫</span>ポイントを渡す<span>≪≪</span></button><p id="sendMsg"></p>
     <p class="warning-box">残りポイントが0になるとGAME OVERとなります。</p>
+  </section>
+
+  <section id="qrCard" class="system-panel qr-modal-card hidden">
+    <div class="panel-head"><div><div class="eyebrow">PLAYER IDENTIFICATION</div><h2>MY QR</h2></div><button type="button" id="closeQrBtn" class="secondary compact">閉じる</button></div>
+    <div class="qr-wrap"><img id="qrImg" alt="参加者QR"><p class="micro-label">PLAYER ID</p><strong id="publicCode" class="customer-number"></strong></div>
+  </section>
+
+  <div class="arena-lower-grid">
+    <section id="rankingCard" class="system-panel dashboard-list-card">
+      <div class="panel-head arena-section-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>RANKING</h2></div><span class="status-light">TOP 100</span></div>
+      <div id="ranking"></div>
+    </section>
+    <section id="historyCard" class="system-panel dashboard-list-card">
+      <div class="panel-head arena-section-head"><div><div class="eyebrow">ACTIVITY LOG</div><h2>HISTORY</h2></div></div>
+      <div id="history"></div>
+    </section>
   </div>
 
-  <div class="tabs cyber-tabs"><button class="tab active" data-target="historyCard">HISTORY</button><button class="tab" data-target="qrCard">MY QR</button><button class="tab" data-target="rankingCard">RANKING</button></div>
-  <div id="historyCard" class="system-panel tab-card"><div class="panel-head"><div><div class="eyebrow">ACTIVITY LOG</div><h2>ポイント履歴</h2></div></div><div id="history"></div></div>
-  <div id="qrCard" class="system-panel tab-card hidden"><div class="panel-head"><div><div class="eyebrow">PLAYER IDENTIFICATION</div><h2>マイQR</h2></div></div><div class="qr-wrap"><img id="qrImg" alt="参加者QR"><p class="micro-label">PLAYER ID</p><strong id="publicCode" class="customer-number"></strong></div></div>
-  <div id="rankingCard" class="system-panel tab-card hidden"><div class="panel-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>ランキング</h2></div><span class="status-light">TOP 100</span></div><div id="ranking"></div></div>
-  <div class="system-panel logout-card"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
+  <div class="system-panel logout-card arena-controls"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
+
+  <nav class="bottom-arena-nav" aria-label="ページ内ナビゲーション">
+    <button type="button" data-scroll="account" class="active"><b>⌂</b><span>HOME</span><small>ホーム</small></button>
+    <button type="button" data-scroll="rankingCard"><b>▥</b><span>RANKING</span><small>ランキング</small></button>
+    <button type="button" data-scroll="historyCard"><b>◷</b><span>HISTORY</span><small>履歴</small></button>
+  </nav>
 </section>
 
 <section id="publicRanking" class="system-panel public-ranking"><div class="panel-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>現在のランキング</h2></div><button id="publicRefresh" class="secondary compact">更新</button></div><div id="publicRankingList"></div></section>
 </main>
+
 <div id="gameOverOverlay" class="gameover-overlay hidden"><div class="gameover-box"><div class="gameover-kicker">CONNECTION TERMINATED</div><h2>GAME OVER</h2><p>またのご参加をお待ちしております。</p><div class="gameover-count"><strong id="gameOverCount">5</strong><span>秒後にアカウントが削除されます</span></div></div></div>
 <script>
 const $=s=>document.querySelector(s);let timer=null;let authToken=localStorage.getItem('nexusParticipantToken')||'';
@@ -45,66 +108,19 @@ async function api(url,options={}){const headers={'Content-Type':'application/js
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}function fmt(s){if(!s)return '';const v=String(s);return new Date(v.includes('T')?v:v.replace(' ','T')+'Z').toLocaleString('ja-JP')}
 function historyLabel(h){if(h.action_type==='participant_transfer_out')return `譲渡 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='participant_transfer_in')return `獲得 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_out')return `スタッフ移動 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_in')return `スタッフ移動 ← ${esc(h.counterpart||'相手')}`;return '運営調整'}
 let gameOverShown=false;function showGameOver(){if(gameOverShown)return;gameOverShown=true;clearInterval(timer);$('#gameOverOverlay').classList.remove('hidden');let remain=5;$('#gameOverCount').textContent=remain;const countdown=setInterval(()=>{remain--;if(remain>=1)$('#gameOverCount').textContent=remain;else clearInterval(countdown)},1000);setTimeout(()=>location.reload(),5100)}
-async function getRanking(){const rows=await api('/api/ranking');const html=rows.length?rows.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}"><span class="rank-num">${String(i+1).padStart(2,'0')}</span><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';$('#ranking').innerHTML=html;$('#publicRankingList').innerHTML=html;return rows}
+async function getRanking(){const rows=await api('/api/ranking');const html=rows.length?rows.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}"><span class="rank-num">${i<3?['①','②','③'][i]:String(i+1)}</span><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';$('#ranking').innerHTML=html;$('#publicRankingList').innerHTML=html;return rows}
 async function loadHistory(){try{const hist=await api('/api/my-history');$('#history').innerHTML=hist.length?hist.map(h=>`<div class="history-item"><div><div class="history-type">${historyLabel(h)}</div><strong class="delta ${h.delta>0?'plus':'minus'}">${h.delta>0?'+':''}${h.delta.toLocaleString()} pt</strong>${h.reason?`<div class="reason">${esc(h.reason)}</div>`:''}</div><div class="muted small">${fmt(h.created_at)}</div></div>`).join(''):'<p class="muted">まだ履歴はありません。</p>'}catch(e){$('#history').innerHTML=`<p class="error">履歴を取得できませんでした：${esc(e.message)}</p>`}}
 let qrLoaded=false;async function loadQr(){if(qrLoaded)return;try{const qr=await api('/api/my-qr');$('#qrImg').src=qr.dataUrl;$('#publicCode').textContent=qr.code;qrLoaded=true}catch(e){}}
-async function loadMe(showError=false){
-  let me;
-  try {
-    // 認証確認は単独で行う。ここが成功した時点で参加者画面へ切り替える。
-    me=await api('/api/me');
-  } catch(e) {
-    // 本当に認証切れのときだけログイン画面へ戻す。
-    if(e.status===401 || e.status===403){
-      clearInterval(timer);qrLoaded=false;
-      localStorage.removeItem('nexusParticipantToken');authToken='';
-      $('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');
-      getRanking().catch(()=>{});
-      $('#authMsg').textContent=`ログインが切れました：${e.message}`;
-      return;
-    }
-    // 一時的な通信失敗ではログイン状態を維持して次回更新を待つ。
-    if(showError) $('#authMsg').textContent=`更新に失敗しました：${e.message}`;
-    clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);
-    return;
-  }
-
-  $('#authMsg').textContent='';
-  $('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');
-  $('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';
-  if(me.points===0){showGameOver();return}
-  $('#sendAmount').max=me.points;$('#transferLimit').textContent=`譲渡可能：${me.points.toLocaleString()} pt`;
-
-  // ランキング・履歴・QRの失敗でログイン状態を解除しない。
-  const rank=await getRanking().catch(()=>[]);
-  loadHistory();
-  loadQr();
-  const idx=rank.findIndex(x=>x.public_code===me.public_code || x.username===me.username);
-  $('#rankText').textContent=idx>=0?`RANK ${idx+1} / ${rank.length}`:'100位圏外';
-  clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);
-}
-async function auth(mode){
-  $('#authMsg').textContent='';
-  try{
-    const r=await api('/api/'+mode,{method:'POST',body:JSON.stringify({loginId:$('#loginId').value,password:$('#password').value})});
-    $('#password').value='';
-    if(r.authToken){authToken=r.authToken;localStorage.setItem('nexusParticipantToken',authToken);}
-    if(r.user){
-      // ログイン成功直後は /api/me を挟まず、確定済みの参加者情報で画面を切り替える。
-      clearInterval(timer);qrLoaded=false;
-      $('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');
-      $('#name').textContent=r.user.username;$('#customerCode').textContent=r.user.public_code;$('#points').textContent=r.user.points.toLocaleString()+' pt';
-      if(r.user.points===0){showGameOver();return}
-      $('#sendAmount').max=r.user.points;$('#transferLimit').textContent=`譲渡可能：${r.user.points.toLocaleString()} pt`;
-      const rank=await getRanking().catch(()=>[]);loadHistory();loadQr();
-      const idx=rank.findIndex(x=>x.public_code===r.user.public_code || x.username===r.user.username);
-      $('#rankText').textContent=idx>=0?`RANK ${idx+1} / ${rank.length}`:'100位圏外';
-      timer=setInterval(()=>loadMe(false),12000);
-      return;
-    }
-    await loadMe(true);
-  }catch(e){$('#authMsg').textContent=e.message}
-}
+function setRank(rows,me){const idx=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);$('#rankText').textContent=idx>=0?`#${idx+1}`:'OUT'}
+async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);qrLoaded=false;localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
+$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';if(me.points===0){showGameOver();return}$('#sendAmount').max=me.points;$('#transferLimit').textContent=`譲渡可能：${me.points.toLocaleString()} pt`;const rank=await getRanking().catch(()=>[]);loadHistory();loadQr();setRank(rank,me);clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
+async function auth(mode){$('#authMsg').textContent='';try{const r=await api('/api/'+mode,{method:'POST',body:JSON.stringify({loginId:$('#loginId').value,password:$('#password').value})});$('#password').value='';if(r.authToken){authToken=r.authToken;localStorage.setItem('nexusParticipantToken',authToken)}if(r.user){clearInterval(timer);qrLoaded=false;$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=r.user.username;$('#customerCode').textContent=r.user.public_code;$('#points').textContent=r.user.points.toLocaleString()+' pt';if(r.user.points===0){showGameOver();return}$('#sendAmount').max=r.user.points;$('#transferLimit').textContent=`譲渡可能：${r.user.points.toLocaleString()} pt`;const rank=await getRanking().catch(()=>[]);loadHistory();loadQr();setRank(rank,r.user);timer=setInterval(()=>loadMe(false),12000);return}await loadMe(true)}catch(e){$('#authMsg').textContent=e.message}}
 $('#sendBtn').onclick=async()=>{const btn=$('#sendBtn');$('#sendMsg').textContent='';$('#sendMsg').className='';try{btn.disabled=true;const r=await api('/api/transfer',{method:'POST',body:JSON.stringify({toCode:$('#toCode').value,amount:Number($('#sendAmount').value),reason:$('#sendReason').value})});if(r.eliminated){showGameOver();return}$('#sendMsg').className='ok';$('#sendMsg').textContent=`${r.to} に ${r.amount.toLocaleString()}pt を渡しました。現在 ${r.points.toLocaleString()}pt`;$('#sendReason').value='';await loadMe()}catch(e){$('#sendMsg').className='error';$('#sendMsg').textContent=e.message}finally{btn.disabled=false}}
-$('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=loadMe;$('#logoutBtn').onclick=async()=>{try{await api('/api/logout',{method:'POST'})}catch(e){} localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};$('#publicRefresh').onclick=()=>getRanking();$('#navRanking').onclick=e=>{e.preventDefault();if(!$('#account').classList.contains('hidden')){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-card').forEach(x=>x.classList.add('hidden'));document.querySelector('[data-target="rankingCard"]').classList.add('active');$('#rankingCard').classList.remove('hidden');getRanking();$('#rankingCard').scrollIntoView({behavior:'smooth',block:'start'})}else{$('#publicRanking').scrollIntoView({behavior:'smooth',block:'start'})}};document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab-card').forEach(x=>x.classList.add('hidden'));b.classList.add('active');$('#'+b.dataset.target).classList.remove('hidden')});loadMe();
-</script></body></html>
+$('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=()=>loadMe(true);$('#logoutBtn').onclick=async()=>{try{await api('/api/logout',{method:'POST'})}catch(e){}localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};$('#publicRefresh').onclick=()=>getRanking();
+function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
+$('#navRanking').onclick=e=>{e.preventDefault();if(!$('#account').classList.contains('hidden')){getRanking();scrollToId('rankingCard')}else scrollToId('publicRanking')};
+document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>scrollToId(b.dataset.scroll));
+$('#openQrBtn').onclick=()=>{$('#qrCard').classList.remove('hidden');loadQr();scrollToId('qrCard')};$('#closeQrBtn').onclick=()=>$('#qrCard').classList.add('hidden');
+loadMe();
+</script>
+</body></html>

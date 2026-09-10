@@ -1,6 +1,6 @@
-# NEXUS:ZERO v5.1
+# NEXUS:ZERO v5.2
 
-## v5.1 の変更
+## v5.2 の変更
 
 - 正式タイトルを `NEXUS:ZERO` に変更
 - 正式ロゴを参加者画面・スタッフ画面に組み込み
@@ -46,7 +46,7 @@ Render の Web Service > Environment に設定してください。
 3. 作成後、Postgres の Internal Database URL を確認
 4. Web Service の Environment で `DATABASE_URL` にそのURLを設定
 5. `SESSION_SECRET` と `PASSWORD_ENCRYPTION_KEY` も設定
-6. GitHub を v5.1 に更新し Render を再デプロイ
+6. GitHub を v5.2 に更新し Render を再デプロイ
 7. 起動ログに `Database: PostgreSQL` が出れば成功
 8. `/admin` に入り、新しい参加者を1人作る
 9. 参加者でログインし、ポイント変更後に再デプロイしてもデータが残ることを確認
