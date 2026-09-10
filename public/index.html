@@ -1,22 +1,44 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#eef6ff"><title>NEXUS POINT ARENA</title><link rel="stylesheet" href="/style.css"></head><body>
-<div class="bg-grid"></div><nav><strong>NEXUS POINT ARENA</strong><div class="nav-links"><a href="#rankingCard" id="navRanking">RANKING</a><a href="/admin">STAFF</a></div></nav>
-<main>
-<section id="auth" class="card hero-card"><div class="eyebrow">FESTIVAL ONLINE COMPETITION</div><h1>NEXUS POINT ARENA</h1><p class="lead">運営から案内された4桁IDとパスワードでログインして、ポイントを競おう。</p><div class="auth-grid"><div><label>4桁ID</label><input id="loginId" maxlength="20" autocomplete="username" inputmode="numeric" placeholder="例：0427"></div><div><label>パスワード</label><input id="password" type="password" maxlength="72" autocomplete="current-password" placeholder="6文字以上"></div></div><div class="row"><button id="loginBtn">ログイン</button></div><p class="note">アカウントは運営スタッフが発行します。0ptになるとGAME OVERとなり、5秒後にアカウントが削除されます。</p><p id="authMsg" class="error"></p></section>
-
-<section id="account" class="hidden">
-<div class="card player-card"><div class="player-top"><div><div class="eyebrow">PLAYER ONLINE</div><h1 id="name"></h1></div><div class="code-panel"><span>ID</span><strong id="customerCode">----</strong></div></div><div id="points" class="points">0 pt</div><div class="status-row"><span id="rankText" class="status-chip"></span><span class="status-chip live">● LIVE</span></div></div>
-
-<div class="card transfer-card"><div class="section-title"><div><div class="eyebrow">PLAYER TO PLAYER</div><h2>ポイント譲渡</h2></div><span class="icon-badge">⇄</span></div><p class="muted">相手の4桁のIDを入力すると、スタッフを介さずに、自分の所持ポイントを相手へ譲渡できます。</p><div class="split"><div><label>相手のID</label><input id="toCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="例：0042"></div><div><label>譲渡ポイント</label><input id="sendAmount" type="number" inputmode="numeric" min="1" value="100"></div></div><label>理由</label><input id="sendReason" maxlength="80" placeholder="例：対戦結果 / 取引"><div class="balance-guide" id="transferLimit">譲渡可能：0 pt</div><button id="sendBtn">ポイントを渡す</button><p id="sendMsg"></p><p class="warning-box">所持ポイントをすべて譲渡して0ptになると、その時点で自動退場しアカウントが削除されます。</p></div>
-
-<div class="tabs"><button class="tab active" data-target="historyCard">HISTORY</button><button class="tab" data-target="qrCard">MY QR</button><button class="tab" data-target="rankingCard">RANKING</button></div>
-<div id="historyCard" class="card tab-card"><div class="eyebrow">ACTIVITY LOG</div><h2>ポイント履歴</h2><div id="history"></div></div>
-<div id="qrCard" class="card tab-card hidden"><div class="eyebrow">PLAYER IDENTIFICATION</div><h2>マイQR</h2><p class="muted">スタッフがあなたをすぐ呼び出すためのQRです。</p><div class="qr-wrap"><img id="qrImg" alt="参加者QR"><p class="muted small">ID</p><strong id="publicCode" class="customer-number"></strong></div></div>
-<div id="rankingCard" class="card tab-card hidden"><div class="eyebrow">LIVE STANDINGS</div><h2>ランキング</h2><div id="ranking"></div></div>
-<div class="card logout-card"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#030712"><title>NEXUS:ZERO</title><link rel="stylesheet" href="/style.css"></head><body class="player-page">
+<div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
+<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="#rankingCard" id="navRanking">RANKING</a><a href="/admin">STAFF</a></div></nav>
+<main class="app-shell">
+<section id="auth" class="system-panel auth-panel">
+  <div class="logo-stage"><img src="/nexus-zero-logo.webp" alt="NEXUS:ZERO" class="main-logo"><p class="battle-copy">奪え。守れ。生き残れ。</p></div>
+  <div class="panel-head"><div><div class="eyebrow">PLAYER ACCESS</div><h1>PLAYER LOGIN</h1></div><span class="status-light">SYSTEM READY</span></div>
+  <div class="auth-grid"><div><label>PLAYER ID</label><input id="loginId" maxlength="20" autocomplete="username" inputmode="numeric" placeholder="0427"></div><div><label>PASSWORD</label><input id="password" type="password" maxlength="72" autocomplete="current-password" placeholder="PASSWORD"></div></div>
+  <button id="loginBtn" class="primary-action">CONNECT</button>
+  <p class="system-note">アカウントは運営スタッフが発行します。0ptでGAME OVERとなります。</p><p id="authMsg" class="error"></p>
 </section>
 
-<section id="publicRanking" class="card"><div class="section-title"><div><div class="eyebrow">LIVE STANDINGS</div><h2>現在のランキング</h2></div><button id="publicRefresh" class="secondary compact">更新</button></div><div id="publicRankingList"></div></section>
-</main><div id="gameOverOverlay" class="gameover-overlay hidden"><div class="gameover-box"><div class="gameover-kicker">CONNECTION TERMINATED</div><h2>GAME OVER</h2><p>またのご参加をお待ちしております。</p><div class="gameover-count"><strong id="gameOverCount">5</strong><span>秒後にアカウントが削除されます</span></div></div></div>
+<section id="account" class="hidden">
+  <section class="logo-header"><img src="/nexus-zero-logo.webp" alt="NEXUS:ZERO"><p>奪え。守れ。生き残れ。</p></section>
+
+  <div class="player-dashboard system-panel">
+    <div class="player-status-line"><span><i></i> PLAYER STATUS</span><strong>ONLINE</strong></div>
+    <div class="player-grid">
+      <div class="identity-block"><span class="micro-label">PLAYER ID</span><div class="id-display" id="customerCode">----</div><span class="micro-label">PLAYER NAME</span><h1 id="name"></h1></div>
+      <div class="metric-block points-block"><span class="micro-label">TOTAL POINT</span><div id="points" class="points">0 pt</div><div class="metric-grid"></div></div>
+      <div class="metric-block rank-block"><span class="micro-label">RANK</span><div id="rankText" class="rank-display">--</div><span class="live-chip">● LIVE</span></div>
+    </div>
+  </div>
+
+  <div class="system-panel transfer-card">
+    <div class="panel-head"><div><div class="eyebrow">POINT TRANSFER</div><h2>ポイント譲渡</h2></div><span class="hud-icon">⇄</span></div>
+    <div class="transfer-grid"><div><label>相手ID</label><input id="toCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div><div><label>ポイント</label><input id="sendAmount" type="number" inputmode="numeric" min="1" value="1"></div><div class="wide"><label>理由</label><input id="sendReason" maxlength="80" placeholder="例：対戦結果 / 取引"></div></div>
+    <div class="balance-guide" id="transferLimit">譲渡可能：0 pt</div><button id="sendBtn" class="primary-action">ポイントを渡す</button><p id="sendMsg"></p>
+    <p class="warning-box">残りポイントが0になるとGAME OVERとなります。</p>
+  </div>
+
+  <div class="tabs cyber-tabs"><button class="tab active" data-target="historyCard">HISTORY</button><button class="tab" data-target="qrCard">MY QR</button><button class="tab" data-target="rankingCard">RANKING</button></div>
+  <div id="historyCard" class="system-panel tab-card"><div class="panel-head"><div><div class="eyebrow">ACTIVITY LOG</div><h2>ポイント履歴</h2></div></div><div id="history"></div></div>
+  <div id="qrCard" class="system-panel tab-card hidden"><div class="panel-head"><div><div class="eyebrow">PLAYER IDENTIFICATION</div><h2>マイQR</h2></div></div><div class="qr-wrap"><img id="qrImg" alt="参加者QR"><p class="micro-label">PLAYER ID</p><strong id="publicCode" class="customer-number"></strong></div></div>
+  <div id="rankingCard" class="system-panel tab-card hidden"><div class="panel-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>ランキング</h2></div><span class="status-light">TOP 100</span></div><div id="ranking"></div></div>
+  <div class="system-panel logout-card"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
+</section>
+
+<section id="publicRanking" class="system-panel public-ranking"><div class="panel-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>現在のランキング</h2></div><button id="publicRefresh" class="secondary compact">更新</button></div><div id="publicRankingList"></div></section>
+</main>
+<div id="gameOverOverlay" class="gameover-overlay hidden"><div class="gameover-box"><div class="gameover-kicker">CONNECTION TERMINATED</div><h2>GAME OVER</h2><p>またのご参加をお待ちしております。</p><div class="gameover-count"><strong id="gameOverCount">5</strong><span>秒後にアカウントが削除されます</span></div></div></div>
 <script>
 const $=s=>document.querySelector(s);let timer=null;let authToken=localStorage.getItem('nexusParticipantToken')||'';
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken;}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const err=new Error('ネットワーク通信に失敗しました');err.status=0;throw err}const d=await r.json().catch(()=>({}));if(!r.ok){const err=new Error(d.error||'通信に失敗しました');err.status=r.status;err.code=d.code||'';throw err}return d}

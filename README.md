@@ -1,6 +1,15 @@
-# NEXUS POINT ARENA v5.0
+# NEXUS:ZERO v5.1
 
-## v5.0 の大きな変更
+## v5.1 の変更
+
+- 正式タイトルを `NEXUS:ZERO` に変更
+- 正式ロゴを参加者画面・スタッフ画面に組み込み
+- UIを黒基調 + ネオンシアン/バイオレットの電脳競技デザインへ全面刷新
+- サブタイトルを「奪え。守れ。生き残れ。」に統一
+- 不要な世界観コピーを削除し、POINT / RANK / HISTORY などシステム情報を中心に整理
+- 参加者ダッシュボードを ID / TOTAL POINT / RANK のHUD構成へ変更
+- 管理画面を ADMIN CONSOLE デザインへ刷新
+- PostgreSQL・認証・ランキング・履歴・ポイント譲渡等のv5.0機能は維持
 
 - SQLite を廃止し PostgreSQL (`DATABASE_URL`) を使用
 - Webサービス再起動・再デプロイで参加者/ポイント/履歴が消えない構成
@@ -37,7 +46,7 @@ Render の Web Service > Environment に設定してください。
 3. 作成後、Postgres の Internal Database URL を確認
 4. Web Service の Environment で `DATABASE_URL` にそのURLを設定
 5. `SESSION_SECRET` と `PASSWORD_ENCRYPTION_KEY` も設定
-6. GitHub を v5.0 に更新し Render を再デプロイ
+6. GitHub を v5.1 に更新し Render を再デプロイ
 7. 起動ログに `Database: PostgreSQL` が出れば成功
 8. `/admin` に入り、新しい参加者を1人作る
 9. 参加者でログインし、ポイント変更後に再デプロイしてもデータが残ることを確認

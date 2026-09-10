@@ -403,7 +403,7 @@ app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(e
   try{
     await initDb();
     app.listen(PORT,'0.0.0.0',()=>{
-      console.log(`NEXUS POINT ARENA v5.0: http://localhost:${PORT}`);
+      console.log(`NEXUS:ZERO v5.1: http://localhost:${PORT}`);
       console.log('Database: PostgreSQL');
       console.log(`Starting points: ${STARTING_POINTS}`);
       if(SESSION_SECRET.startsWith('replace-this'))console.log('WARNING: SESSION_SECRETを本番用に変更してください。');
