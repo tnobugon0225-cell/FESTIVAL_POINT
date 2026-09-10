@@ -1,3 +1,14 @@
+# NEXUS:ZERO v5.12
+
+## UI update
+- 対戦申請を受けた対戦相手・審判に全画面 BATTLE REQUEST 通知
+- 通知画面から承認 / 拒否が可能
+- 承認後・申請後は専用 `/match` 画面へ遷移
+- MATCHING / MATCHING COMPLETE / BATTLE IN PROGRESS / VICTORY / DEFEAT を専用画面化
+- 審判の勝利判定も対戦専用画面に配置
+- ホームでは3秒ごとに新しい対戦申請を確認
+- v5.11の承認処理、PostgreSQL、12アバター、ランキング、履歴などを維持
+
 NEXUS:ZERO v5.11
 
 - 対戦マッチングの承認処理を修正

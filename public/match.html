@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02050b"><title>BATTLE | NEXUS:ZERO</title><link rel="stylesheet" href="/style.css"></head>
+<body class="player-page match-page">
+<div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
+<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><span class="match-live-nav">BATTLE LINK</span></div></nav>
+<main class="match-screen-shell">
+  <section id="matchScreen" class="match-screen state-loading">
+    <div class="match-screen-grid" aria-hidden="true"></div>
+    <div class="match-screen-top"><span id="stateKicker">CONNECTING</span><strong id="stateBadge">...</strong></div>
+    <div class="match-stage-core">
+      <div class="match-stage-orbit" aria-hidden="true"></div>
+      <h1 id="stateTitle">MATCH DATA LOADING</h1>
+      <p id="stateSubtitle">対戦情報を同期しています</p>
+    </div>
+    <div id="battlePlayers" class="battle-player-row"></div>
+    <div id="battleMeta" class="battle-meta"></div>
+    <div id="battleControls" class="battle-controls"></div>
+    <p id="battleMsg" class="match-action-msg"></p>
+    <button id="backHome" class="ghost match-home-btn" type="button">HOMEへ戻る</button>
+  </section>
+</main>
+<script>
+const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='';
+async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const x=new Error('ネットワーク通信に失敗しました');x.status=0;throw x}const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
+function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
+function person(p,label){return `<div class="battle-person"><span>${label}</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div>`}
+function setState(cls,kicker,title,subtitle,badge){const s=$('#matchScreen');s.className='match-screen '+cls;$('#stateKicker').textContent=kicker;$('#stateTitle').textContent=title;$('#stateSubtitle').textContent=subtitle;$('#stateBadge').textContent=badge}
+function approval(label,ok){return `<span class="approval-chip ${ok?'approved':'waiting'}">${label} ${ok?'✓':'…'}</span>`}
+async function load(){
+ try{
+   const me=await api('/api/me');const r=await api('/api/matches/me');const m=r.match;
+   if(!m){clearInterval(timer);setState('state-idle','NO ACTIVE MATCH','NO ACTIVE BATTLE','進行中の対戦はありません','IDLE');$('#battlePlayers').innerHTML='';$('#battleMeta').innerHTML='';$('#battleControls').innerHTML='';$('#backHome').classList.remove('hidden');return}
+   $('#backHome').classList.toggle('hidden',m.status!=='completed');
+   $('#battlePlayers').innerHTML=`${person(m.challenger,'PLAYER A')}<div class="battle-vs">VS</div>${person(m.opponent,'PLAYER B')}`;
+   $('#battleMeta').innerHTML=`<div><span>WAGER</span><strong>${Number(m.wager).toLocaleString()} pt</strong></div><div><span>REFEREE</span><strong>${esc(m.referee.name)}</strong><small>ID ${esc(m.referee.code)}</small></div>`;
+   if(m.status==='pending'){
+     setState('state-pending','MATCHING','MATCHING IN PROGRESS','承認情報を同期しています','WAITING');
+     let controls=`<div class="approval-row">${approval('OPPONENT',m.opponentApproved)}${approval('REFEREE',m.refereeApproved)}</div>`;
+     if((m.role==='opponent'&&!m.opponentApproved)||(m.role==='referee'&&!m.refereeApproved)) controls+=`<div class="match-actions"><button class="success" onclick="approve(${m.id})">承認する</button><button class="danger" onclick="rejectMatch(${m.id})">拒否する</button></div>`;
+     else if(m.role==='challenger') controls+=`<div class="match-actions"><button class="ghost" onclick="rejectMatch(${m.id})">申請を取り消す</button></div>`;
+     else controls+=`<p class="battle-wait">もう一方の承認を待っています。</p>`;
+     $('#battleControls').innerHTML=controls;
+   }else if(m.status==='matched'){
+     setState('state-matched','MATCHING COMPLETE','LINK ESTABLISHED','対戦リンクを確立しました','MATCHED');$('#battleControls').innerHTML='<div class="link-pulse-text">BATTLE SYSTEM STARTING...</div>';
+     if(!startTimer)startTimer=setTimeout(()=>start(m.id),1800);
+   }else if(m.status==='in_progress'){
+     setState('state-battle','BATTLE LIVE','BATTLE IN PROGRESS','勝敗が確定するまで対戦を続行してください','LIVE');
+     if(m.role==='referee') $('#battleControls').innerHTML=`<div class="judge-panel match-judge-full"><div class="eyebrow">REFEREE JUDGEMENT</div><h2>勝者を選択</h2><div class="match-actions"><button class="success" onclick="judge(${m.id},${m.challenger.id},'${encodeURIComponent(m.challenger.name)}')">${esc(m.challenger.name)} 勝利</button><button class="success" onclick="judge(${m.id},${m.opponent.id},'${encodeURIComponent(m.opponent.name)}')">${esc(m.opponent.name)} 勝利</button></div></div>`;
+     else $('#battleControls').innerHTML='<div class="battle-wait-large">REFEREE JUDGEMENT WAITING<span>審判の勝利判定を待っています</span></div>';
+   }else if(m.status==='completed'){
+     const mine=m.role==='challenger'?m.challenger:m.role==='opponent'?m.opponent:null;const won=mine&&Number(m.winnerUserId)===Number(mine.id);
+     if(mine)setState(won?'state-victory':'state-defeat','BATTLE RESULT',won?'VICTORY':'DEFEAT',won?`+${Number(m.wager).toLocaleString()} pt`:`-${Number(m.wager).toLocaleString()} pt`,'COMPLETE');
+     else setState('state-complete','BATTLE RESULT','RESULT CONFIRMED',`WINNER : ${m.winnerName}`,'COMPLETE');
+     $('#battleControls').innerHTML=`<div class="winner-line">WINNER <strong>${esc(m.winnerName||'---')}</strong></div>`;
+   }
+   lastStatus=m.status;
+ }catch(e){if(e.status===401||e.status===403){location.href='/';return}$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}
+}
+async function approve(id){$('#battleMsg').textContent='承認処理中...';try{await api(`/api/matches/${id}/approve`,{method:'POST'});$('#battleMsg').className='match-action-msg ok';$('#battleMsg').textContent='承認しました';await load()}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=`承認できませんでした：${e.message}`}}
+async function rejectMatch(id){if(!confirm('この対戦申請を拒否／取消しますか？'))return;try{await api(`/api/matches/${id}/reject`,{method:'POST'});location.href='/'}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
+async function start(id){startTimer=null;try{await api(`/api/matches/${id}/start`,{method:'POST'});await load()}catch(e){}}
+async function judge(id,winnerId,nameEncoded){const name=decodeURIComponent(nameEncoded);if(!confirm(`${name} の勝利で確定しますか？`))return;try{await api(`/api/matches/${id}/result`,{method:'POST',body:JSON.stringify({winnerId})});await load()}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
+$('#backHome').onclick=()=>location.href='/';load();timer=setInterval(load,2000);
+</script></body></html>
