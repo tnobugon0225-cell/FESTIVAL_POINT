@@ -1,3 +1,10 @@
+NEXUS:ZERO v5.22
+
+- CONNECTローディング専用SE（Cyber08-1）を削除
+- HOME / RANKING / HISTORY / RULE のモジュール切り替え演出を約3秒に変更
+- 右上の RANKING / RULE からの移動にも切り替え演出を適用
+- RULEもログイン後は同一ページ内モジュール表示に対応し、BGMを継続しやすく調整
+
 NEXUS:ZERO v5.21
 
 - HOME / RANKING / HISTORY 間の切替演出を約5秒に延長

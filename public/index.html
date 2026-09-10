@@ -11,7 +11,7 @@
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
-<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/rule">RULE</a><a href="/admin">STAFF</a></div></nav>
+<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a href="/admin">STAFF</a></div></nav>
 
 <main class="app-shell arena-shell">
 <section id="auth" class="system-panel auth-panel auth-v52">
@@ -148,14 +148,11 @@
 <script>
 const $=s=>document.querySelector(s);let timer=null;let authToken=localStorage.getItem('nexusParticipantToken')||'';let selectedAvatar='avatar-01';
 let accessTransitionRunning=false;
-let loginLoadingSE=null;
-function startLoginLoadingSE(){try{if(loginLoadingSE){loginLoadingSE.pause();loginLoadingSE.currentTime=0}else{loginLoadingSE=new Audio('/se/connect-loading.mp3');loginLoadingSE.preload='auto';loginLoadingSE.volume=.68}loginLoadingSE.play().catch(()=>{})}catch(e){}}
-function stopLoginLoadingSE(){try{if(loginLoadingSE){loginLoadingSE.pause();loginLoadingSE.currentTime=0}}catch(e){}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function setAccessState(percent,text){const bar=$('#accessProgressBar'),pct=$('#accessPercent'),status=$('#accessStatus');if(bar)bar.style.width=`${percent}%`;if(pct)pct.textContent=`${percent}%`;if(status)status.textContent=text}
-async function beginAccessTransition(){accessTransitionRunning=true;startLoginLoadingSE();const el=$('#loginTransition');el.classList.remove('hidden','access-success','access-failed');setAccessState(8,'ACCESSING NEXUS NETWORK');await sleep(250);setAccessState(28,'VERIFYING PLAYER ID');await sleep(300);setAccessState(54,'AUTHENTICATING');await sleep(350);setAccessState(76,'SYNCHRONIZING PLAYER DATA')}
-async function finishAccessTransition(){setAccessState(100,'LINK ESTABLISHED');$('#loginTransition').classList.add('access-success');await sleep(650);$('#loginTransition').classList.add('hidden');stopLoginLoadingSE();accessTransitionRunning=false}
-async function failAccessTransition(message='ACCESS DENIED'){setAccessState(100,message);$('#loginTransition').classList.add('access-failed');await sleep(550);$('#loginTransition').classList.add('hidden');stopLoginLoadingSE();accessTransitionRunning=false}
+async function beginAccessTransition(){accessTransitionRunning=true;const el=$('#loginTransition');el.classList.remove('hidden','access-success','access-failed');setAccessState(8,'ACCESSING NEXUS NETWORK');await sleep(250);setAccessState(28,'VERIFYING PLAYER ID');await sleep(300);setAccessState(54,'AUTHENTICATING');await sleep(350);setAccessState(76,'SYNCHRONIZING PLAYER DATA')}
+async function finishAccessTransition(){setAccessState(100,'LINK ESTABLISHED');$('#loginTransition').classList.add('access-success');await sleep(650);$('#loginTransition').classList.add('hidden');accessTransitionRunning=false}
+async function failAccessTransition(message='ACCESS DENIED'){setAccessState(100,message);$('#loginTransition').classList.add('access-failed');await sleep(550);$('#loginTransition').classList.add('hidden');accessTransitionRunning=false}
 
 document.querySelectorAll('.avatar-choice').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.avatar-choice').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');selectedAvatar=btn.dataset.avatar;}));
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
