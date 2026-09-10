@@ -100,3 +100,61 @@
   .rank-avatar{width:32px;height:32px}
   .dashboard-list-card #ranking .rank-item:nth-child(n+6){display:none}
 }
+
+/* ===== NEXUS:ZERO v5.4 header/layout polish ===== */
+/* Dedicated wide header artwork: smaller, centered, and never vertically clipped. */
+.v52-player .hero-lockup{
+  padding:10px 0 22px;
+  overflow:visible;
+  gap:8px;
+}
+.v52-player .hero-logo{
+  display:block;
+  width:min(640px,88vw);
+  height:auto;
+  max-height:none;
+  margin:0 auto;
+  object-fit:contain;
+  object-position:center;
+  filter:drop-shadow(0 0 16px rgba(40,200,255,.22));
+}
+.v52-player .hero-copy{
+  margin:0;
+  padding:0;
+  line-height:1.35;
+  font-size:clamp(16px,3.4vw,23px);
+}
+.account-hero{margin-bottom:4px}
+
+/* Keep transfer fields as one compact row on phones too. */
+.transfer-grid-v52{
+  display:grid!important;
+  grid-template-columns:minmax(0,.85fr) minmax(0,.62fr) minmax(0,1.35fr)!important;
+  gap:8px!important;
+  align-items:end;
+}
+.transfer-grid-v52>div{min-width:0!important;grid-column:auto!important}
+.transfer-grid-v52 input{
+  width:100%;
+  min-width:0;
+  padding:11px 8px;
+}
+.transfer-grid-v52 label{font-size:10px;letter-spacing:.03em;white-space:nowrap}
+
+/* Avoid the sticky bottom navigation obscuring cards/content. */
+.v52-player .arena-shell{padding-bottom:132px!important}
+.bottom-arena-nav{margin-top:14px}
+
+@media(max-width:560px){
+  .v52-player .hero-lockup{padding:8px 0 20px;gap:6px}
+  .v52-player .hero-logo{width:min(620px,92vw)}
+  .v52-player .hero-copy{font-size:15px;letter-spacing:.12em}
+  .transfer-grid-v52{
+    grid-template-columns:minmax(0,.82fr) minmax(0,.58fr) minmax(0,1.32fr)!important;
+    gap:6px!important;
+  }
+  .transfer-grid-v52 input{height:46px;padding:10px 7px;font-size:12px}
+  .transfer-grid-v52 label{font-size:9px;letter-spacing:0}
+  .arena-transfer{padding:15px 12px}
+  .v52-player .arena-shell{padding-bottom:138px!important}
+}

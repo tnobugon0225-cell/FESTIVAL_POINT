@@ -36,3 +36,10 @@ npm start
 ## 注意
 既存PostgreSQLの `users` テーブルには起動時に `avatar_key` 列が自動追加されます。
 参加者はログインのたびにアバターを選択でき、その選択が保存されます。
+
+## v5.4 changes
+- Dedicated wide NEXUS:ZERO header image (`public/nexus-zero-header.webp`)
+- Smaller centered hero logo with no vertical clipping
+- Point transfer inputs remain in a single row on mobile
+- Extra bottom spacing so sticky navigation does not cover content
+- Existing avatar selection and separate TOP 100 ranking page retained
