@@ -1,3 +1,10 @@
+NEXUS:ZERO v5.15
+
+- 結果画面のHOME復帰カウントダウンが10へ戻るちらつきを修正
+- 勝者アイコンにVICTOR発光HUDを追加
+- 敗者アイコンにDEFEATED警告HUDと斜め警告ラインを追加
+- v5.14の対戦機能・BATTLE POINTS表記・RIVAL表記を維持
+
 # NEXUS:ZERO v5.14
 
 - HOME / 承認画面 / 対戦画面 / 勝敗画面のアバター点滅を抑制

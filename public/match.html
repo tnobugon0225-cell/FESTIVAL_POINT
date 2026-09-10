@@ -20,14 +20,15 @@
   </section>
 </main>
 <script>
-const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null;
+const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null,resultReturnMatchId=null;
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const x=new Error('ネットワーク通信に失敗しました');x.status=0;throw x}const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
-function person(p,label){return `<div class="battle-person"><img class="battle-person-avatar" src="${avatarSrc(p.avatarKey)}" alt=""><span>${label}</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div>`}
+function person(p,label,result=''){const badge=result==='winner'?'<div class="result-avatar-badge victor-badge">VICTOR</div>':result==='loser'?'<div class="result-avatar-badge defeated-badge">DEFEATED</div><div class="defeat-slash" aria-hidden="true"></div>':'';return `<div class="battle-person ${result?`result-${result}`:''}"><div class="battle-avatar-wrap"><img class="battle-person-avatar" src="${avatarSrc(p.avatarKey)}" alt="">${badge}</div><span>${label}</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div>`}
 function refereeMeta(p){return `<div class="battle-referee-meta"><img src="${avatarSrc(p.avatarKey)}" alt=""><div><span>REFEREE</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div></div>`}
 function setStableHTML(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
-function startResultReturn(completedAt){if(resultReturnTimer)return;const end=new Date(completedAt).getTime()+10000;const tick=()=>{const remain=Math.max(0,Math.ceil((end-Date.now())/1000));const el=document.querySelector('#resultCountdown');if(el)el.textContent=remain;if(remain<=0){clearInterval(resultCountdownTimer);location.href='/';}};tick();resultCountdownTimer=setInterval(tick,250);resultReturnTimer=setTimeout(()=>location.href='/',Math.max(0,end-Date.now()+80))}
+function resultRemaining(completedAt){const ts=new Date(completedAt).getTime();const end=(Number.isFinite(ts)?ts:Date.now())+10000;return Math.max(0,Math.ceil((end-Date.now())/1000))}
+function startResultReturn(matchId,completedAt){if(resultReturnMatchId===matchId&&resultCountdownTimer)return;clearInterval(resultCountdownTimer);clearTimeout(resultReturnTimer);resultReturnMatchId=matchId;const ts=new Date(completedAt).getTime();const end=(Number.isFinite(ts)?ts:Date.now())+10000;const tick=()=>{const remain=Math.max(0,Math.ceil((end-Date.now())/1000));const el=document.querySelector('#resultCountdown');if(el&&el.textContent!==String(remain))el.textContent=remain;if(remain<=0){clearInterval(resultCountdownTimer);resultCountdownTimer=null;location.href='/';}};tick();resultCountdownTimer=setInterval(tick,250);resultReturnTimer=setTimeout(()=>location.href='/',Math.max(0,end-Date.now()+100))}
 function setState(cls,kicker,title,subtitle,badge){const s=$('#matchScreen');s.className='match-screen '+cls;$('#stateKicker').textContent=kicker;$('#stateTitle').textContent=title;$('#stateSubtitle').textContent=subtitle;$('#stateBadge').textContent=badge}
 function approval(label,ok){return `<span class="approval-chip ${ok?'approved':'waiting'}">${label} ${ok?'✓':'…'}</span>`}
 async function load(){
@@ -35,7 +36,7 @@ async function load(){
    const me=await api('/api/me');const r=await api('/api/matches/me');const m=r.match;
    if(!m){clearInterval(timer);setState('state-idle','NO ACTIVE MATCH','NO ACTIVE BATTLE','進行中の対戦はありません','IDLE');setStableHTML($('#battlePlayers'),'');setStableHTML($('#battleMeta'),'');$('#battleControls').innerHTML='';$('#backHome').classList.remove('hidden');return}
    $('#backHome').classList.toggle('hidden',m.status!=='completed');
-   setStableHTML($('#battlePlayers'),`${person(m.challenger,'PLAYER A')}<div class="battle-vs">VS</div>${person(m.opponent,'RIVAL')}`);
+   if(m.status!=='completed') setStableHTML($('#battlePlayers'),`${person(m.challenger,'PLAYER A')}<div class="battle-vs">VS</div>${person(m.opponent,'RIVAL')}`);
    setStableHTML($('#battleMeta'),`<div><span>BATTLE POINTS</span><strong>${Number(m.wager).toLocaleString()} pt</strong></div>${refereeMeta(m.referee)}`);
    if(m.status==='pending'){
      setState('state-pending','MATCHING','MATCHING IN PROGRESS','承認情報を同期しています','WAITING');
@@ -53,10 +54,15 @@ async function load(){
      else $('#battleControls').innerHTML='<div class="battle-wait-large">REFEREE JUDGEMENT WAITING<span>審判の勝利判定を待っています</span></div>';
    }else if(m.status==='completed'){
      const mine=m.role==='challenger'?m.challenger:m.role==='opponent'?m.opponent:null;const won=mine&&Number(m.winnerUserId)===Number(mine.id);
+     const challengerWon=Number(m.winnerUserId)===Number(m.challenger.id);
+     const playerHtml=`${person(m.challenger,'PLAYER A',challengerWon?'winner':'loser')}<div class="battle-vs result-vs">VS</div>${person(m.opponent,'RIVAL',challengerWon?'loser':'winner')}`;
+     setStableHTML($('#battlePlayers'),playerHtml);
      if(mine)setState(won?'state-victory':'state-defeat','BATTLE RESULT',won?'VICTORY':'DEFEAT',won?`+${Number(m.wager).toLocaleString()} pt`:`-${Number(m.wager).toLocaleString()} pt`,'COMPLETE');
      else setState('state-complete','BATTLE RESULT','RESULT CONFIRMED',`WINNER : ${m.winnerName}`,'COMPLETE');
-     $('#battleControls').innerHTML=`<div class="winner-line">WINNER <strong>${esc(m.winnerName||'---')}</strong><div class="result-return">HOMEへ戻るまで <b id="resultCountdown">10</b> 秒</div></div>`;
-     startResultReturn(m.completedAt);
+     const remain=resultRemaining(m.completedAt);
+     const resultHtml=`<div class="winner-line">WINNER <strong>${esc(m.winnerName||'---')}</strong><div class="result-return">HOMEへ戻るまで <b id="resultCountdown">${remain}</b> 秒</div></div>`;
+     setStableHTML($('#battleControls'),resultHtml);
+     startResultReturn(m.id,m.completedAt);
    }
    lastStatus=m.status;
  }catch(e){if(e.status===401||e.status===403){location.href='/';return}$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}

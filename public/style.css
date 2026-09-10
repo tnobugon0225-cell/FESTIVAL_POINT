@@ -333,3 +333,23 @@
 /* v5.14 - stable avatar rendering */
 .avatar-core img,.rank-avatar,.request-player img,.request-referee img,.battle-person-avatar,.battle-referee-meta img,.avatar-choice img,.user-avatar{animation:none!important;transition:none!important;filter:none!important;will-change:auto!important;backface-visibility:hidden;transform:translateZ(0)}
 .avatar-core,.rank-item,.request-player,.battle-person,.battle-referee-meta{animation:none!important}
+
+
+/* v5.15 battle result emphasis */
+.battle-avatar-wrap{position:relative;width:92px;height:92px;margin:0 auto 10px;isolation:isolate}
+.battle-person-avatar{display:block;width:100%;height:100%;object-fit:cover;border:1px solid rgba(62,211,255,.42);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
+.result-winner{position:relative;border-color:rgba(90,255,192,.7);background:radial-gradient(circle at 50% 34%,rgba(37,199,148,.22),rgba(3,17,31,.82) 62%);box-shadow:inset 0 0 30px rgba(52,255,190,.08),0 0 24px rgba(52,255,190,.16)}
+.result-winner .battle-avatar-wrap{filter:drop-shadow(0 0 8px rgba(89,255,210,.8)) drop-shadow(0 0 18px rgba(57,207,255,.42));animation:winnerAura 1.8s ease-in-out infinite}
+.result-winner .battle-person-avatar{border-color:#70ffd4;box-shadow:0 0 0 1px rgba(67,235,255,.65),0 0 28px rgba(61,255,195,.48)}
+.result-winner strong{color:#a9ffe2;text-shadow:0 0 12px rgba(69,255,198,.4)}
+.result-loser{position:relative;border-color:rgba(255,86,113,.5);background:radial-gradient(circle at 50% 34%,rgba(128,21,48,.22),rgba(3,12,24,.86) 65%);opacity:.82}
+.result-loser .battle-person-avatar{filter:saturate(.46) brightness(.68) contrast(1.08);border-color:rgba(255,85,110,.72)}
+.result-loser strong{color:#e8a6b2}
+.result-avatar-badge{position:absolute;z-index:4;left:50%;bottom:-8px;transform:translateX(-50%);min-width:78px;padding:4px 7px;font-size:8px;font-weight:1000;letter-spacing:.16em;text-align:center;background:rgba(1,8,16,.92);clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
+.victor-badge{color:#89ffda;border:1px solid rgba(91,255,202,.75);box-shadow:0 0 13px rgba(48,255,187,.28)}
+.defeated-badge{color:#ff718e;border:1px solid rgba(255,71,104,.72);box-shadow:0 0 13px rgba(255,49,87,.25)}
+.defeat-slash{position:absolute;z-index:3;left:4%;top:48%;width:92%;height:3px;transform:rotate(-38deg);background:linear-gradient(90deg,transparent,#ff3d65 16%,#ff7890 50%,#ff3d65 84%,transparent);box-shadow:0 0 8px rgba(255,38,80,.9),0 0 18px rgba(255,38,80,.45)}
+.defeat-slash:after{content:'';position:absolute;left:0;right:0;top:7px;height:1px;background:rgba(255,95,120,.68)}
+.result-vs{opacity:.55}
+@keyframes winnerAura{0%,100%{transform:scale(1);filter:drop-shadow(0 0 7px rgba(89,255,210,.7)) drop-shadow(0 0 14px rgba(57,207,255,.35))}50%{transform:scale(1.025);filter:drop-shadow(0 0 12px rgba(89,255,210,.95)) drop-shadow(0 0 25px rgba(57,207,255,.55))}}
+@media(max-width:560px){.battle-avatar-wrap{width:78px;height:78px}.result-avatar-badge{min-width:68px;font-size:7px;padding:3px 5px}}
