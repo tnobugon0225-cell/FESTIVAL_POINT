@@ -7,10 +7,11 @@
   <title>NEXUS:ZERO</title>
   <link rel="stylesheet" href="/style.css">
   <script src="/bgm.js" defer></script>
+  <script src="/ui-fx.js" defer></script>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
-<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/ranking">RANKING</a><a href="/rule">RULE</a><a href="/admin">STAFF</a></div></nav>
+<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/rule">RULE</a><a href="/admin">STAFF</a></div></nav>
 
 <main class="app-shell arena-shell">
 <section id="auth" class="system-panel auth-panel auth-v52">
@@ -79,8 +80,8 @@
   </section>
 
   <div class="quick-nav" aria-label="クイックメニュー">
-    <button type="button" onclick="location.href='/history'">HISTORY<span>履歴</span></button>
-    <button type="button" onclick="location.href='/ranking'">RANKING<span>ランキング</span></button>
+    <button type="button" data-href="/history" data-nexus-nav="HISTORY">HISTORY<span>履歴</span></button>
+    <button type="button" data-href="/ranking" data-nexus-nav="RANKING">RANKING<span>ランキング</span></button>
   </div>
 
   <section class="system-panel transfer-card arena-transfer match-create-card">
@@ -96,7 +97,7 @@
 
   <div class="arena-lower-grid home-ranking-only">
     <section id="rankingCard" class="system-panel dashboard-list-card">
-      <div class="panel-head arena-section-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>RANKING</h2></div><a class="status-light top100-link" href="/ranking">TOP 100</a></div>
+      <div class="panel-head arena-section-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>RANKING</h2></div><a class="status-light top100-link" href="/ranking" data-nexus-nav="RANKING">TOP 100</a></div>
       <div id="ranking"></div>
     </section>
   </div>
@@ -105,12 +106,12 @@
 
   <nav class="bottom-arena-nav" aria-label="ページ内ナビゲーション">
     <button type="button" data-scroll="account" class="active"><b>⌂</b><span>HOME</span><small>ホーム</small></button>
-    <button type="button" onclick="location.href='/ranking'"><b>▥</b><span>RANKING</span><small>ランキング</small></button>
-    <button type="button" onclick="location.href='/history'"><b>◷</b><span>HISTORY</span><small>履歴</small></button>
+    <button type="button" data-href="/ranking" data-nexus-nav="RANKING"><b>▥</b><span>RANKING</span><small>ランキング</small></button>
+    <button type="button" data-href="/history" data-nexus-nav="HISTORY"><b>◷</b><span>HISTORY</span><small>履歴</small></button>
   </nav>
 </section>
 
-<section id="publicRanking" class="system-panel public-ranking"><div class="panel-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>現在のランキング</h2></div><a href="/ranking" class="secondary compact link-button">TOP 100</a></div><div id="publicRankingList"></div></section>
+<section id="publicRanking" class="system-panel public-ranking"><div class="panel-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>現在のランキング</h2></div><a href="/ranking" data-nexus-nav="RANKING" class="secondary compact link-button">TOP 100</a></div><div id="publicRankingList"></div></section>
 </main>
 
 <div id="loginTransition" class="access-transition hidden" aria-live="polite" aria-label="NEXUS network access in progress">
@@ -145,14 +146,16 @@
 </div>
 <div id="gameOverOverlay" class="gameover-overlay hidden"><div class="gameover-box"><div class="gameover-kicker">CONNECTION TERMINATED</div><h2>GAME OVER</h2><p>またのご参加をお待ちしております。</p><div class="gameover-count"><strong id="gameOverCount">5</strong><span>秒後にアカウントが削除されます</span></div></div></div>
 <script>
-window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home'));
 const $=s=>document.querySelector(s);let timer=null;let authToken=localStorage.getItem('nexusParticipantToken')||'';let selectedAvatar='avatar-01';
 let accessTransitionRunning=false;
+let loginLoadingSE=null;
+function startLoginLoadingSE(){try{if(loginLoadingSE){loginLoadingSE.pause();loginLoadingSE.currentTime=0}else{loginLoadingSE=new Audio('/se/connect-loading.mp3');loginLoadingSE.preload='auto';loginLoadingSE.volume=.68}loginLoadingSE.play().catch(()=>{})}catch(e){}}
+function stopLoginLoadingSE(){try{if(loginLoadingSE){loginLoadingSE.pause();loginLoadingSE.currentTime=0}}catch(e){}}
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function setAccessState(percent,text){const bar=$('#accessProgressBar'),pct=$('#accessPercent'),status=$('#accessStatus');if(bar)bar.style.width=`${percent}%`;if(pct)pct.textContent=`${percent}%`;if(status)status.textContent=text}
-async function beginAccessTransition(){accessTransitionRunning=true;const el=$('#loginTransition');el.classList.remove('hidden','access-success','access-failed');setAccessState(8,'ACCESSING NEXUS NETWORK');await sleep(250);setAccessState(28,'VERIFYING PLAYER ID');await sleep(300);setAccessState(54,'AUTHENTICATING');await sleep(350);setAccessState(76,'SYNCHRONIZING PLAYER DATA')}
-async function finishAccessTransition(){setAccessState(100,'LINK ESTABLISHED');$('#loginTransition').classList.add('access-success');await sleep(650);$('#loginTransition').classList.add('hidden');accessTransitionRunning=false}
-async function failAccessTransition(message='ACCESS DENIED'){setAccessState(100,message);$('#loginTransition').classList.add('access-failed');await sleep(550);$('#loginTransition').classList.add('hidden');accessTransitionRunning=false}
+async function beginAccessTransition(){accessTransitionRunning=true;startLoginLoadingSE();const el=$('#loginTransition');el.classList.remove('hidden','access-success','access-failed');setAccessState(8,'ACCESSING NEXUS NETWORK');await sleep(250);setAccessState(28,'VERIFYING PLAYER ID');await sleep(300);setAccessState(54,'AUTHENTICATING');await sleep(350);setAccessState(76,'SYNCHRONIZING PLAYER DATA')}
+async function finishAccessTransition(){setAccessState(100,'LINK ESTABLISHED');$('#loginTransition').classList.add('access-success');await sleep(650);$('#loginTransition').classList.add('hidden');stopLoginLoadingSE();accessTransitionRunning=false}
+async function failAccessTransition(message='ACCESS DENIED'){setAccessState(100,message);$('#loginTransition').classList.add('access-failed');await sleep(550);$('#loginTransition').classList.add('hidden');stopLoginLoadingSE();accessTransitionRunning=false}
 
 document.querySelectorAll('.avatar-choice').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.avatar-choice').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');selectedAvatar=btn.dataset.avatar;}));
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
@@ -179,8 +182,8 @@ async function getRanking(me=null){
   return rows
 }
 function setRank(rows,me){const idx=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);$('#rankText').textContent=idx>=0?`#${idx+1}`:'OUT'}
-async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
-$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
+async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');window.NexusBGM?.clearTrack?.();getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
+$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');window.NexusBGM?.setTrack('home');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
 async function auth(mode){
   if(accessTransitionRunning)return;
   $('#authMsg').textContent='';
@@ -199,7 +202,7 @@ async function auth(mode){
       if(r.user.points===0){await finishAccessTransition();$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');showGameOver();return}
       const rank=await getRanking(r.user).catch(()=>[]);setRank(rank,r.user);await checkMatchNotification().catch(()=>{});startMatchPolling();
       await finishAccessTransition();
-      $('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');
+      $('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');window.NexusBGM?.setTrack('home');
       window.scrollTo({top:0,behavior:'instant'});
       timer=setInterval(()=>loadMe(false),12000);return
     }

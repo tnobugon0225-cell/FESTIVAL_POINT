@@ -31,6 +31,7 @@
     control.innerHTML=`<span>${enabled?'♪':'×'}</span><b>${enabled?'BGM ON':'BGM OFF'}</b><small>${title}</small>`;
     control.classList.toggle('off',!enabled);
     control.classList.toggle('blocked',blocked&&enabled);
+    control.classList.toggle('hidden',!current);
   }
   async function play(){
     if(!enabled||!current)return;
@@ -50,6 +51,7 @@
     paint();
     play();
   }
+  function clearTrack(){audio.pause();audio.removeAttribute('src');audio.load();current='';blocked=false;paint();}
   function toggle(){
     enabled=!enabled;
     localStorage.setItem('nexusBgmEnabled',enabled?'1':'0');
@@ -64,6 +66,6 @@
   document.addEventListener('keydown',unlock,{passive:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&enabled&&current)play();});
   audio.addEventListener('ended',()=>{if(enabled){audio.currentTime=0;play();}});
-  window.NexusBGM={setTrack,toggle,play,get enabled(){return enabled},get current(){return current}};
+  window.NexusBGM={setTrack,clearTrack,toggle,play,get enabled(){return enabled},get current(){return current}};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureControl);else ensureControl();
 })();

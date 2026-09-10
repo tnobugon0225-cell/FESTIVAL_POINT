@@ -6,10 +6,12 @@
   <meta name="theme-color" content="#02050b">
   <title>HISTORY | NEXUS:ZERO</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="/bgm.js" defer></script>
+  <script src="/ui-fx.js" defer></script>
 </head>
 <body class="player-page v52-player history-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
-<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/ranking">RANKING</a><a href="/admin">STAFF</a></div></nav>
+<nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/ranking">RANKING</a><a href="/admin">STAFF</a></div></nav>
 <main class="app-shell arena-shell history-shell">
   <section class="ranking-hero system-panel history-hero">
     <div class="eyebrow">ACTIVITY LOG</div>
@@ -21,12 +23,13 @@
     <div id="fullHistory"><p class="muted">履歴を読み込み中...</p></div>
   </section>
   <nav class="bottom-arena-nav" aria-label="ページナビゲーション">
-    <button type="button" onclick="location.href='/'"><b>⌂</b><span>HOME</span><small>ホーム</small></button>
-    <button type="button" onclick="location.href='/ranking'"><b>▥</b><span>RANKING</span><small>ランキング</small></button>
+    <button type="button" data-href="/" data-nexus-nav="HOME"><b>⌂</b><span>HOME</span><small>ホーム</small></button>
+    <button type="button" data-href="/ranking" data-nexus-nav="RANKING"><b>▥</b><span>RANKING</span><small>ランキング</small></button>
     <button type="button" class="active"><b>◷</b><span>HISTORY</span><small>履歴</small></button>
   </nav>
 </main>
 <script>
+window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home'));
 const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'';
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function fmt(s){if(!s)return '';const v=String(s);return new Date(v.includes('T')?v:v.replace(' ','T')+'Z').toLocaleString('ja-JP')}

@@ -1,3 +1,12 @@
+NEXUS:ZERO v5.20
+
+- TOP100ランキングから4桁ID表示を削除
+- RANKING / HISTORYでも「深層同調」を再生
+- LOGIN画面ではBGMを再生しない
+- HOME ⇄ RANKING/HISTORY の画面移動にNEXUSモジュール切替カットインを追加
+- Cyber10-1をUIボタンSEとして追加
+- CONNECT後のアクセス演出中のみCyber08-1を再生
+
 NEXUS:ZERO v5.19
 
 - HOME右上に RULE ボタンを追加
