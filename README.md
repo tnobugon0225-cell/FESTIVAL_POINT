@@ -1,8 +1,8 @@
-# NEXUS:ZERO v5.5
+# NEXUS:ZERO v5.6
 
 PostgreSQL版の学祭用ポイント競技サイトです。
 
-## v5.5 の主な変更
+## v5.6 の主な変更
 - ロゴ表示領域を調整し、スマホで下側が切れにくいように修正
 - 参加者ログイン時に6種類の1:1アバターから選択可能
 - 選択したアバターをプロフィールとランキングに表示
@@ -37,7 +37,7 @@ npm start
 既存PostgreSQLの `users` テーブルには起動時に `avatar_key` 列が自動追加されます。
 参加者はログインのたびにアバターを選択でき、その選択が保存されます。
 
-## v5.5 changes
+## v5.6 changes
 - Dedicated wide NEXUS:ZERO header image (`public/nexus-zero-header.webp`)
 - Smaller centered hero logo with no vertical clipping
 - Point transfer inputs remain in a single row on mobile
@@ -45,8 +45,15 @@ npm start
 - Existing avatar selection and separate TOP 100 ranking page retained
 
 
-## v5.5 UI updates
+## v5.6 UI updates
 - ヘッダー画像内にサブタイトルを統合
 - HOMEランキングはTOP5＋自分が6位以下なら自分の順位を追加表示
 - HISTORYを専用ページ化
 - TOP100ランキングは専用ページのまま維持
+
+
+## v5.6 update
+- 参加者ログイン成功時にフルスクリーンの NEXUS ACCESS 演出を追加
+- ACCESSING → VERIFYING → AUTHENTICATING → SYNCHRONIZING → LINK ESTABLISHED の順で遷移
+- 認証失敗時は ACCESS DENIED / CONNECTION FAILED を表示してログイン画面へ戻る
+- 既存の参加者機能、PostgreSQL、ランキング、履歴、アバター選択は維持

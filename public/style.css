@@ -178,3 +178,34 @@
   .v52-player .integrated-lockup{padding:6px 0 14px}
   .v52-player .integrated-header-logo{width:96vw;max-width:none}
 }
+
+
+/* v5.6 — NEXUS access transition */
+.access-transition{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(circle at 50% 45%,rgba(22,74,122,.24),transparent 32%),radial-gradient(circle at 50% 48%,rgba(116,50,255,.13),transparent 46%),#01040a;overflow:hidden;color:#eafcff}
+.access-transition.hidden{display:none}
+.access-transition::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(40,195,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(40,195,255,.045) 1px,transparent 1px);background-size:30px 30px;mask-image:linear-gradient(to bottom,transparent 2%,#000 28%,#000 78%,transparent 100%);animation:accessGrid 6s linear infinite}
+.access-transition::after{content:"";position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#39dbff,transparent);box-shadow:0 0 14px #39dbff;animation:accessScan 1.8s linear infinite}
+.access-core{position:relative;width:190px;height:190px;margin-bottom:10px;filter:drop-shadow(0 0 12px rgba(38,197,255,.42))}
+.access-ring{position:absolute;border-radius:50%;border:1px solid rgba(75,213,255,.65);inset:0}
+.access-ring::before,.access-ring::after{content:"";position:absolute;background:#58e6ff;box-shadow:0 0 10px #58e6ff}
+.access-ring::before{width:18px;height:2px;left:50%;top:-1px;transform:translateX(-50%)}
+.access-ring::after{width:2px;height:18px;top:50%;right:-1px;transform:translateY(-50%)}
+.ring-one{animation:accessSpin 2.6s linear infinite}
+.ring-two{inset:20px;border-color:rgba(147,91,255,.7);border-style:dashed;animation:accessSpinReverse 2s linear infinite}
+.ring-three{inset:52px;border:2px solid rgba(66,220,255,.85);animation:accessPulse 1.1s ease-in-out infinite}
+.access-crosshair{position:absolute;inset:50% auto auto 50%;width:150px;height:150px;transform:translate(-50%,-50%)}
+.access-crosshair::before,.access-crosshair::after{content:"";position:absolute;background:linear-gradient(90deg,transparent,#53e5ff,transparent)}
+.access-crosshair::before{left:0;right:0;top:50%;height:1px}.access-crosshair::after{top:0;bottom:0;left:50%;width:1px;background:linear-gradient(transparent,#9b6cff,transparent)}
+.access-node{position:absolute;left:50%;top:50%;width:17px;height:17px;border:2px solid #d9fbff;transform:translate(-50%,-50%) rotate(45deg);box-shadow:0 0 8px #52e6ff,0 0 25px rgba(142,80,255,.8);animation:nodePulse .8s ease-in-out infinite alternate}
+.access-wordmark{position:relative;z-index:1;font-size:clamp(24px,7vw,40px);font-weight:900;letter-spacing:.16em;text-indent:.16em;text-shadow:0 0 12px rgba(75,216,255,.7),0 0 25px rgba(113,67,255,.45)}
+.access-status{position:relative;z-index:1;color:#6fe8ff;font-size:12px;font-weight:800;letter-spacing:.22em;text-align:center;min-height:18px}
+.access-progress{position:relative;z-index:1;width:min(72vw,360px);height:3px;background:rgba(92,208,255,.12);border:1px solid rgba(87,213,255,.22);overflow:hidden}
+.access-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#1cdcff,#7063ff,#b95cff);box-shadow:0 0 15px #3edfff;transition:width .35s ease}
+.access-percent{position:relative;z-index:1;font-variant-numeric:tabular-nums;font-size:13px;letter-spacing:.2em;color:#c7eefe}
+.access-sub{position:relative;z-index:1;margin-top:2px;font-size:13px;letter-spacing:.18em;color:rgba(224,244,255,.72)}
+.access-transition.access-success .access-node{background:#75ffd0;border-color:#75ffd0;box-shadow:0 0 16px #75ffd0,0 0 40px rgba(117,255,208,.65)}
+.access-transition.access-success .access-status{color:#75ffd0}
+.access-transition.access-failed .access-node{background:#ff5577;border-color:#ff8fa5;box-shadow:0 0 16px #ff5577,0 0 40px rgba(255,54,103,.55)}
+.access-transition.access-failed .access-status{color:#ff718d}
+@keyframes accessSpin{to{transform:rotate(360deg)}}@keyframes accessSpinReverse{to{transform:rotate(-360deg)}}@keyframes accessPulse{50%{opacity:.35;transform:scale(.92)}}@keyframes nodePulse{to{transform:translate(-50%,-50%) rotate(45deg) scale(1.28)}}@keyframes accessGrid{to{background-position:0 60px,60px 0}}@keyframes accessScan{0%{top:8%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:92%;opacity:0}}
+@media (prefers-reduced-motion:reduce){.access-transition::before,.access-transition::after,.access-ring,.ring-three,.access-node{animation:none!important}.access-progress span{transition:none}}
