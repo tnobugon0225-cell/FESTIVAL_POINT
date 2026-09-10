@@ -346,7 +346,7 @@ app.post('/api/matches', requireUser, async (req,res,next)=>{
   const wager=Number(req.body.wager);
   if(!/^\d{4}$/.test(opponentCode)) return res.status(400).json({error:'対戦相手のIDを4桁で入力してください'});
   if(!/^\d{4}$/.test(refereeCode)) return res.status(400).json({error:'審判のIDを4桁で入力してください'});
-  if(!Number.isInteger(wager)||wager<1||wager>100000) return res.status(400).json({error:'賭けポイントは1〜100,000の整数で入力してください'});
+  if(!Number.isInteger(wager)||wager<1||wager>100000) return res.status(400).json({error:'対戦ポイントは1〜100,000の整数で入力してください'});
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
@@ -360,7 +360,7 @@ app.post('/api/matches', requireUser, async (req,res,next)=>{
     if(new Set(ids).size!==3){await client.query('ROLLBACK');return res.status(400).json({error:'対戦者2名と審判は、それぞれ別の参加者を指定してください'})}
     for(const uid of ids){if(await activeMatchForUser(uid,client)){await client.query('ROLLBACK');return res.status(409).json({error:'指定した参加者の中に、すでに進行中のマッチがある人がいます'})}}
     const maxWager=Math.min(Number(challenger.points),Number(opponent.points));
-    if(wager>maxWager){await client.query('ROLLBACK');return res.status(400).json({error:`賭けられる最大ポイントは ${maxWager}pt です`})}
+    if(wager>maxWager){await client.query('ROLLBACK');return res.status(400).json({error:`設定できる対戦ポイントの上限は ${maxWager}pt です`})}
     const r=await client.query(`INSERT INTO matches(challenger_id,opponent_id,referee_id,challenger_name,opponent_name,referee_name,challenger_code,opponent_code,referee_code,wager) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,[challenger.id,opponent.id,referee.id,challenger.username,opponent.username,referee.username,challenger.public_code,opponent.public_code,referee.public_code,wager]);
     await client.query('COMMIT');
     res.json({ok:true,match:publicMatch(r.rows[0],req.userId),maxWager});
@@ -447,7 +447,7 @@ app.post('/api/matches/:id/result', requireUser, async (req,res,next)=>{
     const winner=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[winnerId])).rows[0];
     const loser=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[loserId])).rows[0];
     if(!winner||!loser){await client.query('ROLLBACK');return res.status(410).json({error:'対戦者アカウントが存在しません'})}
-    const wager=Number(m.wager);if(Number(loser.points)<wager){await client.query('ROLLBACK');return res.status(409).json({error:`${loser.username} のポイントが賭けポイントを下回っています。運営に確認してください`})}
+    const wager=Number(m.wager);if(Number(loser.points)<wager){await client.query('ROLLBACK');return res.status(409).json({error:`${loser.username} のポイントが対戦ポイントを下回っています。運営に確認してください`})}
     const winnerPoints=Number(winner.points)+wager,loserPoints=Number(loser.points)-wager;
     await client.query('UPDATE users SET points=$1 WHERE id=$2',[winnerPoints,winnerId]);await client.query('UPDATE users SET points=$1 WHERE id=$2',[loserPoints,loserId]);
     await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`MATCH #${id} 勝利`,'match_win',loserId,loser.username]);

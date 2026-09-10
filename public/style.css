@@ -328,3 +328,8 @@
 .battle-referee-meta{display:grid!important;grid-template-columns:52px 1fr;align-items:center;gap:10px;text-align:left!important}.battle-referee-meta img{width:52px;height:52px;object-fit:cover;border:1px solid rgba(69,212,255,.48);clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}.battle-referee-meta span,.battle-referee-meta strong,.battle-referee-meta small{display:block;text-align:left}.battle-referee-meta strong{font-size:16px!important;margin-top:2px!important}
 .result-return{margin-top:14px;font-size:11px;letter-spacing:.08em;color:#83b7cb}.result-return b{display:inline-block;min-width:1.2em;font-size:22px;color:#fff;text-shadow:0 0 14px currentColor}
 @media(max-width:560px){.request-player img{width:58px;height:58px}.battle-person-avatar{width:min(31vw,112px);height:min(31vw,112px)}.battle-referee-meta{grid-template-columns:42px 1fr}.battle-referee-meta img{width:42px;height:42px}}
+
+
+/* v5.14 - stable avatar rendering */
+.avatar-core img,.rank-avatar,.request-player img,.request-referee img,.battle-person-avatar,.battle-referee-meta img,.avatar-choice img,.user-avatar{animation:none!important;transition:none!important;filter:none!important;will-change:auto!important;backface-visibility:hidden;transform:translateZ(0)}
+.avatar-core,.rank-item,.request-player,.battle-person,.battle-referee-meta{animation:none!important}

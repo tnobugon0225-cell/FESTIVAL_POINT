@@ -1,3 +1,11 @@
+# NEXUS:ZERO v5.14
+
+- HOME / 承認画面 / 対戦画面 / 勝敗画面のアバター点滅を抑制
+- 自動更新時に同じHTML・画像を毎回作り直さない方式へ変更
+- WAGER表記を BATTLE POINTS / 対戦ポイント に変更
+- 承認待ちの OPPONENT 表記を RIVAL に変更
+- v5.13の対戦結果10秒表示・自動HOME復帰・アバター表示は維持
+
 NEXUS:ZERO v5.13
 
 - 対戦終了後、VICTORY / DEFEAT / RESULT画面を10秒表示してHOMEへ自動遷移

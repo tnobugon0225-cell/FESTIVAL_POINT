@@ -81,7 +81,7 @@
     <div class="transfer-grid transfer-grid-v52 match-entry-grid">
       <div><label>対戦相手ID</label><input id="opponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
       <div><label>審判ID</label><input id="refereeCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
-      <div><label>賭けポイント</label><input id="wagerAmount" type="number" inputmode="numeric" min="1" placeholder="POINT"></div>
+      <div><label>対戦ポイント</label><input id="wagerAmount" type="number" inputmode="numeric" min="1" placeholder="POINT"></div>
     </div>
     <button id="challengeBtn" class="primary-action transfer-action"><span>≫≫</span>対戦を申し込む<span>≪≪</span></button><p id="matchCreateMsg"></p>
     <p class="system-note">賭け上限は、対戦する2人のうち所持ポイントが低い方のポイント数です。</p>
@@ -153,6 +153,8 @@ async function failAccessTransition(message='ACCESS DENIED'){setAccessState(100,
 
 document.querySelectorAll('.avatar-choice').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.avatar-choice').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');selectedAvatar=btn.dataset.avatar;}));
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
+function setImgSrc(el,src){if(!el)return;const abs=new URL(src,location.href).href;if(el.src!==abs)el.src=src}
+function setStableHTML(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken;}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const err=new Error('ネットワーク通信に失敗しました');err.status=0;throw err}const d=await r.json().catch(()=>({}));if(!r.ok){const err=new Error(d.error||'通信に失敗しました');err.status=r.status;err.code=d.code||'';throw err}return d}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}function fmt(s){if(!s)return '';const v=String(s);return new Date(v.includes('T')?v:v.replace(' ','T')+'Z').toLocaleString('ja-JP')}
 function historyLabel(h){if(h.action_type==='participant_transfer_out')return `譲渡 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='participant_transfer_in')return `獲得 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_out')return `スタッフ移動 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_in')return `スタッフ移動 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='match_win')return `勝利 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='match_loss')return `敗北 → ${esc(h.counterpart||'相手')}`;return '運営調整'}
@@ -168,14 +170,15 @@ async function getRanking(me=null){
       html+=`<div class="rank-separator"><span>YOUR POSITION</span></div><div class="rank-item rank-self"><span class="rank-num">${selfIndex+1}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}<small>YOU</small></span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`;
     }
   }
-  $('#ranking').innerHTML=html;
-  $('#publicRankingList').innerHTML=preview.length?preview.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}"><span class="rank-num">${i<3?['①','②','③'][i]:String(i+1)}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';
+  setStableHTML($('#ranking'),html);
+  const publicHtml=preview.length?preview.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}"><span class="rank-num">${i<3?['①','②','③'][i]:String(i+1)}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';
+  setStableHTML($('#publicRankingList'),publicHtml);
   return rows
 }
 let qrLoaded=false;async function loadQr(){if(qrLoaded)return;try{const qr=await api('/api/my-qr');$('#qrImg').src=qr.dataUrl;$('#publicCode').textContent=qr.code;qrLoaded=true}catch(e){}}
 function setRank(rows,me){const idx=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);$('#rankText').textContent=idx>=0?`#${idx+1}`:'OUT'}
 async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);qrLoaded=false;localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
-$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';$('#playerAvatar').src=avatarSrc(me.avatar_key);if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);loadQr();setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
+$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);loadQr();setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
 async function auth(mode){
   if(accessTransitionRunning)return;
   $('#authMsg').textContent='';
@@ -190,7 +193,7 @@ async function auth(mode){
     if(r.user){
       setAccessState(88,'LOADING ARENA PROFILE');
       clearInterval(timer);qrLoaded=false;
-      $('#name').textContent=r.user.username;$('#customerCode').textContent=r.user.public_code;$('#points').textContent=r.user.points.toLocaleString()+' pt';$('#playerAvatar').src=avatarSrc(r.user.avatar_key);
+      $('#name').textContent=r.user.username;$('#customerCode').textContent=r.user.public_code;$('#points').textContent=r.user.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(r.user.avatar_key));
       if(r.user.points===0){await finishAccessTransition();$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');showGameOver();return}
       const rank=await getRanking(r.user).catch(()=>[]);loadQr();setRank(rank,r.user);await checkMatchNotification().catch(()=>{});startMatchPolling();
       await finishAccessTransition();
@@ -209,7 +212,7 @@ async function auth(mode){
 let currentMatch=null,matchPollTimer=null,lastRequestNoticeId=null;
 function incomingNeedsDecision(m){return m&&m.status==='pending'&&((m.role==='opponent'&&!m.opponentApproved)||(m.role==='referee'&&!m.refereeApproved))}
 function requestRoleText(m){return m.role==='referee'?'あなたは審判として指名されています':'あなたに対戦が申し込まれています'}
-function renderRequestInfo(m){return `<div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>OPPONENT</span><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span class="request-referee"><img src="${avatarSrc(m.referee.avatarKey)}" alt=""><i>REFEREE</i><strong>${esc(m.referee.name)}</strong></span><span>WAGER <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`}
+function renderRequestInfo(m){return `<div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span class="request-referee"><img src="${avatarSrc(m.referee.avatarKey)}" alt=""><i>REFEREE</i><strong>${esc(m.referee.name)}</strong></span><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`}
 function showBattleRequest(m){currentMatch=m;lastRequestNoticeId=m.id;$('#battleRequestRole').textContent=requestRoleText(m);$('#battleRequestInfo').innerHTML=renderRequestInfo(m);$('#battleRequestMsg').textContent='';$('#battleRequestOverlay').classList.remove('hidden');document.body.classList.add('modal-lock')}
 function hideBattleRequest(){ $('#battleRequestOverlay').classList.add('hidden');document.body.classList.remove('modal-lock') }
 async function checkMatchNotification(){
@@ -231,7 +234,7 @@ function startMatchPolling(){clearInterval(matchPollTimer);matchPollTimer=setInt
 $('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{const r=await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});currentMatch=r.match;$('#battleRequestMsg').className='match-action-msg ok';$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(450);location.href='/match'}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
 $('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{await api(`/api/matches/${currentMatch.id}/reject`,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null;$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent='対戦申請を拒否しました'}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`拒否できませんでした：${e.message}`;btn.disabled=false}};
 $('#battleRequestLater').onclick=()=>hideBattleRequest();
-$('#challengeBtn').onclick=async()=>{const btn=$('#challengeBtn');$('#matchCreateMsg').textContent='';$('#matchCreateMsg').className='';try{btn.disabled=true;const r=await api('/api/matches',{method:'POST',body:JSON.stringify({opponentCode:$('#opponentCode').value,refereeCode:$('#refereeCode').value,wager:Number($('#wagerAmount').value)})});$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent=`対戦申請を送信しました / WAGER ${r.match.wager}pt`;$('#wagerAmount').value='';await sleep(350);location.href='/match'}catch(e){$('#matchCreateMsg').className='error';$('#matchCreateMsg').textContent=e.message}finally{btn.disabled=false}};
+$('#challengeBtn').onclick=async()=>{const btn=$('#challengeBtn');$('#matchCreateMsg').textContent='';$('#matchCreateMsg').className='';try{btn.disabled=true;const r=await api('/api/matches',{method:'POST',body:JSON.stringify({opponentCode:$('#opponentCode').value,refereeCode:$('#refereeCode').value,wager:Number($('#wagerAmount').value)})});$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent=`対戦申請を送信しました / BATTLE POINTS ${r.match.wager}pt`;$('#wagerAmount').value='';await sleep(350);location.href='/match'}catch(e){$('#matchCreateMsg').className='error';$('#matchCreateMsg').textContent=e.message}finally{btn.disabled=false}};
 $('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=()=>loadMe(true);$('#logoutBtn').onclick=async()=>{clearInterval(matchPollTimer);try{await api('/api/logout',{method:'POST'})}catch(e){}localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};
 function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
 document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>scrollToId(b.dataset.scroll));

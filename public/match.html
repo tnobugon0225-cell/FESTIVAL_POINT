@@ -26,19 +26,20 @@ function esc(s){const d=document.createElement('div');d.textContent=s??'';return
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
 function person(p,label){return `<div class="battle-person"><img class="battle-person-avatar" src="${avatarSrc(p.avatarKey)}" alt=""><span>${label}</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div>`}
 function refereeMeta(p){return `<div class="battle-referee-meta"><img src="${avatarSrc(p.avatarKey)}" alt=""><div><span>REFEREE</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div></div>`}
+function setStableHTML(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
 function startResultReturn(completedAt){if(resultReturnTimer)return;const end=new Date(completedAt).getTime()+10000;const tick=()=>{const remain=Math.max(0,Math.ceil((end-Date.now())/1000));const el=document.querySelector('#resultCountdown');if(el)el.textContent=remain;if(remain<=0){clearInterval(resultCountdownTimer);location.href='/';}};tick();resultCountdownTimer=setInterval(tick,250);resultReturnTimer=setTimeout(()=>location.href='/',Math.max(0,end-Date.now()+80))}
 function setState(cls,kicker,title,subtitle,badge){const s=$('#matchScreen');s.className='match-screen '+cls;$('#stateKicker').textContent=kicker;$('#stateTitle').textContent=title;$('#stateSubtitle').textContent=subtitle;$('#stateBadge').textContent=badge}
 function approval(label,ok){return `<span class="approval-chip ${ok?'approved':'waiting'}">${label} ${ok?'✓':'…'}</span>`}
 async function load(){
  try{
    const me=await api('/api/me');const r=await api('/api/matches/me');const m=r.match;
-   if(!m){clearInterval(timer);setState('state-idle','NO ACTIVE MATCH','NO ACTIVE BATTLE','進行中の対戦はありません','IDLE');$('#battlePlayers').innerHTML='';$('#battleMeta').innerHTML='';$('#battleControls').innerHTML='';$('#backHome').classList.remove('hidden');return}
+   if(!m){clearInterval(timer);setState('state-idle','NO ACTIVE MATCH','NO ACTIVE BATTLE','進行中の対戦はありません','IDLE');setStableHTML($('#battlePlayers'),'');setStableHTML($('#battleMeta'),'');$('#battleControls').innerHTML='';$('#backHome').classList.remove('hidden');return}
    $('#backHome').classList.toggle('hidden',m.status!=='completed');
-   $('#battlePlayers').innerHTML=`${person(m.challenger,'PLAYER A')}<div class="battle-vs">VS</div>${person(m.opponent,'PLAYER B')}`;
-   $('#battleMeta').innerHTML=`<div><span>WAGER</span><strong>${Number(m.wager).toLocaleString()} pt</strong></div>${refereeMeta(m.referee)}`;
+   setStableHTML($('#battlePlayers'),`${person(m.challenger,'PLAYER A')}<div class="battle-vs">VS</div>${person(m.opponent,'RIVAL')}`);
+   setStableHTML($('#battleMeta'),`<div><span>BATTLE POINTS</span><strong>${Number(m.wager).toLocaleString()} pt</strong></div>${refereeMeta(m.referee)}`);
    if(m.status==='pending'){
      setState('state-pending','MATCHING','MATCHING IN PROGRESS','承認情報を同期しています','WAITING');
-     let controls=`<div class="approval-row">${approval('OPPONENT',m.opponentApproved)}${approval('REFEREE',m.refereeApproved)}</div>`;
+     let controls=`<div class="approval-row">${approval('RIVAL',m.opponentApproved)}${approval('REFEREE',m.refereeApproved)}</div>`;
      if((m.role==='opponent'&&!m.opponentApproved)||(m.role==='referee'&&!m.refereeApproved)) controls+=`<div class="match-actions"><button class="success" onclick="approve(${m.id})">承認する</button><button class="danger" onclick="rejectMatch(${m.id})">拒否する</button></div>`;
      else if(m.role==='challenger') controls+=`<div class="match-actions"><button class="ghost" onclick="rejectMatch(${m.id})">申請を取り消す</button></div>`;
      else controls+=`<p class="battle-wait">もう一方の承認を待っています。</p>`;
