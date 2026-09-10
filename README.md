@@ -1,3 +1,10 @@
+NEXUS:ZERO v5.19
+
+- HOME右上に RULE ボタンを追加
+- /rule に専用ルール説明画面を追加
+- 対戦申請・対戦内容・審判・対戦ポイント・GAME OVER・報酬を説明
+- RULE画面でもHOME用BGM「深層同調」を再生
+
 NEXUS:ZERO v5.18
 
 - ログイン画面に簡潔なゲーム導入文を追加
