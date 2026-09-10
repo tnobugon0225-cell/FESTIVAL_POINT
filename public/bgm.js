@@ -1,4 +1,8 @@
 (()=>{
+  if(window.self!==window.top){
+    window.NexusBGM={setTrack(){},clearTrack(){},toggle(){},play(){},get enabled(){return false},get current(){return ''}};
+    return;
+  }
   const TRACKS={
     home:'/bgm/shinsou-douchou.mp3',
     matching:'/bgm/memory-sphere.mp3',
@@ -60,11 +64,14 @@
     paint();
   }
   function unlock(){
+    localStorage.setItem('nexusAudioUnlocked','1');
     if(enabled&&current&&audio.paused)play();
   }
   document.addEventListener('pointerdown',unlock,{passive:true});
   document.addEventListener('keydown',unlock,{passive:true});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden&&enabled&&current)play();});
+  window.addEventListener('pageshow',()=>{if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current)play();});
+  window.addEventListener('focus',()=>{if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current&&audio.paused)play();});
   audio.addEventListener('ended',()=>{if(enabled){audio.currentTime=0;play();}});
   window.NexusBGM={setTrack,clearTrack,toggle,play,get enabled(){return enabled},get current(){return current}};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureControl);else ensureControl();

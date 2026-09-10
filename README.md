@@ -1,3 +1,10 @@
+NEXUS:ZERO v5.21
+
+- HOME / RANKING / HISTORY 間の切替演出を約5秒に延長
+- HOMEからRANKING/HISTORYへ移動する際は同一ページ内モジュール表示にして、深層同調BGMが途切れないよう改善
+- アバター選択専用SE Cyber21-2 を追加
+- 通常ボタンSEとアバター選択SEが二重再生されないよう分離
+
 NEXUS:ZERO v5.20
 
 - TOP100ランキングから4桁ID表示を削除
