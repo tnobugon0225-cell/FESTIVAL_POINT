@@ -4,7 +4,6 @@ const helmet = require('helmet');
 const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const pgSession = require('connect-pg-simple')(session);
-const QRCode = require('qrcode');
 const path = require('path');
 const crypto = require('crypto');
 
@@ -301,16 +300,6 @@ app.get('/api/my-history', requireUser, async (req, res, next) => {
     const r = await query(`SELECT h.id,h.delta,h.reason,h.action_type,h.created_at,COALESCE(c.username,h.counterpart_name) counterpart
       FROM point_history h LEFT JOIN users c ON c.id=h.counterpart_user_id WHERE h.user_id=$1 ORDER BY h.id DESC LIMIT 40`, [req.userId]);
     res.json(r.rows.map(x=>({...x,id:Number(x.id),delta:Number(x.delta)})));
-  } catch(e){ next(e); }
-});
-app.get('/api/my-qr', requireUser, async (req, res, next) => {
-  try {
-    const u = await one('SELECT public_code FROM users WHERE id=$1', [req.userId]);
-    const requestBase = `${req.protocol}://${req.get('host')}`;
-    const base = (BASE_URL || requestBase).replace(/\/$/, '');
-    const payload = `${base}/admin?code=${encodeURIComponent(u.public_code)}`;
-    const dataUrl = await QRCode.toDataURL(payload, { width: 360, margin: 2, errorCorrectionLevel: 'M' });
-    res.json({ code:u.public_code, dataUrl, url:payload });
   } catch(e){ next(e); }
 });
 app.get('/api/ranking', async (req, res, next) => {

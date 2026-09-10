@@ -6,6 +6,7 @@
   <meta name="theme-color" content="#02050b">
   <title>NEXUS:ZERO</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="/bgm.js" defer></script>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -72,7 +73,6 @@
 
   <div class="quick-nav" aria-label="クイックメニュー">
     <button type="button" onclick="location.href='/history'">HISTORY<span>履歴</span></button>
-    <button type="button" id="openQrBtn">MY QR<span>QR</span></button>
     <button type="button" onclick="location.href='/ranking'">RANKING<span>ランキング</span></button>
   </div>
 
@@ -85,11 +85,6 @@
     </div>
     <button id="challengeBtn" class="primary-action transfer-action"><span>≫≫</span>対戦を申し込む<span>≪≪</span></button><p id="matchCreateMsg"></p>
     <p class="system-note">賭け上限は、対戦する2人のうち所持ポイントが低い方のポイント数です。</p>
-  </section>
-
-  <section id="qrCard" class="system-panel qr-modal-card hidden">
-    <div class="panel-head"><div><div class="eyebrow">PLAYER IDENTIFICATION</div><h2>MY QR</h2></div><button type="button" id="closeQrBtn" class="secondary compact">閉じる</button></div>
-    <div class="qr-wrap"><img id="qrImg" alt="参加者QR"><p class="micro-label">PLAYER ID</p><strong id="publicCode" class="customer-number"></strong></div>
   </section>
 
   <div class="arena-lower-grid home-ranking-only">
@@ -143,6 +138,7 @@
 </div>
 <div id="gameOverOverlay" class="gameover-overlay hidden"><div class="gameover-box"><div class="gameover-kicker">CONNECTION TERMINATED</div><h2>GAME OVER</h2><p>またのご参加をお待ちしております。</p><div class="gameover-count"><strong id="gameOverCount">5</strong><span>秒後にアカウントが削除されます</span></div></div></div>
 <script>
+window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home'));
 const $=s=>document.querySelector(s);let timer=null;let authToken=localStorage.getItem('nexusParticipantToken')||'';let selectedAvatar='avatar-01';
 let accessTransitionRunning=false;
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
@@ -175,10 +171,9 @@ async function getRanking(me=null){
   setStableHTML($('#publicRankingList'),publicHtml);
   return rows
 }
-let qrLoaded=false;async function loadQr(){if(qrLoaded)return;try{const qr=await api('/api/my-qr');$('#qrImg').src=qr.dataUrl;$('#publicCode').textContent=qr.code;qrLoaded=true}catch(e){}}
 function setRank(rows,me){const idx=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);$('#rankText').textContent=idx>=0?`#${idx+1}`:'OUT'}
-async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);qrLoaded=false;localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
-$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);loadQr();setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
+async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
+$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
 async function auth(mode){
   if(accessTransitionRunning)return;
   $('#authMsg').textContent='';
@@ -192,10 +187,10 @@ async function auth(mode){
     if(r.authToken){authToken=r.authToken;localStorage.setItem('nexusParticipantToken',authToken)}
     if(r.user){
       setAccessState(88,'LOADING ARENA PROFILE');
-      clearInterval(timer);qrLoaded=false;
+      clearInterval(timer);
       $('#name').textContent=r.user.username;$('#customerCode').textContent=r.user.public_code;$('#points').textContent=r.user.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(r.user.avatar_key));
       if(r.user.points===0){await finishAccessTransition();$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');showGameOver();return}
-      const rank=await getRanking(r.user).catch(()=>[]);loadQr();setRank(rank,r.user);await checkMatchNotification().catch(()=>{});startMatchPolling();
+      const rank=await getRanking(r.user).catch(()=>[]);setRank(rank,r.user);await checkMatchNotification().catch(()=>{});startMatchPolling();
       await finishAccessTransition();
       $('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');
       window.scrollTo({top:0,behavior:'instant'});
@@ -238,7 +233,6 @@ $('#challengeBtn').onclick=async()=>{const btn=$('#challengeBtn');$('#matchCreat
 $('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=()=>loadMe(true);$('#logoutBtn').onclick=async()=>{clearInterval(matchPollTimer);try{await api('/api/logout',{method:'POST'})}catch(e){}localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};
 function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
 document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>scrollToId(b.dataset.scroll));
-$('#openQrBtn').onclick=()=>{$('#qrCard').classList.remove('hidden');loadQr();scrollToId('qrCard')};$('#closeQrBtn').onclick=()=>$('#qrCard').classList.add('hidden');
 loadMe();
 </script>
 </body></html>
