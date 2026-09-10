@@ -17,7 +17,7 @@ const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-me-now';
 const BASE_URL = process.env.BASE_URL || '';
 const STARTING_POINTS = Math.max(1, Number(process.env.STARTING_POINTS || 10));
-const AVATAR_KEYS = ['avatar-01','avatar-02','avatar-03','avatar-04','avatar-05','avatar-06'];
+const AVATAR_KEYS = ['avatar-01','avatar-02','avatar-03','avatar-04','avatar-05','avatar-06','avatar-07','avatar-08','avatar-09','avatar-10','avatar-11','avatar-12'];
 function cleanAvatarKey(v) {
   const key = String(v || '').trim();
   return AVATAR_KEYS.includes(key) ? key : '';
@@ -77,6 +77,32 @@ async function initDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_history_user ON point_history(user_id, id DESC);
     ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_key VARCHAR(20);
+
+    CREATE TABLE IF NOT EXISTS matches (
+      id BIGSERIAL PRIMARY KEY,
+      challenger_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      opponent_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      referee_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      challenger_name TEXT NOT NULL,
+      opponent_name TEXT NOT NULL,
+      referee_name TEXT NOT NULL,
+      challenger_code VARCHAR(4) NOT NULL,
+      opponent_code VARCHAR(4) NOT NULL,
+      referee_code VARCHAR(4) NOT NULL,
+      wager INTEGER NOT NULL CHECK(wager > 0),
+      opponent_approved BOOLEAN NOT NULL DEFAULT FALSE,
+      referee_approved BOOLEAN NOT NULL DEFAULT FALSE,
+      status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','matched','in_progress','completed','rejected','cancelled')),
+      winner_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      winner_name TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      matched_at TIMESTAMPTZ,
+      started_at TIMESTAMPTZ,
+      completed_at TIMESTAMPTZ
+    );
+    CREATE INDEX IF NOT EXISTS idx_matches_active_challenger ON matches(challenger_id,status);
+    CREATE INDEX IF NOT EXISTS idx_matches_active_opponent ON matches(opponent_id,status);
+    CREATE INDEX IF NOT EXISTS idx_matches_active_referee ON matches(referee_id,status);
   `);
 
   const existingAdmin = await one('SELECT id FROM staff LIMIT 1');
@@ -283,29 +309,118 @@ app.get('/api/ranking', async (req, res, next) => {
   try { const r=await query('SELECT public_code,username,points,avatar_key FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 100'); res.json(r.rows.map(x=>({...x,points:Number(x.points)}))); } catch(e){ next(e); }
 });
 
-app.post('/api/transfer', requireUser, userTransferGuard, async (req, res, next) => {
-  const toCode=String(req.body.toCode||'').trim(), amount=Number(req.body.amount), reason=cleanReason(req.body.reason);
-  if(!/^\d{4}$/.test(toCode)) return res.status(400).json({error:'相手のIDを4桁で入力してください'});
-  if(!Number.isInteger(amount)||amount<1||amount>100000) return res.status(400).json({error:'譲渡ポイントは1〜100,000の整数で入力してください'});
-  if(reason.length<2) return res.status(400).json({error:'譲渡理由を2文字以上で入力してください'});
+
+// Participant-to-participant direct transfer is disabled in v5.8.
+app.post('/api/transfer', requireUser, (req,res) => res.status(410).json({ error:'ポイント譲渡は廃止されました。対戦マッチングを利用してください' }));
+
+const ACTIVE_MATCH_STATUSES = ['pending','matched','in_progress'];
+async function activeMatchForUser(userId, client=pool) {
+  const r = await client.query(`SELECT id FROM matches WHERE status = ANY($1::varchar[]) AND (challenger_id=$2 OR opponent_id=$2 OR referee_id=$2) ORDER BY id DESC LIMIT 1`, [ACTIVE_MATCH_STATUSES, userId]);
+  return r.rows[0] || null;
+}
+function publicMatch(row, viewerId) {
+  if(!row) return null;
+  const role = Number(row.challenger_id)===Number(viewerId) ? 'challenger' : Number(row.opponent_id)===Number(viewerId) ? 'opponent' : Number(row.referee_id)===Number(viewerId) ? 'referee' : 'viewer';
+  return {
+    id:Number(row.id), role, status:row.status, wager:Number(row.wager),
+    opponentApproved:!!row.opponent_approved, refereeApproved:!!row.referee_approved,
+    challenger:{id:row.challenger_id?Number(row.challenger_id):null,name:row.challenger_name,code:row.challenger_code},
+    opponent:{id:row.opponent_id?Number(row.opponent_id):null,name:row.opponent_name,code:row.opponent_code},
+    referee:{id:row.referee_id?Number(row.referee_id):null,name:row.referee_name,code:row.referee_code},
+    winnerUserId:row.winner_user_id?Number(row.winner_user_id):null,winnerName:row.winner_name||null,
+    createdAt:row.created_at,matchedAt:row.matched_at,startedAt:row.started_at,completedAt:row.completed_at
+  };
+}
+
+app.post('/api/matches', requireUser, async (req,res,next)=>{
+  const opponentCode=String(req.body.opponentCode||'').trim();
+  const refereeCode=String(req.body.refereeCode||'').trim();
+  const wager=Number(req.body.wager);
+  if(!/^\d{4}$/.test(opponentCode)) return res.status(400).json({error:'対戦相手のIDを4桁で入力してください'});
+  if(!/^\d{4}$/.test(refereeCode)) return res.status(400).json({error:'審判のIDを4桁で入力してください'});
+  if(!Number.isInteger(wager)||wager<1||wager>100000) return res.status(400).json({error:'賭けポイントは1〜100,000の整数で入力してください'});
   const client=await pool.connect();
   try{
     await client.query('BEGIN');
-    const from=(await client.query('SELECT id,username,public_code,points FROM users WHERE id=$1 FOR UPDATE',[req.userId])).rows[0];
-    const to=(await client.query('SELECT id,username,public_code,points FROM users WHERE public_code=$1 AND points>0 FOR UPDATE',[toCode])).rows[0];
-    if(!to){await client.query('ROLLBACK');return res.status(404).json({error:'そのIDの参加者は見つかりません'})}
-    if(!from||Number(from.points)<=0){await client.query('ROLLBACK');return res.status(410).json({error:'このアカウントは退場処理中です'})}
-    if(Number(from.id)===Number(to.id)){await client.query('ROLLBACK');return res.status(400).json({error:'自分自身には渡せません'})}
-    if(Number(from.points)<amount){await client.query('ROLLBACK');return res.status(400).json({error:'所持ポイントを超える譲渡はできません'})}
-    const eliminated=Number(from.points)===amount;
-    await client.query('UPDATE users SET points=points-$1 WHERE id=$2',[amount,from.id]);
-    await client.query('UPDATE users SET points=points+$1 WHERE id=$2',[amount,to.id]);
-    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[from.id,-amount,reason,'participant_transfer_out',to.id,to.username]);
-    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[to.id,amount,reason,'participant_transfer_in',from.id,from.username]);
+    const challenger=(await client.query('SELECT id,username,public_code,points FROM users WHERE id=$1 FOR UPDATE',[req.userId])).rows[0];
+    const opponent=(await client.query('SELECT id,username,public_code,points FROM users WHERE public_code=$1 AND points>0 FOR UPDATE',[opponentCode])).rows[0];
+    const referee=(await client.query('SELECT id,username,public_code,points FROM users WHERE public_code=$1 AND points>0 FOR UPDATE',[refereeCode])).rows[0];
+    if(!challenger||Number(challenger.points)<=0){await client.query('ROLLBACK');return res.status(410).json({error:'このアカウントは退場処理中です'})}
+    if(!opponent){await client.query('ROLLBACK');return res.status(404).json({error:'対戦相手のIDが見つかりません'})}
+    if(!referee){await client.query('ROLLBACK');return res.status(404).json({error:'審判のIDが見つかりません'})}
+    const ids=[Number(challenger.id),Number(opponent.id),Number(referee.id)];
+    if(new Set(ids).size!==3){await client.query('ROLLBACK');return res.status(400).json({error:'対戦者2名と審判は、それぞれ別の参加者を指定してください'})}
+    for(const uid of ids){if(await activeMatchForUser(uid,client)){await client.query('ROLLBACK');return res.status(409).json({error:'指定した参加者の中に、すでに進行中のマッチがある人がいます'})}}
+    const maxWager=Math.min(Number(challenger.points),Number(opponent.points));
+    if(wager>maxWager){await client.query('ROLLBACK');return res.status(400).json({error:`賭けられる最大ポイントは ${maxWager}pt です`})}
+    const r=await client.query(`INSERT INTO matches(challenger_id,opponent_id,referee_id,challenger_name,opponent_name,referee_name,challenger_code,opponent_code,referee_code,wager) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,[challenger.id,opponent.id,referee.id,challenger.username,opponent.username,referee.username,challenger.public_code,opponent.public_code,referee.public_code,wager]);
     await client.query('COMMIT');
-    if(eliminated) scheduleElimination(Number(from.id));
-    if(eliminated) return res.json({ok:true,eliminated:true,message:'GAME OVER',deleteAfterMs:5000});
-    res.json({ok:true,eliminated:false,to:to.username,amount,points:Number(from.points)-amount});
+    res.json({ok:true,match:publicMatch(r.rows[0],req.userId),maxWager});
+  }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
+});
+
+app.get('/api/matches/me', requireUser, async (req,res,next)=>{
+  try{
+    let r=await query(`SELECT * FROM matches WHERE (challenger_id=$1 OR opponent_id=$1 OR referee_id=$1) AND status = ANY($2::varchar[]) ORDER BY id DESC LIMIT 1`,[req.userId,ACTIVE_MATCH_STATUSES]);
+    if(!r.rows[0]) r=await query(`SELECT * FROM matches WHERE (challenger_id=$1 OR opponent_id=$1 OR referee_id=$1) AND status='completed' AND completed_at > NOW()-INTERVAL '45 seconds' ORDER BY id DESC LIMIT 1`,[req.userId]);
+    res.json({match:publicMatch(r.rows[0]||null,req.userId)});
+  }catch(e){next(e)}
+});
+
+app.post('/api/matches/:id/approve', requireUser, async (req,res,next)=>{
+  const id=Number(req.params.id);const client=await pool.connect();
+  try{
+    await client.query('BEGIN');const m=(await client.query('SELECT * FROM matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}
+    if(m.status!=='pending'){await client.query('ROLLBACK');return res.status(409).json({error:'このマッチは承認待ちではありません'})}
+    if(Number(m.opponent_id)===req.userId) m.opponent_approved=true;
+    else if(Number(m.referee_id)===req.userId) m.referee_approved=true;
+    else {await client.query('ROLLBACK');return res.status(403).json({error:'このマッチを承認する権限がありません'})}
+    const matched=m.opponent_approved&&m.referee_approved;
+    const r=await client.query(`UPDATE matches SET opponent_approved=$1,referee_approved=$2,status=$3,matched_at=CASE WHEN $3='matched' THEN COALESCE(matched_at,NOW()) ELSE matched_at END WHERE id=$4 RETURNING *`,[m.opponent_approved,m.referee_approved,matched?'matched':'pending',id]);
+    await client.query('COMMIT');res.json({ok:true,match:publicMatch(r.rows[0],req.userId)});
+  }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
+});
+
+app.post('/api/matches/:id/reject', requireUser, async (req,res,next)=>{
+  const id=Number(req.params.id);try{
+    const m=await one('SELECT * FROM matches WHERE id=$1',[id]);if(!m)return res.status(404).json({error:'マッチが見つかりません'});
+    if(m.status!=='pending')return res.status(409).json({error:'このマッチは承認待ちではありません'});
+    if(Number(m.opponent_id)!==req.userId&&Number(m.referee_id)!==req.userId&&Number(m.challenger_id)!==req.userId)return res.status(403).json({error:'このマッチを拒否できません'});
+    await query("UPDATE matches SET status='rejected' WHERE id=$1",[id]);res.json({ok:true});
+  }catch(e){next(e)}
+});
+
+app.post('/api/matches/:id/start', requireUser, async (req,res,next)=>{
+  const id=Number(req.params.id);try{
+    const m=await one('SELECT * FROM matches WHERE id=$1',[id]);if(!m)return res.status(404).json({error:'マッチが見つかりません'});
+    if(![m.challenger_id,m.opponent_id,m.referee_id].some(x=>Number(x)===req.userId))return res.status(403).json({error:'このマッチに参加していません'});
+    if(m.status==='in_progress')return res.json({ok:true,match:publicMatch(m,req.userId)});
+    if(m.status!=='matched')return res.status(409).json({error:'まだマッチングが完了していません'});
+    const r=await query("UPDATE matches SET status='in_progress',started_at=COALESCE(started_at,NOW()) WHERE id=$1 RETURNING *",[id]);res.json({ok:true,match:publicMatch(r.rows[0],req.userId)});
+  }catch(e){next(e)}
+});
+
+app.post('/api/matches/:id/result', requireUser, async (req,res,next)=>{
+  const id=Number(req.params.id),winnerId=Number(req.body.winnerId);const client=await pool.connect();
+  try{
+    await client.query('BEGIN');const m=(await client.query('SELECT * FROM matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}
+    if(Number(m.referee_id)!==req.userId){await client.query('ROLLBACK');return res.status(403).json({error:'勝利判定は指定された審判だけが行えます'})}
+    if(!['matched','in_progress'].includes(m.status)){await client.query('ROLLBACK');return res.status(409).json({error:'このマッチは勝利判定できません'})}
+    if(![Number(m.challenger_id),Number(m.opponent_id)].includes(winnerId)){await client.query('ROLLBACK');return res.status(400).json({error:'勝者の指定が正しくありません'})}
+    const loserId=winnerId===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);
+    const winner=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[winnerId])).rows[0];
+    const loser=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[loserId])).rows[0];
+    if(!winner||!loser){await client.query('ROLLBACK');return res.status(410).json({error:'対戦者アカウントが存在しません'})}
+    const wager=Number(m.wager);if(Number(loser.points)<wager){await client.query('ROLLBACK');return res.status(409).json({error:`${loser.username} のポイントが賭けポイントを下回っています。運営に確認してください`})}
+    const winnerPoints=Number(winner.points)+wager,loserPoints=Number(loser.points)-wager;
+    await client.query('UPDATE users SET points=$1 WHERE id=$2',[winnerPoints,winnerId]);await client.query('UPDATE users SET points=$1 WHERE id=$2',[loserPoints,loserId]);
+    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`MATCH #${id} 勝利`,'match_win',loserId,loser.username]);
+    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`MATCH #${id} 敗北`,'match_loss',winnerId,winner.username]);
+    const ur=await client.query("UPDATE matches SET status='completed',winner_user_id=$1,winner_name=$2,completed_at=NOW(),started_at=COALESCE(started_at,NOW()) WHERE id=$3 RETURNING *",[winnerId,winner.username,id]);
+    await client.query('COMMIT');if(loserPoints===0)scheduleElimination(loserId);
+    res.json({ok:true,match:publicMatch(ur.rows[0],req.userId),winner:{id:winnerId,name:winner.username,points:winnerPoints},loser:{id:loserId,name:loser.username,points:loserPoints},wager,eliminated:loserPoints===0});
   }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
 });
 
@@ -416,7 +531,7 @@ app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(e
   try{
     await initDb();
     app.listen(PORT,'0.0.0.0',()=>{
-      console.log(`NEXUS:ZERO v5.3: http://localhost:${PORT}`);
+      console.log(`NEXUS:ZERO v5.8: http://localhost:${PORT}`);
       console.log('Database: PostgreSQL');
       console.log(`Starting points: ${STARTING_POINTS}`);
       if(SESSION_SECRET.startsWith('replace-this'))console.log('WARNING: SESSION_SECRETを本番用に変更してください。');

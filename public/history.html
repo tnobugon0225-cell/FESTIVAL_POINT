@@ -30,7 +30,7 @@
 const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'';
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function fmt(s){if(!s)return '';const v=String(s);return new Date(v.includes('T')?v:v.replace(' ','T')+'Z').toLocaleString('ja-JP')}
-function historyLabel(h){if(h.action_type==='participant_transfer_out')return `譲渡 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='participant_transfer_in')return `獲得 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_out')return `スタッフ移動 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_in')return `スタッフ移動 ← ${esc(h.counterpart||'相手')}`;return '運営調整'}
+function historyLabel(h){if(h.action_type==='participant_transfer_out')return `譲渡 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='participant_transfer_in')return `獲得 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_out')return `スタッフ移動 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_in')return `スタッフ移動 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='match_win')return `勝利 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='match_loss')return `敗北 → ${esc(h.counterpart||'相手')}`;return '運営調整'}
 async function api(url){const headers={};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}const r=await fetch(url,{credentials:'same-origin',cache:'no-store',headers});const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
 async function loadHistory(){
   $('#fullHistory').innerHTML='<p class="muted">履歴を読み込み中...</p>';

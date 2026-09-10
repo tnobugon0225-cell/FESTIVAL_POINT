@@ -29,7 +29,7 @@
 <script>
 const $=s=>document.querySelector(s);
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
-function avatarSrc(key){return `/avatars/${/^avatar-0[1-6]$/.test(String(key||''))?key:'avatar-01'}.webp`}
+function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
 async function loadRanking(){
   $('#fullRanking').innerHTML='<p class="muted">ランキングを読み込み中...</p>';
   try{
