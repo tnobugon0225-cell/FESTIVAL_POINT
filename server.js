@@ -105,6 +105,14 @@ async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_matches_active_referee ON matches(referee_id,status);
   `);
 
+  // Keep the match status constraint compatible across upgrades.
+  // PostgreSQL preserves old CHECK constraints when CREATE TABLE IF NOT EXISTS is used.
+  await query(`
+    ALTER TABLE matches DROP CONSTRAINT IF EXISTS matches_status_check;
+    ALTER TABLE matches ADD CONSTRAINT matches_status_check
+      CHECK(status IN ('pending','matched','in_progress','completed','rejected','cancelled'));
+  `);
+
   const existingAdmin = await one('SELECT id FROM staff LIMIT 1');
   if (!existingAdmin) {
     const hash = await bcrypt.hash(ADMIN_PASSWORD, 12);
@@ -368,18 +376,39 @@ app.get('/api/matches/me', requireUser, async (req,res,next)=>{
 });
 
 app.post('/api/matches/:id/approve', requireUser, async (req,res,next)=>{
-  const id=Number(req.params.id);const client=await pool.connect();
+  const id=Number(req.params.id);
+  if(!Number.isInteger(id)||id<1) return res.status(400).json({error:'マッチIDが不正です'});
+  const client=await pool.connect();
   try{
-    await client.query('BEGIN');const m=(await client.query('SELECT * FROM matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    await client.query('BEGIN');
+    let m=(await client.query('SELECT * FROM matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
     if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}
-    if(m.status!=='pending'){await client.query('ROLLBACK');return res.status(409).json({error:'このマッチは承認待ちではありません'})}
-    if(Number(m.opponent_id)===req.userId) m.opponent_approved=true;
-    else if(Number(m.referee_id)===req.userId) m.referee_approved=true;
-    else {await client.query('ROLLBACK');return res.status(403).json({error:'このマッチを承認する権限がありません'})}
-    const matched=m.opponent_approved&&m.referee_approved;
-    const r=await client.query(`UPDATE matches SET opponent_approved=$1,referee_approved=$2,status=$3,matched_at=CASE WHEN $3='matched' THEN COALESCE(matched_at,NOW()) ELSE matched_at END WHERE id=$4 RETURNING *`,[m.opponent_approved,m.referee_approved,matched?'matched':'pending',id]);
-    await client.query('COMMIT');res.json({ok:true,match:publicMatch(r.rows[0],req.userId)});
-  }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
+    if(m.status!=='pending'){
+      // Idempotent response: if this match has just become matched, don't treat a repeated tap as an error.
+      if(['matched','in_progress'].includes(m.status)){await client.query('COMMIT');return res.json({ok:true,match:publicMatch(m,req.userId)})}
+      await client.query('ROLLBACK');return res.status(409).json({error:'このマッチは承認待ちではありません'});
+    }
+
+    if(Number(m.opponent_id)===Number(req.userId)){
+      if(!m.opponent_approved) await client.query('UPDATE matches SET opponent_approved=TRUE WHERE id=$1',[id]);
+    }else if(Number(m.referee_id)===Number(req.userId)){
+      if(!m.referee_approved) await client.query('UPDATE matches SET referee_approved=TRUE WHERE id=$1',[id]);
+    }else{
+      await client.query('ROLLBACK');return res.status(403).json({error:'このマッチを承認する権限がありません'});
+    }
+
+    // Re-read after the individual approval update so the MATCHED decision always uses DB state.
+    m=(await client.query('SELECT * FROM matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(m.opponent_approved===true && m.referee_approved===true){
+      m=(await client.query(`UPDATE matches SET status='matched',matched_at=COALESCE(matched_at,NOW()) WHERE id=$1 AND status='pending' RETURNING *`,[id])).rows[0] || m;
+    }
+
+    await client.query('COMMIT');
+    res.json({ok:true,match:publicMatch(m,req.userId)});
+  }catch(e){
+    try{await client.query('ROLLBACK')}catch{}
+    next(e);
+  }finally{client.release()}
 });
 
 app.post('/api/matches/:id/reject', requireUser, async (req,res,next)=>{

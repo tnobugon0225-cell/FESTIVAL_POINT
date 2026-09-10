@@ -89,7 +89,7 @@
 
   <section id="matchCard" class="system-panel match-status-card hidden">
     <div class="panel-head"><div><div class="eyebrow" id="matchEyebrow">MATCH STATUS</div><h2 id="matchTitle">MATCHING</h2></div><span id="matchBadge" class="status-light">WAITING</span></div>
-    <div id="matchBody"></div>
+    <div id="matchBody"></div><p id="matchActionMsg" class="match-action-msg"></p>
   </section>
 
   <section id="qrCard" class="system-panel qr-modal-card hidden">
@@ -200,10 +200,11 @@ async function auth(mode){
   }finally{loginBtn.disabled=false}
 }
 let currentMatch=null,lastCompletedMatchId=null,matchStartTimer=null;
+function setMatchActionMsg(msg='',isError=false){const el=$('#matchActionMsg');if(!el)return;el.textContent=msg;el.className='match-action-msg '+(msg?(isError?'error':'ok'):'')}
 function participantLine(label,p){return `<div class="match-person"><span>${label}</span><strong>${esc(p.name)}</strong><small>ID ${esc(p.code)}</small></div>`}
 function approvalChip(label,ok){return `<span class="approval-chip ${ok?'approved':'waiting'}">${label} ${ok?'✓':'…'}</span>`}
 async function loadMatchState(me=null){
-  const r=await api('/api/matches/me');currentMatch=r.match||null;const card=$('#matchCard'),body=$('#matchBody');
+  const r=await api('/api/matches/me');currentMatch=r.match||null;const card=$('#matchCard'),body=$('#matchBody');setMatchActionMsg();
   if(!currentMatch){card.classList.add('hidden');return}
   card.classList.remove('hidden');const m=currentMatch;
   if(m.status==='pending'){
@@ -225,8 +226,8 @@ async function loadMatchState(me=null){
 }
 function showMatchComplete(m){const el=$('#matchTransition');if(!el.classList.contains('hidden'))return;$('#matchTransitionInfo').textContent=`${m.challenger.name}  VS  ${m.opponent.name}  /  ${m.wager} pt`;el.classList.remove('hidden');setTimeout(()=>el.classList.add('hidden'),1900)}
 async function startMatch(id){matchStartTimer=null;try{await api(`/api/matches/${id}/start`,{method:'POST'});await loadMatchState()}catch(e){}}
-window.approveMatch=async id=>{try{await api(`/api/matches/${id}/approve`,{method:'POST'});await loadMatchState()}catch(e){$('#matchCreateMsg').className='error';$('#matchCreateMsg').textContent=e.message}};
-window.rejectMatch=async id=>{if(!confirm('この対戦申請を拒否／取消しますか？'))return;try{await api(`/api/matches/${id}/reject`,{method:'POST'});currentMatch=null;$('#matchCard').classList.add('hidden');$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent='対戦申請を終了しました'}catch(e){$('#matchCreateMsg').className='error';$('#matchCreateMsg').textContent=e.message}};
+window.approveMatch=async id=>{setMatchActionMsg('承認処理中...');try{const r=await api(`/api/matches/${id}/approve`,{method:'POST'});currentMatch=r.match||currentMatch;setMatchActionMsg(r.match&&r.match.status==='matched'?'相手・審判の承認が揃いました。マッチングを確定します。':'承認しました。もう一方の承認を待っています。');await loadMatchState()}catch(e){setMatchActionMsg(`承認できませんでした：${e.message}`,true)}};
+window.rejectMatch=async id=>{if(!confirm('この対戦申請を拒否／取消しますか？'))return;setMatchActionMsg();try{await api(`/api/matches/${id}/reject`,{method:'POST'});currentMatch=null;$('#matchCard').classList.add('hidden');$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent='対戦申請を終了しました'}catch(e){setMatchActionMsg(`拒否／取消できませんでした：${e.message}`,true)}};
 window.judgeMatch=async(id,winnerId,nameEncoded)=>{const name=decodeURIComponent(nameEncoded);if(!confirm(`${name} の勝利で確定しますか？`))return;try{const r=await api(`/api/matches/${id}/result`,{method:'POST',body:JSON.stringify({winnerId})});currentMatch=r.match;await loadMe(false);showBattleResult(r.match,null)}catch(e){alert(e.message)}};
 function showBattleResult(m,me){if(!m||m.status!=='completed'||lastCompletedMatchId===m.id)return;lastCompletedMatchId=m.id;const myId=me?.id||null;let title='RESULT CONFIRMED',text=`勝者：${m.winnerName} / ${m.wager}pt`;
   if(m.role==='challenger'||m.role==='opponent'){const myParticipant=m.role==='challenger'?m.challenger:m.opponent;const won=Number(m.winnerUserId)===Number(myParticipant.id);title=won?'VICTORY':'DEFEAT';text=`${won?'+':'-'}${m.wager.toLocaleString()} pt`;}
