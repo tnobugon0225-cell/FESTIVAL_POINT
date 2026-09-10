@@ -13,9 +13,8 @@
 
 <main class="app-shell arena-shell">
 <section id="auth" class="system-panel auth-panel auth-v52">
-  <div class="hero-lockup">
-    <img src="/nexus-zero-header.webp" alt="NEXUS:ZERO" class="hero-logo">
-    <p class="hero-copy">奪え。守れ。生き残れ。</p>
+  <div class="hero-lockup integrated-lockup">
+    <img src="/nexus-zero-header-integrated.webp" alt="NEXUS:ZERO 奪え。守れ。生き残れ。" class="hero-logo integrated-header-logo">
   </div>
   <div class="panel-head"><div><div class="eyebrow">PLAYER ACCESS</div><h1>PLAYER LOGIN</h1></div><span class="status-light">SYSTEM READY</span></div>
   <div class="auth-grid"><div><label>PLAYER ID</label><input id="loginId" maxlength="20" autocomplete="username" inputmode="numeric" placeholder="0427"></div><div><label>PASSWORD</label><input id="password" type="password" maxlength="72" autocomplete="current-password" placeholder="PASSWORD"></div></div>
@@ -35,9 +34,8 @@
 </section>
 
 <section id="account" class="hidden">
-  <section class="hero-lockup account-hero">
-    <img src="/nexus-zero-header.webp" alt="NEXUS:ZERO" class="hero-logo">
-    <p class="hero-copy">奪え。守れ。生き残れ。</p>
+  <section class="hero-lockup account-hero integrated-lockup">
+    <img src="/nexus-zero-header-integrated.webp" alt="NEXUS:ZERO 奪え。守れ。生き残れ。" class="hero-logo integrated-header-logo">
   </section>
 
   <section class="system-panel arena-status-panel">
@@ -67,7 +65,7 @@
   </section>
 
   <div class="quick-nav" aria-label="クイックメニュー">
-    <button type="button" data-scroll="historyCard">HISTORY<span>履歴</span></button>
+    <button type="button" onclick="location.href='/history'">HISTORY<span>履歴</span></button>
     <button type="button" id="openQrBtn">MY QR<span>QR</span></button>
     <button type="button" onclick="location.href='/ranking'">RANKING<span>ランキング</span></button>
   </div>
@@ -89,14 +87,10 @@
     <div class="qr-wrap"><img id="qrImg" alt="参加者QR"><p class="micro-label">PLAYER ID</p><strong id="publicCode" class="customer-number"></strong></div>
   </section>
 
-  <div class="arena-lower-grid">
+  <div class="arena-lower-grid home-ranking-only">
     <section id="rankingCard" class="system-panel dashboard-list-card">
       <div class="panel-head arena-section-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>RANKING</h2></div><a class="status-light top100-link" href="/ranking">TOP 100</a></div>
       <div id="ranking"></div>
-    </section>
-    <section id="historyCard" class="system-panel dashboard-list-card">
-      <div class="panel-head arena-section-head"><div><div class="eyebrow">ACTIVITY LOG</div><h2>HISTORY</h2></div></div>
-      <div id="history"></div>
     </section>
   </div>
 
@@ -105,7 +99,7 @@
   <nav class="bottom-arena-nav" aria-label="ページ内ナビゲーション">
     <button type="button" data-scroll="account" class="active"><b>⌂</b><span>HOME</span><small>ホーム</small></button>
     <button type="button" onclick="location.href='/ranking'"><b>▥</b><span>RANKING</span><small>ランキング</small></button>
-    <button type="button" data-scroll="historyCard"><b>◷</b><span>HISTORY</span><small>履歴</small></button>
+    <button type="button" onclick="location.href='/history'"><b>◷</b><span>HISTORY</span><small>履歴</small></button>
   </nav>
 </section>
 
@@ -121,13 +115,26 @@ async function api(url,options={}){const headers={'Content-Type':'application/js
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}function fmt(s){if(!s)return '';const v=String(s);return new Date(v.includes('T')?v:v.replace(' ','T')+'Z').toLocaleString('ja-JP')}
 function historyLabel(h){if(h.action_type==='participant_transfer_out')return `譲渡 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='participant_transfer_in')return `獲得 ← ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_out')return `スタッフ移動 → ${esc(h.counterpart||'相手')}`;if(h.action_type==='transfer_in')return `スタッフ移動 ← ${esc(h.counterpart||'相手')}`;return '運営調整'}
 let gameOverShown=false;function showGameOver(){if(gameOverShown)return;gameOverShown=true;clearInterval(timer);$('#gameOverOverlay').classList.remove('hidden');let remain=5;$('#gameOverCount').textContent=remain;const countdown=setInterval(()=>{remain--;if(remain>=1)$('#gameOverCount').textContent=remain;else clearInterval(countdown)},1000);setTimeout(()=>location.reload(),5100)}
-async function getRanking(){const rows=await api('/api/ranking');const preview=rows.slice(0,5);const html=preview.length?preview.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}"><span class="rank-num">${i<3?['①','②','③'][i]:String(i+1)}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';$('#ranking').innerHTML=html;$('#publicRankingList').innerHTML=html;return rows}
-async function loadHistory(){try{const hist=await api('/api/my-history');$('#history').innerHTML=hist.length?hist.map(h=>`<div class="history-item"><div><div class="history-type">${historyLabel(h)}</div><strong class="delta ${h.delta>0?'plus':'minus'}">${h.delta>0?'+':''}${h.delta.toLocaleString()} pt</strong>${h.reason?`<div class="reason">${esc(h.reason)}</div>`:''}</div><div class="muted small">${fmt(h.created_at)}</div></div>`).join(''):'<p class="muted">まだ履歴はありません。</p>'}catch(e){$('#history').innerHTML=`<p class="error">履歴を取得できませんでした：${esc(e.message)}</p>`}}
+async function getRanking(me=null){
+  const rows=await api('/api/ranking');
+  const preview=rows.slice(0,5);
+  let html=preview.length?preview.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''} ${me&&u.public_code===me.public_code?'rank-self':''}"><span class="rank-num">${i<3?['①','②','③'][i]:String(i+1)}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';
+  if(me){
+    const selfIndex=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);
+    if(selfIndex>=5){
+      const u=rows[selfIndex];
+      html+=`<div class="rank-separator"><span>YOUR POSITION</span></div><div class="rank-item rank-self"><span class="rank-num">${selfIndex+1}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}<small>YOU</small></span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`;
+    }
+  }
+  $('#ranking').innerHTML=html;
+  $('#publicRankingList').innerHTML=preview.length?preview.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}"><span class="rank-num">${i<3?['①','②','③'][i]:String(i+1)}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';
+  return rows
+}
 let qrLoaded=false;async function loadQr(){if(qrLoaded)return;try{const qr=await api('/api/my-qr');$('#qrImg').src=qr.dataUrl;$('#publicCode').textContent=qr.code;qrLoaded=true}catch(e){}}
 function setRank(rows,me){const idx=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);$('#rankText').textContent=idx>=0?`#${idx+1}`:'OUT'}
 async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);qrLoaded=false;localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
-$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';$('#playerAvatar').src=avatarSrc(me.avatar_key);if(me.points===0){showGameOver();return}$('#sendAmount').max=me.points;$('#transferLimit').textContent=`譲渡可能：${me.points.toLocaleString()} pt`;const rank=await getRanking().catch(()=>[]);loadHistory();loadQr();setRank(rank,me);clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
-async function auth(mode){$('#authMsg').textContent='';try{const r=await api('/api/'+mode,{method:'POST',body:JSON.stringify({loginId:$('#loginId').value,password:$('#password').value,avatarKey:selectedAvatar})});$('#password').value='';if(r.authToken){authToken=r.authToken;localStorage.setItem('nexusParticipantToken',authToken)}if(r.user){clearInterval(timer);qrLoaded=false;$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=r.user.username;$('#customerCode').textContent=r.user.public_code;$('#points').textContent=r.user.points.toLocaleString()+' pt';$('#playerAvatar').src=avatarSrc(r.user.avatar_key);if(r.user.points===0){showGameOver();return}$('#sendAmount').max=r.user.points;$('#transferLimit').textContent=`譲渡可能：${r.user.points.toLocaleString()} pt`;const rank=await getRanking().catch(()=>[]);loadHistory();loadQr();setRank(rank,r.user);timer=setInterval(()=>loadMe(false),12000);return}await loadMe(true)}catch(e){$('#authMsg').textContent=e.message}}
+$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';$('#playerAvatar').src=avatarSrc(me.avatar_key);if(me.points===0){showGameOver();return}$('#sendAmount').max=me.points;$('#transferLimit').textContent=`譲渡可能：${me.points.toLocaleString()} pt`;const rank=await getRanking(me).catch(()=>[]);loadQr();setRank(rank,me);clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
+async function auth(mode){$('#authMsg').textContent='';try{const r=await api('/api/'+mode,{method:'POST',body:JSON.stringify({loginId:$('#loginId').value,password:$('#password').value,avatarKey:selectedAvatar})});$('#password').value='';if(r.authToken){authToken=r.authToken;localStorage.setItem('nexusParticipantToken',authToken)}if(r.user){clearInterval(timer);qrLoaded=false;$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');$('#name').textContent=r.user.username;$('#customerCode').textContent=r.user.public_code;$('#points').textContent=r.user.points.toLocaleString()+' pt';$('#playerAvatar').src=avatarSrc(r.user.avatar_key);if(r.user.points===0){showGameOver();return}$('#sendAmount').max=r.user.points;$('#transferLimit').textContent=`譲渡可能：${r.user.points.toLocaleString()} pt`;const rank=await getRanking(r.user).catch(()=>[]);loadQr();setRank(rank,r.user);timer=setInterval(()=>loadMe(false),12000);return}await loadMe(true)}catch(e){$('#authMsg').textContent=e.message}}
 $('#sendBtn').onclick=async()=>{const btn=$('#sendBtn');$('#sendMsg').textContent='';$('#sendMsg').className='';try{btn.disabled=true;const r=await api('/api/transfer',{method:'POST',body:JSON.stringify({toCode:$('#toCode').value,amount:Number($('#sendAmount').value),reason:$('#sendReason').value})});if(r.eliminated){showGameOver();return}$('#sendMsg').className='ok';$('#sendMsg').textContent=`${r.to} に ${r.amount.toLocaleString()}pt を渡しました。現在 ${r.points.toLocaleString()}pt`;$('#sendReason').value='';await loadMe()}catch(e){$('#sendMsg').className='error';$('#sendMsg').textContent=e.message}finally{btn.disabled=false}}
 $('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=()=>loadMe(true);$('#logoutBtn').onclick=async()=>{try{await api('/api/logout',{method:'POST'})}catch(e){}localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};
 function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}

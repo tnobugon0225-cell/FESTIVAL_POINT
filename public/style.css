@@ -158,3 +158,23 @@
   .arena-transfer{padding:15px 12px}
   .v52-player .arena-shell{padding-bottom:138px!important}
 }
+
+/* ===== NEXUS:ZERO v5.5 ===== */
+/* integrated hero artwork with subtitle embedded in image */
+.v52-player .integrated-lockup{padding:8px 0 18px;overflow:visible}
+.v52-player .integrated-header-logo{display:block;width:min(760px,94vw);height:auto;margin:0 auto;object-fit:contain;filter:drop-shadow(0 0 14px rgba(42,205,255,.20))}
+.home-ranking-only{grid-template-columns:1fr!important}
+.home-ranking-only .dashboard-list-card{width:100%}
+.rank-self{outline:1px solid rgba(151,92,255,.75);background:linear-gradient(90deg,rgba(30,177,255,.10),rgba(134,61,255,.12))!important;box-shadow:inset 0 0 22px rgba(92,89,255,.07)}
+.rank-separator{display:flex;align-items:center;gap:10px;padding:9px 4px;color:#65dfff;font-size:9px;letter-spacing:.18em}
+.rank-separator:before,.rank-separator:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,rgba(72,190,255,.35),transparent)}
+.history-shell{padding-top:22px;padding-bottom:112px}
+.history-hero h1{margin:8px 0 4px;font-size:clamp(28px,7vw,48px);letter-spacing:.08em}
+.history-full-panel{padding:14px 18px 22px}
+.history-page-item{padding:18px 8px;min-height:92px;border-bottom:1px solid rgba(70,166,226,.14)}
+.history-page-item .delta{font-size:26px}
+.history-page-item .reason{margin-top:7px;font-size:14px}
+@media(max-width:560px){
+  .v52-player .integrated-lockup{padding:6px 0 14px}
+  .v52-player .integrated-header-logo{width:96vw;max-width:none}
+}
