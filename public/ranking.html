@@ -11,7 +11,7 @@
 </head>
 <body class="player-page v52-player ranking-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
-<nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a class="active" href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a href="/admin">STAFF</a></div></nav>
+<nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/" data-nexus-nav="HOME">HOME</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a class="active" href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/history" data-nexus-nav="HISTORY">HISTORY</a></div></nav>
 <main class="app-shell arena-shell ranking-shell">
   <section class="ranking-hero system-panel">
     <div class="eyebrow">LIVE STANDINGS</div>
@@ -22,23 +22,44 @@
   <section class="system-panel top100-panel">
     <div id="fullRanking"><p class="muted">ランキングを読み込み中...</p></div>
   </section>
-  <nav class="bottom-arena-nav" aria-label="ページナビゲーション">
-    <button type="button" data-href="/" data-nexus-nav="HOME"><b>⌂</b><span>HOME</span><small>ホーム</small></button>
-    <button type="button" class="active"><b>▥</b><span>RANKING</span><small>ランキング</small></button>
-    <button type="button" data-href="/history" data-nexus-nav="HISTORY"><b>◷</b><span>HISTORY</span><small>履歴</small></button>
-  </nav>
 </main>
 <script>
 window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home'));
 const $=s=>document.querySelector(s);
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
+let rankingLoaded=false;
+function renderRanking(rows){
+  const root=$('#fullRanking');
+  const list=rows.slice(0,100);
+  if(!list.length){
+    if(!rankingLoaded||root.dataset.state!=='empty') root.innerHTML='<p class="muted">まだ参加者はいません。</p>';
+    root.dataset.state='empty';rankingLoaded=true;return;
+  }
+  root.dataset.state='rows';
+  list.forEach((u,i)=>{
+    let row=root.children[i];
+    if(!row||!row.classList.contains('rank-item')){
+      row=document.createElement('div');
+      row.innerHTML='<span class="rank-num"></span><img class="rank-avatar" alt=""><span class="rank-name"></span><strong><span class="rank-points"></span> <small>pt</small></strong>';
+      if(root.children[i])root.insertBefore(row,root.children[i]);else root.appendChild(row);
+    }
+    row.className=`rank-item full-rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}`;
+    const num=row.querySelector('.rank-num');if(num.textContent!==String(i+1))num.textContent=String(i+1);
+    const img=row.querySelector('.rank-avatar'),src=avatarSrc(u.avatar_key);if(img.getAttribute('src')!==src)img.src=src;
+    const name=row.querySelector('.rank-name'),nextName=String(u.username??'');if(name.textContent!==nextName)name.textContent=nextName;
+    const points=row.querySelector('.rank-points'),nextPoints=Number(u.points).toLocaleString();if(points.textContent!==nextPoints)points.textContent=nextPoints;
+  });
+  while(root.children.length>list.length)root.lastElementChild.remove();
+  rankingLoaded=true;
+}
 async function loadRanking(){
-  $('#fullRanking').innerHTML='<p class="muted">ランキングを読み込み中...</p>';
+  const root=$('#fullRanking');
+  if(!rankingLoaded)root.innerHTML='<p class="muted">ランキングを読み込み中...</p>';
   try{
     const r=await fetch('/api/ranking',{cache:'no-store'});const rows=await r.json();if(!r.ok)throw new Error(rows.error||'取得に失敗しました');
-    $('#fullRanking').innerHTML=rows.length?rows.slice(0,100).map((u,i)=>`<div class="rank-item full-rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}"><span class="rank-num">${i+1}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}</span><strong>${Number(u.points).toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';
-  }catch(e){$('#fullRanking').innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
+    renderRanking(rows);
+  }catch(e){if(!rankingLoaded)root.innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
 }
 $('#refreshRanking').onclick=loadRanking;loadRanking();setInterval(loadRanking,12000);
 </script>

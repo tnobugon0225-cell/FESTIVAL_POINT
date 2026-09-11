@@ -270,8 +270,8 @@ async function requireUser(req, res, next) {
 async function requireStaff(req, res, next) {
   try {
     if (!req.session.staffId) return res.status(403).json({ error: 'スタッフ権限が必要です' });
-    const s = await one('SELECT id,username,role,active FROM staff WHERE id=$1', [req.session.staffId]);
-    if (!s || !s.active) return res.status(403).json({ error: 'スタッフ権限が無効です' });
+    const s = await one('SELECT id,username,role FROM staff WHERE id=$1', [req.session.staffId]);
+    if (!s) return res.status(403).json({ error: 'スタッフ権限が必要です' });
     req.staff = { ...s, id: Number(s.id) }; next();
   } catch (e) { next(e); }
 }
@@ -732,13 +732,13 @@ app.post('/api/quick-matches/:id/janken-choice',requireUser,async(req,res,next)=
 app.post('/api/staff/login', loginGuard('staff'), async (req,res,next)=>{
   try{
     const username=cleanName(req.body.username), password=String(req.body.password||'');
-    const s=await one('SELECT * FROM staff WHERE LOWER(username)=LOWER($1) AND active=TRUE',[username]);
+    const s=await one('SELECT * FROM staff WHERE LOWER(username)=LOWER($1)',[username]);
     if(!s||!(await bcrypt.compare(password,s.password_hash))){failAttempt(req);return res.status(401).json({error:'スタッフIDまたはパスワードが違います'})}
     await regenerate(req);req.session.staffId=Number(s.id);await saveSession(req);clearAttempt(req);res.json({ok:true,username:s.username,role:s.role});
   }catch(e){next(e)}
 });
 app.post('/api/staff/logout',(req,res)=>req.session.destroy(()=>res.json({ok:true})));
-app.get('/api/staff/status',async(req,res,next)=>{try{if(!req.session.staffId)return res.json({loggedIn:false});const s=await one('SELECT id,username,role,active FROM staff WHERE id=$1',[req.session.staffId]);res.json({loggedIn:!!(s&&s.active),staff:s&&s.active?{...s,id:Number(s.id)}:null})}catch(e){next(e)}});
+app.get('/api/staff/status',async(req,res,next)=>{try{if(!req.session.staffId)return res.json({loggedIn:false});const s=await one('SELECT id,username,role FROM staff WHERE id=$1',[req.session.staffId]);res.json({loggedIn:!!s,staff:s?{...s,id:Number(s.id)}:null})}catch(e){next(e)}});
 
 app.get('/api/staff/users', requireStaff, async (req,res,next)=>{
   try{
@@ -820,10 +820,10 @@ app.post('/api/staff/transfer', requireStaff, async (req,res,next)=>{
 });
 
 app.delete('/api/staff/users/:id', requireAdmin, async (req,res,next)=>{try{const u=await deleteUserHard(Number(req.params.id));if(!u)return res.status(404).json({error:'参加者が見つかりません'});res.json({ok:true,username:u.username})}catch(e){next(e)}});
-app.get('/api/staff/history', requireStaff, async (req,res,next)=>{try{const r=await query(`SELECT h.id,u.username,h.delta,h.reason,h.action_type,COALESCE(c.username,h.counterpart_name) counterpart,s.username staff_name,h.created_at FROM point_history h JOIN users u ON u.id=h.user_id LEFT JOIN users c ON c.id=h.counterpart_user_id LEFT JOIN staff s ON s.id=h.staff_id ORDER BY h.id DESC LIMIT 150`);res.json(r.rows.map(x=>({...x,id:Number(x.id),delta:Number(x.delta)})))}catch(e){next(e)}});
-app.get('/api/staff/accounts', requireAdmin, async (req,res,next)=>{try{const r=await query('SELECT id,username,role,active,created_at FROM staff ORDER BY id');res.json(r.rows.map(x=>({...x,id:Number(x.id)})))}catch(e){next(e)}});
+app.get('/api/staff/history', requireStaff, async (req,res,next)=>{try{const all=String(req.query.all||'')==='1';const limit=all?150:3;const r=await query(`SELECT h.id,u.username,h.delta,h.reason,h.action_type,COALESCE(c.username,h.counterpart_name) counterpart,s.username staff_name,h.created_at FROM point_history h JOIN users u ON u.id=h.user_id LEFT JOIN users c ON c.id=h.counterpart_user_id LEFT JOIN staff s ON s.id=h.staff_id ORDER BY h.id DESC LIMIT ${limit}`);res.json(r.rows.map(x=>({...x,id:Number(x.id),delta:Number(x.delta)})))}catch(e){next(e)}});
+app.get('/api/staff/accounts', requireAdmin, async (req,res,next)=>{try{const r=await query('SELECT id,username,role,created_at FROM staff ORDER BY role,LOWER(username)');res.json(r.rows.map(x=>({...x,id:Number(x.id)})))}catch(e){next(e)}});
 app.post('/api/staff/accounts', requireAdmin, async (req,res,next)=>{const username=cleanName(req.body.username),password=String(req.body.password||''),role=req.body.role==='admin'?'admin':'staff';if(username.length<2||username.length>30)return res.status(400).json({error:'スタッフIDは2〜30文字で入力してください'});if(password.length<8||password.length>72)return res.status(400).json({error:'スタッフパスワードは8〜72文字で入力してください'});try{const hash=await bcrypt.hash(password,12),r=await query('INSERT INTO staff(username,password_hash,role) VALUES($1,$2,$3) RETURNING id',[username,hash,role]);res.json({ok:true,id:Number(r.rows[0].id)})}catch(e){if(e.code==='23505')return res.status(409).json({error:'そのスタッフIDは使用済みです'});next(e)}});
-app.post('/api/staff/accounts/:id/toggle', requireAdmin, async (req,res,next)=>{try{const id=Number(req.params.id);if(id===req.staff.id)return res.status(400).json({error:'自分自身は無効化できません'});const s=await one('SELECT id,active FROM staff WHERE id=$1',[id]);if(!s)return res.status(404).json({error:'スタッフが見つかりません'});await query('UPDATE staff SET active=$1 WHERE id=$2',[!s.active,id]);res.json({ok:true})}catch(e){next(e)}});
+app.delete('/api/staff/accounts/:id', requireAdmin, async (req,res,next)=>{try{const id=Number(req.params.id);if(id===req.staff.id)return res.status(400).json({error:'現在ログイン中の自分自身は削除できません'});const target=await one('SELECT id,username,role FROM staff WHERE id=$1',[id]);if(!target)return res.status(404).json({error:'アカウントが見つかりません'});if(target.role==='admin'){const count=await one("SELECT COUNT(*)::int AS count FROM staff WHERE role='admin'");if(Number(count.count)<=1)return res.status(400).json({error:'最後の管理者は削除できません'})}await query('DELETE FROM staff WHERE id=$1',[id]);res.json({ok:true,username:target.username,role:target.role})}catch(e){next(e)}});
 
 app.use(express.static(path.join(__dirname,'public')));
 app.get('/admin',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));

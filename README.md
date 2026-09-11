@@ -303,3 +303,15 @@ npm start
 - BGM is no longer routed into Web Audio while its AudioContext is suspended.
 - The BGM gain graph is created only after a real user gesture successfully resumes AudioContext; before that, normal HTMLAudio playback remains available.
 - MASTER/BGM sliders continue to control BGM through GainNode once audio is unlocked.
+
+## v5.42
+- Added HOME and HISTORY to the player top navigation and kept NEXUS module loading transitions for HOME / HISTORY / RANKING / RULE.
+- Removed the bottom HOME / RANKING / HISTORY navigation from the Ranking and History pages.
+- Reworked Ranking refresh to update rows in place instead of clearing/rebuilding the list every 12 seconds, reducing avatar/list flicker.
+
+## v5.43
+- 右上ナビを HOME / RULE / RANKING / HISTORY / SETTING に統一し、STAFF導線を削除。
+- 管理者/スタッフログインと管理コンソールをNEXUS:ZERO専用UIへ刷新。
+- 操作履歴は初期表示を最新3件にし、「すべて表示」で最大150件を展開。
+- 管理者は他のADMIN/STAFFアカウントを削除可能。有効化/無効化UIと切替APIを廃止。
+- 自分自身と最後の管理者は誤削除防止のため削除不可。

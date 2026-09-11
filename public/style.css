@@ -805,3 +805,25 @@
 @media(max-width:560px){.hb-answer-legend{gap:5px}.hb-answer-legend span{padding:3px 5px}.hb-mini-code.answer-mode{gap:2px}.hb-mini-code.answer-mode .hb-mini-key i{min-width:11px;height:11px;font-size:7px}}
 /* Legacy floating BGM ON/OFF control is retired in favor of SETTING. */
 .bgm-control{display:none!important}
+
+/* v5.42 top navigation + stable ranking */
+.ranking-shell,.history-shell{padding-bottom:28px}
+@media(max-width:560px){
+  .topbar{gap:6px;padding:11px 8px}
+  .brand-mini{font-size:9px;letter-spacing:.09em;gap:5px}
+  .nav-links{flex:1 1 auto;justify-content:flex-end;gap:5px;font-size:7px;letter-spacing:.055em}
+  .nav-links a{flex:0 0 auto}
+  .setting-nav-button{font-size:7px;letter-spacing:.045em}
+}
+@media(max-width:390px){
+  .brand-mini{font-size:8px;letter-spacing:.055em}
+  .brand-pulse{width:6px;height:6px}
+  .nav-links{gap:4px;font-size:6.5px;letter-spacing:.035em}
+  .setting-nav-button{font-size:6.5px;letter-spacing:.03em}
+}
+
+/* v5.43 ADMIN CORE */
+.admin-v543{background:#02060d}.admin-v543 .admin-shell{max-width:1180px}.admin-topbar{border-bottom-color:rgba(66,216,255,.34)}
+.admin-login-shell{min-height:calc(100svh - 72px);display:grid;place-items:center;padding:32px 0}.admin-login-mark{width:min(620px,100%);text-align:center;margin-bottom:18px}.admin-login-mark img{width:min(520px,92%);display:block;margin:auto;filter:drop-shadow(0 0 24px rgba(48,205,255,.22))}.admin-login-mark span{display:block;margin-top:4px;font:800 9px ui-monospace,monospace;letter-spacing:.28em;color:#68dfff}.admin-login-panel{position:relative;width:min(520px,100%);padding:28px;border:1px solid rgba(62,213,255,.34);background:linear-gradient(180deg,rgba(4,18,35,.96),rgba(1,8,18,.98));box-shadow:0 28px 80px rgba(0,0,0,.56),inset 0 0 40px rgba(37,189,255,.035);clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}.admin-login-panel:before,.admin-module:before{content:"";position:absolute;left:0;top:0;width:86px;height:2px;background:#48dcff;box-shadow:0 0 14px #48dcff}.admin-login-panel h1{margin:7px 0 3px;font-size:clamp(26px,7vw,42px);letter-spacing:.08em}.admin-login-panel>p{margin:0 0 24px;color:#7da8bc}.admin-kicker{font:900 9px ui-monospace,monospace;letter-spacing:.22em;color:#5fe2ff}.admin-enter{width:100%;margin-top:12px}
+.admin-core{padding-top:8px}.admin-command-header{position:relative;margin-bottom:14px;padding:21px 22px;border:1px solid rgba(75,217,255,.28);background:linear-gradient(90deg,rgba(2,18,34,.94),rgba(6,9,26,.94));display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}.admin-command-header h1{margin:5px 0 3px;font-size:clamp(23px,4vw,34px);letter-spacing:.08em}.admin-command-header p{margin:0;color:#8db3c5}.admin-action-msg{grid-column:1/-1;margin:0;min-height:1.2em}.admin-dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.admin-module{position:relative;overflow:hidden;margin:0;padding:22px;border:1px solid rgba(60,187,237,.22);background:linear-gradient(145deg,rgba(4,18,31,.96),rgba(2,8,18,.96));box-shadow:inset 0 0 30px rgba(49,199,255,.025);clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}.admin-module h2{margin:4px 0 17px;font-size:19px;letter-spacing:.05em}.module-no{position:absolute;right:15px;top:4px;font:900 44px ui-monospace,monospace;color:rgba(61,219,255,.06)}.admin-module-log,.admin-module-accounts{grid-column:1/-1}.admin-wide{width:100%}.module-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.module-title-row h2{margin-bottom:4px}.admin-search-results{margin-top:12px}.admin-player-card{border-color:rgba(65,208,255,.22);background:rgba(2,11,22,.75)}.admin-history-item{border-left:2px solid rgba(64,214,255,.28)}.operator-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.operator-chip{margin:0;min-height:70px;border-color:rgba(74,209,255,.18);background:rgba(4,15,27,.72)}.admin-v543 input,.admin-v543 select{background:rgba(1,8,17,.82);border-color:rgba(75,203,250,.26)}
+@media(max-width:720px){.admin-dashboard-grid{grid-template-columns:1fr}.admin-module-log,.admin-module-accounts{grid-column:auto}.admin-command-header{grid-template-columns:1fr}.admin-command-header .admin-actions{display:grid;grid-template-columns:1fr 1fr}.operator-list{grid-template-columns:1fr}.admin-login-shell{padding:18px 0}.admin-login-panel{padding:20px 16px}.admin-module{padding:18px 15px}.admin-topbar .console-title{font-size:8px;letter-spacing:.1em}}
