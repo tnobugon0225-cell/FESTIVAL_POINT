@@ -42,6 +42,23 @@
     try{await audio.play();blocked=false;}catch(e){blocked=true;}
     paint();
   }
+  async function prime(name='home'){
+    if(!enabled||!TRACKS[name])return;
+    try{
+      const next=TRACKS[name];
+      if(!audio.src.endsWith(next)){audio.src=next;audio.load();}
+      const wasMuted=audio.muted;
+      audio.muted=true;
+      const promise=audio.play();
+      if(promise&&typeof promise.then==='function')await promise;
+      audio.pause();
+      try{audio.currentTime=0}catch(e){}
+      audio.muted=wasMuted;
+      blocked=false;
+    }catch(e){
+      try{audio.pause();audio.muted=false}catch(_){}
+    }
+  }
   function setTrack(name){
     if(!TRACKS[name])return;
     ensureControl();
@@ -73,6 +90,6 @@
   window.addEventListener('pageshow',()=>{if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current)play();});
   window.addEventListener('focus',()=>{if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current&&audio.paused)play();});
   audio.addEventListener('ended',()=>{if(enabled){audio.currentTime=0;play();}});
-  window.NexusBGM={setTrack,clearTrack,toggle,play,get enabled(){return enabled},get current(){return current}};
+  window.NexusBGM={setTrack,clearTrack,toggle,play,prime,get enabled(){return enabled},get current(){return current}};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ensureControl);else ensureControl();
 })();

@@ -377,3 +377,26 @@
 
 .module-transition-percent{display:block;margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.18em;color:#6ceaff;text-shadow:0 0 10px rgba(60,221,255,.65)}
 .module-frame-overlay{position:fixed;inset:0;z-index:180;background:#02050b;overflow:hidden}.module-frame-overlay.hidden{display:none}.module-frame-overlay iframe{display:block;width:100%;height:100%;border:0;background:#02050b}
+
+/* ===== NEXUS:ZERO v5.23 login logo alignment ===== */
+#auth .integrated-lockup{
+  width:100%;
+  box-sizing:border-box;
+  margin:0 auto;
+  padding-left:0;
+  padding-right:0;
+  overflow:hidden;
+}
+#auth .integrated-header-logo{
+  display:block;
+  width:100%!important;
+  max-width:760px!important;
+  height:auto;
+  margin:0 auto!important;
+  object-fit:contain;
+  object-position:center center;
+  transform:none!important;
+}
+@media(max-width:560px){
+  #auth .integrated-header-logo{width:100%!important;max-width:100%!important;}
+}
