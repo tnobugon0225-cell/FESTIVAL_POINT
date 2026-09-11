@@ -7,6 +7,12 @@
     se:readVol('nexusSeVolume',.62)
   };
 
+  function syncFromStorage(){
+    state.master=readVol('nexusMasterVolume',1);
+    state.bgm=readVol('nexusBgmVolume',.42);
+    state.se=readVol('nexusSeVolume',.62);
+  }
+
   let settingsPanel=null,settingsButton=null;
   let ctx=null,bgmSource=null,bgmGain=null;
 
@@ -57,11 +63,23 @@
     setSe(v){state.se=clamp(v);persist();paintSettings()},
     snapshot(){return {...state}},
     effectiveBgm(){return clamp(state.master*state.bgm)},
-    effectiveSe(){return clamp(state.master*state.se)}
+    effectiveSe(){return clamp(state.master*state.se)},
+    sync(){syncFromStorage();applyVolume();paintSettings()},
+    open(){syncFromStorage();ensureSettings();unlock();settingsPanel?.classList.add('show');settingsButton?.classList.add('active');paintSettings()}
   };
 
   if(window.self!==window.top){
-    window.NexusBGM={setTrack(){},clearTrack(){},toggle(){},play(){},prime(){},get enabled(){return false},get current(){return ''}};
+    function ensureProxySettings(){
+      if(!document.body||document.querySelector('.setting-nav-button'))return;
+      const nav=document.querySelector('.topbar .nav-links');
+      if(!nav)return;
+      const btn=document.createElement('button');
+      btn.type='button';btn.className='setting-nav-button';btn.setAttribute('data-no-se','');btn.textContent='SETTING';
+      btn.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();window.parent?.postMessage({type:'nexus-open-settings'},location.origin)});
+      nav.appendChild(btn);
+    }
+    window.NexusBGM={setTrack(){},clearTrack(){},toggle(){},play(){},prime(){},unlock(){},sync(){},get enabled(){return false},get current(){return ''}};
+    const ready=()=>ensureProxySettings();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
     return;
   }
 
@@ -74,6 +92,7 @@
 
   async function play(){
     if(!enabled||!current)return;
+    syncFromStorage();
     try{applyVolume();await audio.play();blocked=false}catch(e){blocked=true}
   }
   async function prime(name='home'){
@@ -84,6 +103,7 @@
     }catch(e){try{audio.pause();audio.muted=false}catch(_){}}
   }
   function setTrack(name){
+    syncFromStorage();applyVolume();
     if(!TRACKS[name])return;
     if(current===name){if(audio.paused)play();return}
     current=name;const next=TRACKS[name];
@@ -95,9 +115,12 @@
   function toggle(){enabled=!enabled;if(enabled)play();else audio.pause()}
   async function unlock(){
     localStorage.setItem('nexusAudioUnlocked','1');
+    syncFromStorage();applyVolume();
     await unlockAudioGraph();
+    applyVolume();
     if(enabled&&current&&audio.paused)play();
   }
+  function sync(){syncFromStorage();applyVolume();paintSettings()}
 
   function pct(v){return Math.round(v*100)}
   function sliderRow(key,label){return `<label class="nexus-volume-row"><span><b>${label}</b><em id="${key}Value">0</em></span><input id="${key}Slider" type="range" min="0" max="100" step="1" value="0"></label>`}
@@ -121,11 +144,11 @@
   }
 
   document.addEventListener('pointerdown',unlock,{passive:true});document.addEventListener('keydown',unlock,{passive:true});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden&&enabled&&current)play()});
-  window.addEventListener('pageshow',()=>{if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current)play()});
-  window.addEventListener('focus',()=>{if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current&&audio.paused)play()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){sync();if(enabled&&current)play()}});
+  window.addEventListener('pageshow',()=>{sync();if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current)play()});
+  window.addEventListener('focus',()=>{sync();if(localStorage.getItem('nexusAudioUnlocked')==='1'&&enabled&&current&&audio.paused)play()});
   window.addEventListener('storage',e=>{if(['nexusMasterVolume','nexusBgmVolume','nexusSeVolume'].includes(e.key)){state.master=readVol('nexusMasterVolume',1);state.bgm=readVol('nexusBgmVolume',.42);state.se=readVol('nexusSeVolume',.62);applyVolume();paintSettings();window.dispatchEvent(new CustomEvent('nexus-audio-settings',{detail:{...state}}))}});
   audio.addEventListener('ended',()=>{if(enabled){audio.currentTime=0;play()}});
-  window.NexusBGM={setTrack,clearTrack,toggle,play,prime,get enabled(){return enabled},get current(){return current}};
+  window.NexusBGM={setTrack,clearTrack,toggle,play,prime,unlock,sync,get enabled(){return enabled},get current(){return current}};
   const ready=()=>ensureSettings();if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',ready);else ready();
 })();

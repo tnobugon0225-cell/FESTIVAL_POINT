@@ -87,7 +87,7 @@
 
   function showModule(url,label){
     const wrap=ensureModuleFrame();if(!wrap){location.href=url;return}
-    runTransition(label,()=>{if(new URL(url,location.href).pathname==='/'){wrap.classList.add('hidden');const frame=wrap.querySelector('#moduleFrame');frame.removeAttribute('src');history.pushState({nexusModule:'home'},'', '/');window.NexusBGM?.setTrack?.('home');return}const frame=wrap.querySelector('#moduleFrame');wrap.classList.remove('hidden');frame.src=url+(url.includes('?')?'&':'?')+'embed=1';history.pushState({nexusModule:label.toLowerCase()},'',new URL(url,location.href).pathname);window.NexusBGM?.setTrack?.('home')});
+    runTransition(label,()=>{if(new URL(url,location.href).pathname==='/'){wrap.classList.add('hidden');const frame=wrap.querySelector('#moduleFrame');frame.removeAttribute('src');history.pushState({nexusModule:'home'},'', '/');window.NexusAudioSettings?.sync?.();window.NexusBGM?.sync?.();window.NexusBGM?.setTrack?.('home');window.NexusBGM?.play?.();return}const frame=wrap.querySelector('#moduleFrame');wrap.classList.remove('hidden');frame.src=url+(url.includes('?')?'&':'?')+'embed=1';history.pushState({nexusModule:label.toLowerCase()},'',new URL(url,location.href).pathname);window.NexusBGM?.setTrack?.('home')});
   }
   function navigate(url,label='MODULE'){const account=document.getElementById('account');const canUseFrame=window.self===window.top && account && !account.classList.contains('hidden') && isModulePath(url);if(canUseFrame){showModule(url,label);return}runTransition(label,()=>{location.href=url})}
 
@@ -99,7 +99,11 @@
     if(nav){e.preventDefault();const url=nav.getAttribute('href')||nav.dataset.href||'/';const label=nav.dataset.nexusNav||labelFor(url);if(window.self!==window.top && window.parent){window.parent.postMessage({type:'nexus-module-nav',url,label},location.origin)}else navigate(url,label)}
   },true);
 
-  window.addEventListener('message',e=>{if(e.origin!==location.origin||!e.data||e.data.type!=='nexus-module-nav')return;showModule(e.data.url||'/',e.data.label||labelFor(e.data.url||'/'))});
+  window.addEventListener('message',e=>{
+    if(e.origin!==location.origin||!e.data)return;
+    if(e.data.type==='nexus-open-settings'){window.NexusAudioSettings?.open?.();return}
+    if(e.data.type==='nexus-module-nav'){showModule(e.data.url||'/',e.data.label||labelFor(e.data.url||'/'))}
+  });
   window.addEventListener('popstate',()=>{if(window.self!==window.top)return;const p=location.pathname;const wrap=document.getElementById('moduleFrameOverlay');if(!wrap)return;if(p==='/'){wrap.classList.add('hidden');return}if(p==='/ranking'||p==='/history'||p==='/rule'){const frame=wrap.querySelector('#moduleFrame');wrap.classList.remove('hidden');frame.src=p+'?embed=1'}});
 
   window.NexusUI={playClick,playAvatar,navigate};

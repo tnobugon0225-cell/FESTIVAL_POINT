@@ -315,3 +315,15 @@ npm start
 - 操作履歴は初期表示を最新3件にし、「すべて表示」で最大150件を展開。
 - 管理者は他のADMIN/STAFFアカウントを削除可能。有効化/無効化UIと切替APIを廃止。
 - 自分自身と最後の管理者は誤削除防止のため削除不可。
+
+
+## v5.44
+- RULE / RANKING / HISTORY の右上にも SETTING を表示し、埋め込み表示時はHOME側の音量設定パネルを開くように変更。
+- HOME復帰・ログイン・ページ復帰時に保存済み MASTER/BGM/SE 音量を再同期。SETTINGを開かないと音量が戻らない問題を修正。
+- ログイン操作の実ユーザー操作時にBGM AudioContextを明示的にアンロックし、HOME BGMの再生/音量反映を安定化。
+
+
+## v5.45
+- JANKEN BO5: removed numeric win counters from the score HUD.
+- Replaced them with three circular activation nodes per player; each round win lights one node.
+- Kept the round number centered while making the win state readable at a glance.
