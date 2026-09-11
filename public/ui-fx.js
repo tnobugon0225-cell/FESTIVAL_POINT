@@ -104,7 +104,7 @@
     const avatar=e.target.closest('.avatar-choice');
     if(avatar){playAvatar();return;}
     const action=e.target.closest('button,a');
-    if(action && !document.body.classList.contains('hitblow-page') && !action.classList.contains('bgm-control') && !action.hasAttribute('data-no-se')) playClick();
+    if(action && !document.body.classList.contains('hitblow-page') && !document.body.classList.contains('janken-page') && !action.classList.contains('bgm-control') && !action.hasAttribute('data-no-se')) playClick();
     const nav=e.target.closest('[data-nexus-nav]');
     if(nav){
       e.preventDefault();

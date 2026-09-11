@@ -648,6 +648,7 @@ function jankenWinner(a,b){
   return 2;
 }
 const JANKEN_ROUND_MS=15000;
+const JANKEN_RESULT_GAP_MS=6200; // next 15s selection window starts after the round result overlay closes
 const JANKEN_HANDS=['rock','paper','scissors'];
 function randomJanken(){return JANKEN_HANDS[Math.floor(Math.random()*JANKEN_HANDS.length)]}
 
@@ -681,7 +682,7 @@ async function resolveJankenRound(client,m){
     return m;
   }
 
-  m=(await client.query(`UPDATE quick_matches SET challenger_janken_wins=$1,opponent_janken_wins=$2,challenger_janken_choice=NULL,opponent_janken_choice=NULL,janken_round=janken_round+$3,janken_round_started_at=NOW() WHERE id=$4 RETURNING *`,[cw,ow,result==='draw'?0:1,m.id])).rows[0];
+  m=(await client.query(`UPDATE quick_matches SET challenger_janken_wins=$1,opponent_janken_wins=$2,challenger_janken_choice=NULL,opponent_janken_choice=NULL,janken_round=janken_round+$3,janken_round_started_at=NOW() + ($5 * INTERVAL '1 millisecond') WHERE id=$4 RETURNING *`,[cw,ow,result==='draw'?0:1,m.id,JANKEN_RESULT_GAP_MS])).rows[0];
   return m;
 }
 
@@ -714,6 +715,7 @@ app.post('/api/quick-matches/:id/janken-choice',requireUser,async(req,res,next)=
     const uid=Number(req.userId),isC=Number(m.challenger_id)===uid,isO=Number(m.opponent_id)===uid;
     if(!isC&&!isO){await client.query('ROLLBACK');return res.status(403).json({error:'このマッチに参加していません'})}
     const started=m.janken_round_started_at?new Date(m.janken_round_started_at).getTime():0;
+    if(started&&Date.now()<started){await client.query('ROLLBACK');return res.status(409).json({error:'次ラウンド準備中です'})}
     if(started&&Date.now()>=started+JANKEN_ROUND_MS){m=await resolveJankenRound(client,m);await client.query('COMMIT');return res.status(409).json({error:'このラウンドの選択時間は終了しました'})}
     const col=isC?'challenger_janken_choice':'opponent_janken_choice';
     m=(await client.query(`UPDATE quick_matches SET ${col}=$1 WHERE id=$2 RETURNING *`,[choice,id])).rows[0];

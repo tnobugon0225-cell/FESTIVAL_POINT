@@ -276,3 +276,8 @@ npm start
 - JANKEN BO5: 15-second selection window; hand can be changed any number of times until time expires.
 - Removed numeric 3-second reveal countdown. Added a short SIGNALS LOCKED transition instead.
 - Round result display made clearer and extended to about 4.2 seconds.
+
+
+## v5.36
+- JANKEN: next 15-second selection window now begins only after the previous result overlay has fully closed.
+- JANKEN/HIT&BLOW battle-selection click SE is disabled for now.
