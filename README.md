@@ -1,4 +1,4 @@
-NEXUS:ZERO v5.27
+NEXUS:ZERO v5.28
 
 - 12 avatars replaced with final individual artwork
 - QUICK BATTLE framework added
@@ -214,3 +214,9 @@ npm start
 - ACCESSING → VERIFYING → AUTHENTICATING → SYNCHRONIZING → LINK ESTABLISHED の順で遷移
 - 認証失敗時は ACCESS DENIED / CONNECTION FAILED を表示してログイン画面へ戻る
 - 既存の参加者機能、PostgreSQL、ランキング、履歴、アバター選択は維持
+
+
+## v5.28
+- QUICK BATTLE approval UI hides referee/system-referee information.
+- HIT & BLOW scan history is paged (4 records/page) inside a fixed-height viewport to avoid long page scrolling.
+- A large live 30-second countdown is shown for every turn. Timeout still advances the turn server-side.
