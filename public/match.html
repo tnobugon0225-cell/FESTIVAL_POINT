@@ -21,7 +21,7 @@
 </main>
 <script>
 window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('matching'));
-const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null,resultReturnMatchId=null,judging=false;
+const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null,resultReturnMatchId=null,judging=false,introRunning=false;
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const x=new Error('ネットワーク通信に失敗しました');x.status=0;throw x}const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
@@ -32,6 +32,7 @@ function resultRemaining(completedAt){const ts=new Date(completedAt).getTime();c
 function startResultReturn(matchId,completedAt){if(resultReturnMatchId===matchId&&resultCountdownTimer)return;clearInterval(resultCountdownTimer);clearTimeout(resultReturnTimer);resultReturnMatchId=matchId;const ts=new Date(completedAt).getTime();const end=(Number.isFinite(ts)?ts:Date.now())+10000;const tick=()=>{const remain=Math.max(0,Math.ceil((end-Date.now())/1000));const el=document.querySelector('#resultCountdown');if(el&&el.textContent!==String(remain))el.textContent=remain;if(remain<=0){clearInterval(resultCountdownTimer);resultCountdownTimer=null;location.href='/';}};tick();resultCountdownTimer=setInterval(tick,250);resultReturnTimer=setTimeout(()=>location.href='/',Math.max(0,end-Date.now()+100))}
 function setState(cls,kicker,title,subtitle,badge){const s=$('#matchScreen');s.className='match-screen '+cls;$('#stateKicker').textContent=kicker;$('#stateTitle').textContent=title;$('#stateSubtitle').textContent=subtitle;$('#stateBadge').textContent=badge}
 function approval(label,ok){return `<span class="approval-chip ${ok?'approved':'waiting'}">${label} ${ok?'✓':'…'}</span>`}
+function showBattleIntro(m,onDone){if(introRunning)return;const key=`nexusIntro:custom:${m.id}`;if(sessionStorage.getItem(key)==='1'){onDone();return}sessionStorage.setItem(key,'1');introRunning=true;const o=document.createElement('div');o.className='prebattle-intro';o.innerHTML=`<div class="prebattle-player prebattle-a"><img src="${avatarSrc(m.challenger.avatarKey)}"><strong>${esc(m.challenger.name)}</strong></div><div class="prebattle-vs">VS</div><div class="prebattle-player prebattle-b"><img src="${avatarSrc(m.opponent.avatarKey)}"><strong>${esc(m.opponent.name)}</strong></div>`;document.body.appendChild(o);setTimeout(()=>o.classList.add('show'),30);setTimeout(()=>{o.classList.remove('show');setTimeout(()=>{o.remove();introRunning=false;onDone()},330)},3000)}
 async function load(){
  try{
    const me=await api('/api/me');const r=await api('/api/matches/me');const m=r.match;
@@ -50,7 +51,7 @@ async function load(){
    }else if(m.status==='matched'){
      window.NexusBGM?.setTrack('matching');
      setState('state-matched','MATCHING COMPLETE','LINK ESTABLISHED','対戦リンクを確立しました','MATCHED');$('#battleControls').innerHTML='<div class="link-pulse-text">BATTLE SYSTEM STARTING...</div>';
-     if(!startTimer)startTimer=setTimeout(()=>start(m.id),1800);
+     if(!startTimer&&!introRunning){startTimer=setTimeout(()=>{startTimer=null;showBattleIntro(m,()=>start(m.id))},120);}
    }else if(m.status==='in_progress'){
      window.NexusBGM?.setTrack('battle');
      setState('state-battle','BATTLE LIVE','BATTLE IN PROGRESS','勝敗が確定するまで対戦を続行してください','LIVE');
@@ -75,6 +76,6 @@ async function load(){
 async function approve(id){$('#battleMsg').textContent='承認処理中...';try{await api(`/api/matches/${id}/approve`,{method:'POST'});$('#battleMsg').className='match-action-msg ok';$('#battleMsg').textContent='承認しました';await load()}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=`承認できませんでした：${e.message}`}}
 async function rejectMatch(id){if(!confirm('この対戦申請を拒否／取消しますか？'))return;try{await api(`/api/matches/${id}/reject`,{method:'POST'});location.href='/'}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
 async function start(id){startTimer=null;try{await api(`/api/matches/${id}/start`,{method:'POST'});await load()}catch(e){}}
-async function judge(id,winnerId,nameEncoded){if(judging)return;const name=decodeURIComponent(nameEncoded);if(!confirm(`${name} の勝利で確定しますか？`))return;judging=true;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=true);$('#battleMsg').className='match-action-msg';$('#battleMsg').textContent='勝敗を確定しています...';try{await api(`/api/matches/${id}/result`,{method:'POST',body:JSON.stringify({winnerId})});clearInterval(timer);await load()}catch(e){judging=false;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=false);$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
+async function judge(id,winnerId,nameEncoded){if(judging)return;const name=decodeURIComponent(nameEncoded);if(!confirm(`${name} の勝利で確定しますか？`))return;judging=true;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=true);$('#battleMsg').className='match-action-msg';$('#battleMsg').textContent='勝敗を確定しています...';try{await api(`/api/matches/${id}/result`,{method:'POST',body:JSON.stringify({winnerId})});clearInterval(timer);await load()}catch(e){judging=false,introRunning=false;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=false);$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
 $('#backHome').onclick=()=>location.href='/';load();timer=setInterval(load,2000);
 </script></body></html>

@@ -1,4 +1,4 @@
-NEXUS:ZERO v5.26
+NEXUS:ZERO v5.27
 
 - 12 avatars replaced with final individual artwork
 - QUICK BATTLE framework added
