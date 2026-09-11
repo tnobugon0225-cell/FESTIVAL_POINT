@@ -278,6 +278,6 @@ npm start
 - Round result display made clearer and extended to about 4.2 seconds.
 
 
-## v5.36
+## v5.37
 - JANKEN: next 15-second selection window now begins only after the previous result overlay has fully closed.
 - JANKEN/HIT&BLOW battle-selection click SE is disabled for now.
