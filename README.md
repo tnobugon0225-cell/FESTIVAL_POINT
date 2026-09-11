@@ -1,4 +1,4 @@
-NEXUS:ZERO v5.28
+NEXUS:ZERO v5.29
 
 - 12 avatars replaced with final individual artwork
 - QUICK BATTLE framework added
@@ -216,7 +216,13 @@ npm start
 - 既存の参加者機能、PostgreSQL、ランキング、履歴、アバター選択は維持
 
 
-## v5.28
+## v5.29
 - QUICK BATTLE approval UI hides referee/system-referee information.
 - HIT & BLOW scan history is paged (4 records/page) inside a fixed-height viewport to avoid long page scrolling.
 - A large live 30-second countdown is shown for every turn. Timeout still advances the turn server-side.
+
+
+## v5.29
+- HIT & BLOW の30秒タイマーを固定基準時刻で進め、ポーリングで秒数が戻らないよう修正。
+- PASSKEY選択UIを縮小し、スマホで対戦画面全体を見渡しやすく調整。
+- 履歴は最新3件のみを常時表示し、数字チップ形式で視認性を向上。全履歴は専用オーバーレイで確認可能。
