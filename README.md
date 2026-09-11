@@ -270,3 +270,9 @@ npm start
 - HIT & BLOW の30秒タイマーを固定基準時刻で進め、ポーリングで秒数が戻らないよう修正。
 - PASSKEY選択UIを縮小し、スマホで対戦画面全体を見渡しやすく調整。
 - 履歴は最新3件のみを常時表示し、数字チップ形式で視認性を向上。全履歴は専用オーバーレイで確認可能。
+
+
+## v5.35
+- JANKEN BO5: 15-second selection window; hand can be changed any number of times until time expires.
+- Removed numeric 3-second reveal countdown. Added a short SIGNALS LOCKED transition instead.
+- Round result display made clearer and extended to about 4.2 seconds.

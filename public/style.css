@@ -714,3 +714,20 @@
   .jk-reveal-hands.image-mode{gap:7px}
   .jk-reveal-hands.image-mode>div img{width:min(32vw,140px)}
 }
+/* v5.35 JANKEN round reveal: calm lock animation + clearer result */
+.jk-lock-title{margin:18px 0 14px;font-size:clamp(28px,8vw,50px);font-weight:1000;letter-spacing:.12em;color:#dffaff;text-shadow:0 0 18px rgba(80,222,255,.5)}
+.jk-lock-line{position:relative;height:3px;max-width:360px;margin:18px auto 10px;background:rgba(78,215,255,.12);overflow:hidden}
+.jk-lock-line i{position:absolute;inset:0 auto 0 0;width:36%;background:linear-gradient(90deg,transparent,#6cf3ff 55%,#c58cff);box-shadow:0 0 14px rgba(90,225,255,.65);animation:jkLockSweep 1.1s ease-in-out infinite!important}
+@keyframes jkLockSweep{0%{transform:translateX(-110%)}100%{transform:translateX(300%)}}
+.jk-round-result{border-width:2px}
+.jk-round-result.win{border-color:rgba(85,255,208,.65);box-shadow:0 0 34px rgba(52,255,191,.11),inset 0 0 30px rgba(52,255,191,.05)}
+.jk-round-result.lose{border-color:rgba(255,91,126,.62);box-shadow:0 0 34px rgba(255,64,105,.10),inset 0 0 30px rgba(255,64,105,.05)}
+.jk-round-result.draw{border-color:rgba(177,125,255,.58);box-shadow:0 0 34px rgba(158,106,255,.10),inset 0 0 30px rgba(158,106,255,.05)}
+.jk-result-banner{margin:14px auto 8px;padding:10px 14px;width:min(92%,420px);font-size:clamp(30px,8vw,48px);font-weight:1000;letter-spacing:.08em;border-top:1px solid currentColor;border-bottom:1px solid currentColor}
+.jk-round-result.win .jk-result-banner{color:#72ffd7;text-shadow:0 0 18px rgba(76,255,201,.55)}
+.jk-round-result.lose .jk-result-banner{color:#ff708b;text-shadow:0 0 18px rgba(255,69,108,.5)}
+.jk-round-result.draw .jk-result-banner{color:#bd91ff;text-shadow:0 0 18px rgba(172,119,255,.5)}
+.jk-locking .jk-reveal-core{min-height:250px;display:flex;flex-direction:column;justify-content:center}
+/* Keep only the lock sweep animation; hand images and player icons stay static. */
+.jk-reveal-overlay.jk-locking *{animation:none!important}
+.jk-reveal-overlay.jk-locking .jk-lock-line i{animation:jkLockSweep 1.1s ease-in-out infinite!important}
