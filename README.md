@@ -1,3 +1,12 @@
+NEXUS:ZERO v5.30
+
+- CODE BREAK専用対戦レイアウトへ刷新
+- プレイヤーアイコン＋名前 / VS / 相手アイコン＋名前を横一列に整理
+- MY CODE・ターン・30秒タイマー・リアルタイム入力を上部へ集約
+- PASSKEY選択を小型化して操作領域を圧縮
+- 最新履歴をサイド/下部の小型ドックに固定しスクロール量を削減
+- v5.29のリアルタイム共有・30秒制限・全履歴モーダル等は維持
+
 NEXUS:ZERO v5.29
 
 - 12 avatars replaced with final individual artwork
