@@ -297,3 +297,9 @@ npm start
 - HIT & BLOW 30-second HOME return timer now starts after the successful 4-HIT cut-in has fully closed.
 - SOUND SETTING now uses Web Audio GainNode volume control for reliable MASTER/BGM/SE adjustment on iPhone/Safari.
 - Removed the legacy floating BGM ON/OFF control; sound control is consolidated into SETTING.
+
+## v5.41
+- Fixed BGM silence on iPhone/Safari after the v5.40 volume-control change.
+- BGM is no longer routed into Web Audio while its AudioContext is suspended.
+- The BGM gain graph is created only after a real user gesture successfully resumes AudioContext; before that, normal HTMLAudio playback remains available.
+- MASTER/BGM sliders continue to control BGM through GainNode once audio is unlocked.

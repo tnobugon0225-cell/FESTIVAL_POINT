@@ -10,20 +10,28 @@
   let settingsPanel=null,settingsButton=null;
   let ctx=null,bgmSource=null,bgmGain=null;
 
-  function ensureAudioGraph(audio){
+  // iPhone/Safari note:
+  // A MediaElementSource routed into a suspended AudioContext becomes silent.
+  // Therefore the Web Audio graph is created ONLY from a real user gesture,
+  // after the context has successfully entered the running state. Until then
+  // the HTMLAudioElement plays normally so BGM is never swallowed by a
+  // suspended graph.
+  async function unlockAudioGraph(){
     try{
-      if(!ctx){
-        const Ctx=window.AudioContext||window.webkitAudioContext;
-        if(Ctx)ctx=new Ctx();
-      }
-      if(ctx&&!bgmSource){
+      const Ctx=window.AudioContext||window.webkitAudioContext;
+      if(!Ctx)return false;
+      if(!ctx)ctx=new Ctx();
+      if(ctx.state==='suspended')await ctx.resume();
+      if(ctx.state!=='running')return false;
+      if(!bgmSource){
         bgmSource=ctx.createMediaElementSource(audio);
         bgmGain=ctx.createGain();
         bgmSource.connect(bgmGain).connect(ctx.destination);
       }
-    }catch(e){}
+      applyVolume();
+      return true;
+    }catch(e){return false}
   }
-  function resumeAudioGraph(){try{if(ctx&&ctx.state==='suspended')ctx.resume().catch(()=>{})}catch(e){}}
 
   function applyVolume(){
     const effective=clamp(state.master*state.bgm);
@@ -60,25 +68,23 @@
   const TRACKS={home:'/bgm/shinsou-douchou.mp3',matching:'/bgm/memory-sphere.mp3',battle:'/bgm/reconnection.mp3',victory:'/bgm/theseus-no-fune.mp3'};
   const audio=new Audio();
   audio.loop=true;audio.preload='auto';
-  ensureAudioGraph(audio);
+  audio.setAttribute('playsinline','');
   let current='',blocked=false,enabled=true;
   applyVolume();
 
   async function play(){
     if(!enabled||!current)return;
-    try{ensureAudioGraph(audio);resumeAudioGraph();applyVolume();await audio.play();blocked=false}catch(e){blocked=true}
+    try{applyVolume();await audio.play();blocked=false}catch(e){blocked=true}
   }
   async function prime(name='home'){
     if(!enabled||!TRACKS[name])return;
     try{
-      ensureAudioGraph(audio);resumeAudioGraph();
       const next=TRACKS[name];if(!audio.src.endsWith(next)){audio.src=next;audio.load()}
       const wasMuted=audio.muted;audio.muted=true;const p=audio.play();if(p&&typeof p.then==='function')await p;audio.pause();try{audio.currentTime=0}catch(e){}audio.muted=wasMuted;blocked=false
     }catch(e){try{audio.pause();audio.muted=false}catch(_){}}
   }
   function setTrack(name){
     if(!TRACKS[name])return;
-    ensureAudioGraph(audio);resumeAudioGraph();
     if(current===name){if(audio.paused)play();return}
     current=name;const next=TRACKS[name];
     if(audio.src.endsWith(next)){play();return}
@@ -87,7 +93,11 @@
   function clearTrack(){audio.pause();audio.removeAttribute('src');audio.load();current='';blocked=false}
   // Kept for compatibility with older calls. The old floating ON/OFF bar is intentionally removed.
   function toggle(){enabled=!enabled;if(enabled)play();else audio.pause()}
-  function unlock(){localStorage.setItem('nexusAudioUnlocked','1');ensureAudioGraph(audio);resumeAudioGraph();if(enabled&&current&&audio.paused)play()}
+  async function unlock(){
+    localStorage.setItem('nexusAudioUnlocked','1');
+    await unlockAudioGraph();
+    if(enabled&&current&&audio.paused)play();
+  }
 
   function pct(v){return Math.round(v*100)}
   function sliderRow(key,label){return `<label class="nexus-volume-row"><span><b>${label}</b><em id="${key}Value">0</em></span><input id="${key}Slider" type="range" min="0" max="100" step="1" value="0"></label>`}
