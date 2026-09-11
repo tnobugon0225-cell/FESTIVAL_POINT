@@ -1,3 +1,12 @@
+NEXUS:ZERO v5.33
+
+- HIT & BLOWのコンパクト対戦ヘッダー用にDEFEATEDスラッシュとラベルを専用サイズ化
+- QUICK BATTLEへ JANKEN BO5 を追加
+- じゃんけんは3本先取・同時選択・あいこノーカウント
+- 両者が選択するまで手は非公開、揃ったらREVEAL演出
+- システムが勝敗とポイント移動を自動判定
+- 対戦前3秒VSイントロ、勝敗後10秒でHOME復帰
+
 NEXUS:ZERO v5.32
 
 - HIT & BLOWのPASSKEY選択画像を拡大

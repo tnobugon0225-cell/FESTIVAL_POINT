@@ -10,7 +10,7 @@ function esc(s){const d=document.createElement('div');d.textContent=s??'';return
 function avatarSrc(k){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(k||''))?k:'avatar-01'}.webp`}
 function keySrc(n){return `/passkeys/key-${n}.webp`}
 for(let n=0;n<10;n++){const i=new Image();i.src=keySrc(n)}
-function person(p,label,extra=''){return `<div class="battle-person ${extra}"><div class="battle-avatar-wrap"><img class="battle-person-avatar" src="${avatarSrc(p.avatarKey)}" alt=""></div><span>${label}</span><strong>${esc(p.name)}</strong></div>`}
+function person(p,label,extra=''){const result=extra==='result-winner'?'<div class="hb-result-mark hb-victor-mark">VICTOR</div>':extra==='result-loser'?'<div class="hb-result-mark hb-defeat-mark">DEFEATED</div><i class="hb-defeat-slash"></i>':'';return `<div class="battle-person ${extra}"><div class="battle-avatar-wrap"><img class="battle-person-avatar" src="${avatarSrc(p.avatarKey)}" alt="">${result}</div><span>${label}</span><strong>${esc(p.name)}</strong></div>`}
 function keyCard(n,cls=''){return `<div class="sequence-key ${cls}"><img src="${keySrc(n)}" alt="PASSKEY ${n}"><b>${n}</b></div>`}
 function secretSequence(code){return `<div class="key-sequence my-code-seq">${String(code||'').split('').map(n=>keyCard(n)).join('')}</div>`}
 function selectedSequence(values=selected,extra=''){return `<div class="key-sequence selected-slots ${extra}">${[0,1,2,3].map((_,i)=>values[i]!==undefined&&values[i]!==''?keyCard(values[i]):'<div class="sequence-key empty"><span>?</span></div>').join('')}</div>`}

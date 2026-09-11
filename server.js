@@ -155,10 +155,27 @@ async function initDb() {
       CHECK(status IN ('pending','matched','in_progress','completed','rejected','cancelled'));
   `);
 
-  // v5.27 HIT & BLOW realtime selection + authoritative 30 second turns.
+  // QUICK BATTLE state columns.
   await query(`
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS live_selection VARCHAR(4) NOT NULL DEFAULT '';
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS turn_started_at TIMESTAMPTZ;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS challenger_janken_choice VARCHAR(10);
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS opponent_janken_choice VARCHAR(10);
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS challenger_janken_wins INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS opponent_janken_wins INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS janken_round INTEGER NOT NULL DEFAULT 1;
+
+    CREATE TABLE IF NOT EXISTS janken_rounds (
+      id BIGSERIAL PRIMARY KEY,
+      match_id BIGINT NOT NULL REFERENCES quick_matches(id) ON DELETE CASCADE,
+      round_no INTEGER NOT NULL,
+      challenger_choice VARCHAR(10) NOT NULL,
+      opponent_choice VARCHAR(10) NOT NULL,
+      winner_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      result VARCHAR(10) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_janken_rounds_match ON janken_rounds(match_id,id);
   `);
 
   const existingAdmin = await one('SELECT id FROM staff LIMIT 1');
@@ -534,6 +551,10 @@ function publicQuickMatch(row,viewerId){
     turnStartedAt:row.turn_started_at||null,
     turnDeadlineAt:row.turn_started_at?new Date(new Date(row.turn_started_at).getTime()+30000).toISOString():null,
     initialHint:(viewer===secondId&&row.initial_hint_key)?row.initial_hint_key:null,
+    jankenRound:Number(row.janken_round||1),
+    challengerJankenWins:Number(row.challenger_janken_wins||0),opponentJankenWins:Number(row.opponent_janken_wins||0),
+    myJankenChoice:role==='challenger'?(row.challenger_janken_choice||null):role==='opponent'?(row.opponent_janken_choice||null):null,
+    rivalJankenLocked:role==='challenger'?!!row.opponent_janken_choice:role==='opponent'?!!row.challenger_janken_choice:false,
     winnerUserId:row.winner_user_id?Number(row.winner_user_id):null,winnerName:row.winner_name||null,
     createdAt:row.created_at,matchedAt:row.matched_at,startedAt:row.started_at,completedAt:row.completed_at
   };
@@ -543,7 +564,7 @@ const quickSelect=`SELECT q.*, cu.avatar_key AS challenger_avatar, ou.avatar_key
 
 app.post('/api/quick-matches',requireUser,async(req,res,next)=>{
   const opponentCode=String(req.body.opponentCode||'').trim();const wager=Number(req.body.wager);const gameType=String(req.body.gameType||'hitblow');
-  if(gameType!=='hitblow')return res.status(400).json({error:'現在利用できるQUICK BATTLEは HIT & BLOW です'});
+  if(!['hitblow','janken'].includes(gameType))return res.status(400).json({error:'このQUICK BATTLEは現在利用できません'});
   if(!/^\d{4}$/.test(opponentCode))return res.status(400).json({error:'対戦相手のIDを4桁で入力してください'});
   if(!Number.isInteger(wager)||wager<10||wager%10!==0)return res.status(400).json({error:'対戦ポイントは10pt刻み（10、20、30…）で入力してください'});
   const client=await pool.connect();
@@ -568,7 +589,23 @@ app.get('/api/quick-matches/me',requireUser,async(req,res,next)=>{try{
   res.json({match:publicQuickMatch(r.rows[0]||null,req.userId)});
 }catch(e){next(e)}});
 
-app.post('/api/quick-matches/:id/approve',requireUser,async(req,res,next)=>{const id=Number(req.params.id);const client=await pool.connect();try{await client.query('BEGIN');let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}if(Number(m.opponent_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(403).json({error:'対戦相手だけが承認できます'})}if(m.status!=='pending'){await client.query('COMMIT');return res.json({ok:true,match:publicQuickMatch(m,req.userId)})}const first=Math.random()<0.5?Number(m.challenger_id):Number(m.opponent_id);m=(await client.query(`UPDATE quick_matches SET opponent_approved=TRUE,status='setup',first_player_id=$1,matched_at=NOW() WHERE id=$2 RETURNING *`,[first,id])).rows[0];await client.query('COMMIT');res.json({ok:true,match:publicQuickMatch(m,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
+app.post('/api/quick-matches/:id/approve',requireUser,async(req,res,next)=>{
+  const id=Number(req.params.id);const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}
+    if(Number(m.opponent_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(403).json({error:'対戦相手だけが承認できます'})}
+    if(m.status!=='pending'){await client.query('COMMIT');return res.json({ok:true,match:publicQuickMatch(m,req.userId)})}
+    if(m.game_type==='janken'){
+      m=(await client.query(`UPDATE quick_matches SET opponent_approved=TRUE,status='in_progress',matched_at=NOW(),started_at=NOW(),janken_round=1,challenger_janken_choice=NULL,opponent_janken_choice=NULL WHERE id=$1 RETURNING *`,[id])).rows[0];
+    }else{
+      const first=Math.random()<0.5?Number(m.challenger_id):Number(m.opponent_id);
+      m=(await client.query(`UPDATE quick_matches SET opponent_approved=TRUE,status='setup',first_player_id=$1,matched_at=NOW() WHERE id=$2 RETURNING *`,[first,id])).rows[0];
+    }
+    await client.query('COMMIT');res.json({ok:true,match:publicQuickMatch(m,req.userId)});
+  }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
+});
 
 app.post('/api/quick-matches/:id/reject',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const m=await one('SELECT * FROM quick_matches WHERE id=$1',[id]);if(!m)return res.status(404).json({error:'マッチが見つかりません'});if(![Number(m.challenger_id),Number(m.opponent_id)].includes(Number(req.userId)))return res.status(403).json({error:'このマッチを拒否できません'});if(m.status!=='pending')return res.status(409).json({error:'この申請はすでに開始されています'});await query("UPDATE quick_matches SET status='rejected' WHERE id=$1",[id]);res.json({ok:true});}catch(e){next(e)}});
 
@@ -601,6 +638,68 @@ app.post('/api/quick-matches/:id/selection',requireUser,async(req,res,next)=>{
 });
 
 app.post('/api/quick-matches/:id/guess',requireUser,async(req,res,next)=>{const id=Number(req.params.id);const code=Array.isArray(req.body.keys)?req.body.keys.map(String).join(''):String(req.body.code||'');if(!validKeyCode(code))return res.status(400).json({error:'重複なしで4つのPASSKEYを選択してください'});const client=await pool.connect();try{await client.query('BEGIN');let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}if(m.status!=='in_progress'){await client.query('ROLLBACK');return res.status(409).json({error:'対戦は進行中ではありません'})}if(Number(m.turn_player_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(409).json({error:'現在は相手のターンです'})}if(m.turn_started_at&&new Date(m.turn_started_at).getTime()<=Date.now()-30000){const next=Number(m.turn_player_id)===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);await client.query(`UPDATE quick_matches SET turn_player_id=$1,turn_no=turn_no+1,turn_started_at=NOW(),live_selection='' WHERE id=$2`,[next,id]);await client.query('COMMIT');return res.status(409).json({error:'TIME OUT：相手のターンへ移行しました'})}const isChallenger=Number(m.challenger_id)===Number(req.userId);if(!isChallenger&&Number(m.opponent_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(403).json({error:'このマッチに参加していません'})}const targetSecret=isChallenger?m.opponent_secret:m.challenger_secret;const playerName=isChallenger?m.challenger_name:m.opponent_name;const score=hbScore(targetSecret,code);await client.query(`INSERT INTO hit_blow_guesses(match_id,player_id,player_name,turn_no,guess,hits,blows) VALUES($1,$2,$3,$4,$5,$6,$7)`,[id,req.userId,playerName,m.turn_no,code,score.hits,score.blows]);if(score.hits===4){const winnerId=Number(req.userId),loserId=isChallenger?Number(m.opponent_id):Number(m.challenger_id);const winner=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[winnerId])).rows[0];const loser=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[loserId])).rows[0];const wager=Number(m.wager);if(!winner||!loser||Number(loser.points)<wager){await client.query('ROLLBACK');return res.status(409).json({error:'ポイント状態が変化したため勝敗を確定できません。運営に確認してください'})}const winnerPoints=Number(winner.points)+wager,loserPoints=Number(loser.points)-wager;await client.query('UPDATE users SET points=$1 WHERE id=$2',[winnerPoints,winnerId]);await client.query('UPDATE users SET points=$1 WHERE id=$2',[loserPoints,loserId]);await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`QUICK HIT&BLOW #${id} 勝利`,'match_win',loserId,loser.username]);await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK HIT&BLOW #${id} 敗北`,'match_loss',winnerId,winner.username]);m=(await client.query(`UPDATE quick_matches SET status='completed',winner_user_id=$1,winner_name=$2,completed_at=NOW(),live_selection='' WHERE id=$3 RETURNING *`,[winnerId,winner.username,id])).rows[0];await client.query('COMMIT');if(loserPoints===0)scheduleElimination(loserId);return res.json({ok:true,result:score,completed:true,match:publicQuickMatch(m,req.userId)});}const next=isChallenger?Number(m.opponent_id):Number(m.challenger_id);m=(await client.query(`UPDATE quick_matches SET turn_player_id=$1,turn_no=turn_no+1,turn_started_at=NOW(),live_selection='' WHERE id=$2 RETURNING *`,[next,id])).rows[0];await client.query('COMMIT');res.json({ok:true,result:score,completed:false,match:publicQuickMatch(m,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
+
+function jankenWinner(a,b){
+  if(a===b)return 0;
+  if((a==='rock'&&b==='scissors')||(a==='scissors'&&b==='paper')||(a==='paper'&&b==='rock'))return 1;
+  return 2;
+}
+
+app.get('/api/quick-matches/:id/janken-state',requireUser,async(req,res,next)=>{
+  const id=Number(req.params.id);
+  try{
+    const r=await query(`${quickSelect} WHERE q.id=$1 AND (q.challenger_id=$2 OR q.opponent_id=$2)`,[id,req.userId]);
+    if(!r.rows[0])return res.status(404).json({error:'マッチが見つかりません'});
+    if(r.rows[0].game_type!=='janken')return res.status(400).json({error:'このマッチはJANKENではありません'});
+    const rounds=await query('SELECT round_no,challenger_choice,opponent_choice,winner_user_id,result,created_at FROM janken_rounds WHERE match_id=$1 ORDER BY id',[id]);
+    res.json({match:publicQuickMatch(r.rows[0],req.userId),rounds:rounds.rows.map(x=>({roundNo:Number(x.round_no),challengerChoice:x.challenger_choice,opponentChoice:x.opponent_choice,winnerUserId:x.winner_user_id?Number(x.winner_user_id):null,result:x.result,createdAt:x.created_at}))});
+  }catch(e){next(e)}
+});
+
+app.post('/api/quick-matches/:id/janken-choice',requireUser,async(req,res,next)=>{
+  const id=Number(req.params.id),choice=String(req.body.choice||'');
+  if(!['rock','paper','scissors'].includes(choice))return res.status(400).json({error:'手を選択してください'});
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}
+    if(m.game_type!=='janken'||m.status!=='in_progress'){await client.query('ROLLBACK');return res.status(409).json({error:'現在じゃんけんを選択できません'})}
+    const uid=Number(req.userId),isC=Number(m.challenger_id)===uid,isO=Number(m.opponent_id)===uid;
+    if(!isC&&!isO){await client.query('ROLLBACK');return res.status(403).json({error:'このマッチに参加していません'})}
+    const col=isC?'challenger_janken_choice':'opponent_janken_choice';
+    if(m[col]){await client.query('COMMIT');return res.json({ok:true,waiting:true,match:publicQuickMatch(m,uid)})}
+    m=(await client.query(`UPDATE quick_matches SET ${col}=$1 WHERE id=$2 RETURNING *`,[choice,id])).rows[0];
+    if(!m.challenger_janken_choice||!m.opponent_janken_choice){await client.query('COMMIT');return res.json({ok:true,waiting:true,match:publicQuickMatch(m,uid)})}
+
+    const outcome=jankenWinner(m.challenger_janken_choice,m.opponent_janken_choice);
+    let winnerId=null,result='draw',cw=Number(m.challenger_janken_wins||0),ow=Number(m.opponent_janken_wins||0);
+    if(outcome===1){winnerId=Number(m.challenger_id);result='challenger';cw++;}
+    if(outcome===2){winnerId=Number(m.opponent_id);result='opponent';ow++;}
+    await client.query(`INSERT INTO janken_rounds(match_id,round_no,challenger_choice,opponent_choice,winner_user_id,result) VALUES($1,$2,$3,$4,$5,$6)`,[id,Number(m.janken_round||1),m.challenger_janken_choice,m.opponent_janken_choice,winnerId,result]);
+
+    const complete=cw>=3||ow>=3;
+    if(complete){
+      const finalWinnerId=cw>=3?Number(m.challenger_id):Number(m.opponent_id),loserId=finalWinnerId===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);
+      const winner=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[finalWinnerId])).rows[0];
+      const loser=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[loserId])).rows[0];
+      const wager=Number(m.wager);
+      if(!winner||!loser||Number(loser.points)<wager){await client.query('ROLLBACK');return res.status(409).json({error:'ポイント状態が変化したため勝敗を確定できません。運営に確認してください'})}
+      const wp=Number(winner.points)+wager,lp=Number(loser.points)-wager;
+      await client.query('UPDATE users SET points=$1 WHERE id=$2',[wp,finalWinnerId]);
+      await client.query('UPDATE users SET points=$1 WHERE id=$2',[lp,loserId]);
+      await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[finalWinnerId,wager,`QUICK JANKEN #${id} 勝利`,'match_win',loserId,loser.username]);
+      await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK JANKEN #${id} 敗北`,'match_loss',finalWinnerId,winner.username]);
+      m=(await client.query(`UPDATE quick_matches SET challenger_janken_wins=$1,opponent_janken_wins=$2,challenger_janken_choice=NULL,opponent_janken_choice=NULL,status='completed',winner_user_id=$3,winner_name=$4,completed_at=NOW() WHERE id=$5 RETURNING *`,[cw,ow,finalWinnerId,winner.username,id])).rows[0];
+      await client.query('COMMIT');if(lp===0)scheduleElimination(loserId);
+      return res.json({ok:true,revealed:true,completed:true,outcome:{roundNo:Number(m.janken_round||1),challengerChoice:m.challenger_janken_choice,opponentChoice:m.opponent_janken_choice,result},match:publicQuickMatch(m,uid)});
+    }
+    m=(await client.query(`UPDATE quick_matches SET challenger_janken_wins=$1,opponent_janken_wins=$2,challenger_janken_choice=NULL,opponent_janken_choice=NULL,janken_round=janken_round+$3 WHERE id=$4 RETURNING *`,[cw,ow,result==='draw'?0:1,id])).rows[0];
+    await client.query('COMMIT');
+    res.json({ok:true,revealed:true,completed:false,match:publicQuickMatch(m,uid)});
+  }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
+});
+
 // ---------------------------------------------------------------------------
 
 app.post('/api/staff/login', loginGuard('staff'), async (req,res,next)=>{
@@ -706,6 +805,7 @@ app.get('/history',(req,res)=>res.sendFile(path.join(__dirname,'public','history
 app.get('/rule',(req,res)=>res.sendFile(path.join(__dirname,'public','rule.html')));
 app.get('/match',(req,res)=>res.sendFile(path.join(__dirname,'public','match.html')));
 app.get('/hit-blow',(req,res)=>res.sendFile(path.join(__dirname,'public','hit-blow.html')));
+app.get('/janken',(req,res)=>res.sendFile(path.join(__dirname,'public','janken.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(err);res.status(500).json({error:'サーバー処理でエラーが発生しました'})});
 
