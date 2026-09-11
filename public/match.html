@@ -21,7 +21,7 @@
 </main>
 <script>
 window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('matching'));
-const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null,resultReturnMatchId=null;
+const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null,resultReturnMatchId=null,judging=false;
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const x=new Error('ネットワーク通信に失敗しました');x.status=0;throw x}const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
@@ -54,8 +54,8 @@ async function load(){
    }else if(m.status==='in_progress'){
      window.NexusBGM?.setTrack('battle');
      setState('state-battle','BATTLE LIVE','BATTLE IN PROGRESS','勝敗が確定するまで対戦を続行してください','LIVE');
-     if(m.role==='referee') $('#battleControls').innerHTML=`<div class="judge-panel match-judge-full"><div class="eyebrow">REFEREE JUDGEMENT</div><h2>勝者を選択</h2><div class="match-actions"><button class="success" onclick="judge(${m.id},${m.challenger.id},'${encodeURIComponent(m.challenger.name)}')">${esc(m.challenger.name)} 勝利</button><button class="success" onclick="judge(${m.id},${m.opponent.id},'${encodeURIComponent(m.opponent.name)}')">${esc(m.opponent.name)} 勝利</button></div></div>`;
-     else $('#battleControls').innerHTML='<div class="battle-wait-large">REFEREE JUDGEMENT WAITING<span>審判の勝利判定を待っています</span></div>';
+     if(m.role==='referee') setStableHTML($('#battleControls'),`<div class="judge-panel match-judge-full"><div class="eyebrow">REFEREE JUDGEMENT</div><h2>勝者を選択</h2><div class="match-actions"><button class="success judge-win-btn" onclick="judge(${m.id},${m.challenger.id},'${encodeURIComponent(m.challenger.name)}')">${esc(m.challenger.name)} 勝利</button><button class="success judge-win-btn" onclick="judge(${m.id},${m.opponent.id},'${encodeURIComponent(m.opponent.name)}')">${esc(m.opponent.name)} 勝利</button></div></div>`);
+     else setStableHTML($('#battleControls'),'<div class="battle-wait-large">REFEREE JUDGEMENT WAITING<span>審判の勝利判定を待っています</span></div>');
    }else if(m.status==='completed'){
      window.NexusBGM?.setTrack('victory');
      const mine=m.role==='challenger'?m.challenger:m.role==='opponent'?m.opponent:null;const won=mine&&Number(m.winnerUserId)===Number(mine.id);
@@ -75,6 +75,6 @@ async function load(){
 async function approve(id){$('#battleMsg').textContent='承認処理中...';try{await api(`/api/matches/${id}/approve`,{method:'POST'});$('#battleMsg').className='match-action-msg ok';$('#battleMsg').textContent='承認しました';await load()}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=`承認できませんでした：${e.message}`}}
 async function rejectMatch(id){if(!confirm('この対戦申請を拒否／取消しますか？'))return;try{await api(`/api/matches/${id}/reject`,{method:'POST'});location.href='/'}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
 async function start(id){startTimer=null;try{await api(`/api/matches/${id}/start`,{method:'POST'});await load()}catch(e){}}
-async function judge(id,winnerId,nameEncoded){const name=decodeURIComponent(nameEncoded);if(!confirm(`${name} の勝利で確定しますか？`))return;try{await api(`/api/matches/${id}/result`,{method:'POST',body:JSON.stringify({winnerId})});await load()}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
+async function judge(id,winnerId,nameEncoded){if(judging)return;const name=decodeURIComponent(nameEncoded);if(!confirm(`${name} の勝利で確定しますか？`))return;judging=true;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=true);$('#battleMsg').className='match-action-msg';$('#battleMsg').textContent='勝敗を確定しています...';try{await api(`/api/matches/${id}/result`,{method:'POST',body:JSON.stringify({winnerId})});clearInterval(timer);await load()}catch(e){judging=false;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=false);$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
 $('#backHome').onclick=()=>location.href='/';load();timer=setInterval(load,2000);
 </script></body></html>

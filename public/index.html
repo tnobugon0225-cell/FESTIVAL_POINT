@@ -86,13 +86,32 @@
 
   <section class="system-panel transfer-card arena-transfer match-create-card">
     <div class="panel-head arena-section-head"><div><div class="eyebrow">BATTLE MATCHING</div><h2>対戦マッチング</h2></div><span class="hud-icon">⚔</span></div>
-    <div class="transfer-grid transfer-grid-v52 match-entry-grid">
-      <div><label>対戦相手ID</label><input id="opponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
-      <div><label>審判ID</label><input id="refereeCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
-      <div><label>対戦ポイント</label><input id="wagerAmount" type="number" inputmode="numeric" min="1" placeholder="POINT"></div>
+    <div class="battle-mode-switch">
+      <button type="button" id="quickModeBtn" class="battle-mode-btn active"><strong>QUICK BATTLE</strong><span>2人で対戦 / SYSTEM JUDGEMENT</span></button>
+      <button type="button" id="customModeBtn" class="battle-mode-btn"><strong>CUSTOM BATTLE</strong><span>自由対戦 / REFEREE REQUIRED</span></button>
     </div>
-    <button id="challengeBtn" class="primary-action transfer-action"><span>≫≫</span>対戦を申し込む<span>≪≪</span></button><p id="matchCreateMsg"></p>
-    <p class="system-note">賭け上限は、対戦する2人のうち所持ポイントが低い方のポイント数です。</p>
+    <div id="quickBattlePanel" class="battle-mode-panel">
+      <div class="quick-game-grid">
+        <button type="button" class="quick-game-card active" data-game="hitblow"><b>CODE BREAK</b><strong>HIT &amp; BLOW</strong><span>4つのPASSKEYを解析</span></button>
+        <button type="button" class="quick-game-card disabled" disabled><b>BO5</b><strong>JANKEN</strong><span>COMING SOON</span></button>
+        <button type="button" class="quick-game-card disabled" disabled><b>3 DICE</b><strong>CHINCHIRO</strong><span>COMING SOON</span></button>
+      </div>
+      <div class="transfer-grid transfer-grid-v52 quick-entry-grid">
+        <div><label>対戦相手ID</label><input id="quickOpponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
+        <div><label>対戦ポイント</label><input id="quickWagerAmount" type="number" inputmode="numeric" min="10" step="10" placeholder="10 / 20 / 30 ..."></div>
+      </div>
+      <button id="quickChallengeBtn" class="primary-action transfer-action"><span>≫≫</span>HIT &amp; BLOW を申し込む<span>≪≪</span></button>
+      <p id="quickMatchCreateMsg"></p>
+    </div>
+    <div id="customBattlePanel" class="battle-mode-panel hidden">
+      <div class="transfer-grid transfer-grid-v52 match-entry-grid">
+        <div><label>対戦相手ID</label><input id="opponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
+        <div><label>審判ID</label><input id="refereeCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
+        <div><label>対戦ポイント</label><input id="wagerAmount" type="number" inputmode="numeric" min="10" step="10" placeholder="10 / 20 / 30 ..."></div>
+      </div>
+      <button id="challengeBtn" class="primary-action transfer-action"><span>≫≫</span>対戦を申し込む<span>≪≪</span></button><p id="matchCreateMsg"></p>
+    </div>
+    <p class="system-note">対戦ポイントは10pt刻み。上限は対戦する2人のうち所持ポイントが低い方です。</p>
   </section>
 
   <div class="arena-lower-grid home-ranking-only">
@@ -167,10 +186,18 @@ async function getRanking(me=null){
   const preview=rows.slice(0,5);
   let html=preview.length?preview.map((u,i)=>`<div class="rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''} ${me&&u.public_code===me.public_code?'rank-self':''}"><span class="rank-num">${i<3?['①','②','③'][i]:String(i+1)}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}</span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`).join(''):'<p class="muted">まだ参加者はいません。</p>';
   if(me){
-    const selfIndex=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);
-    if(selfIndex>=5){
-      const u=rows[selfIndex];
-      html+=`<div class="rank-separator"><span>YOUR POSITION</span></div><div class="rank-item rank-self"><span class="rank-num">${selfIndex+1}</span><img class="rank-avatar" src="${avatarSrc(u.avatar_key)}" alt=""><span class="rank-name">${esc(u.username)}<small>YOU</small></span><strong>${u.points.toLocaleString()} <small>pt</small></strong></div>`;
+    let selfIndex=rows.findIndex(x=>x.public_code===me.public_code);
+    let selfRank=selfIndex>=0?selfIndex+1:null;
+    let selfUser=selfIndex>=0?rows[selfIndex]:null;
+    if(selfIndex<0 || selfIndex>=5){
+      try{
+        const mine=await api('/api/my-rank');
+        selfRank=mine.rank;
+        selfUser=mine.user;
+      }catch(e){}
+    }
+    if(selfRank && selfRank>5 && selfUser){
+      html+=`<div class="rank-separator"><span>YOUR POSITION</span></div><div class="rank-item rank-self"><span class="rank-num">${selfRank}</span><img class="rank-avatar" src="${avatarSrc(selfUser.avatar_key)}" alt=""><span class="rank-name">${esc(selfUser.username)}<small>YOU</small></span><strong>${Number(selfUser.points).toLocaleString()} <small>pt</small></strong></div>`;
     }
   }
   setStableHTML($('#ranking'),html);
@@ -212,31 +239,20 @@ async function auth(mode){
   }finally{loginBtn.disabled=false}
 }
 let currentMatch=null,matchPollTimer=null,lastRequestNoticeId=null;
-function incomingNeedsDecision(m){return m&&m.status==='pending'&&((m.role==='opponent'&&!m.opponentApproved)||(m.role==='referee'&&!m.refereeApproved))}
-function requestRoleText(m){return m.role==='referee'?'あなたは審判として指名されています':'あなたに対戦が申し込まれています'}
-function renderRequestInfo(m){return `<div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span class="request-referee"><img src="${avatarSrc(m.referee.avatarKey)}" alt=""><i>REFEREE</i><strong>${esc(m.referee.name)}</strong></span><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`}
-function showBattleRequest(m){currentMatch=m;lastRequestNoticeId=m.id;$('#battleRequestRole').textContent=requestRoleText(m);$('#battleRequestInfo').innerHTML=renderRequestInfo(m);$('#battleRequestMsg').textContent='';$('#battleRequestOverlay').classList.remove('hidden');document.body.classList.add('modal-lock')}
-function hideBattleRequest(){ $('#battleRequestOverlay').classList.add('hidden');document.body.classList.remove('modal-lock') }
-async function checkMatchNotification(){
-  if(!authToken)return;
-  try{
-    const r=await api('/api/matches/me');const m=r.match||null;currentMatch=m;
-    if(!m){hideBattleRequest();return}
-    if(incomingNeedsDecision(m)){
-      if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==m.id)showBattleRequest(m);
-      return;
-    }
-    hideBattleRequest();
-    if(m.status==='pending'||m.status==='matched'||m.status==='in_progress'){
-      if(location.pathname!=='/match') location.href='/match';
-    }
-  }catch(e){}
-}
+function incomingNeedsDecision(m){return m&&m.status==='pending'&&((m.kind==='quick'&&m.role==='opponent'&&!m.opponentApproved)||(m.kind!=='quick'&&((m.role==='opponent'&&!m.opponentApproved)||(m.role==='referee'&&!m.refereeApproved))))}
+function requestRoleText(m){if(m.kind==='quick')return 'QUICK BATTLE / HIT & BLOW の対戦申請です';return m.role==='referee'?'あなたは審判として指名されています':'あなたに対戦が申し込まれています'}
+function renderRequestInfo(m){if(m.kind==='quick')return `<div class="request-game-tag">QUICK BATTLE // CODE BREAK</div><div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span>SYSTEM JUDGEMENT</span><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`;return `<div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span class="request-referee"><img src="${avatarSrc(m.referee.avatarKey)}" alt=""><i>REFEREE</i><strong>${esc(m.referee.name)}</strong></span><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`}
+function showBattleRequest(m){currentMatch=m;lastRequestNoticeId=`${m.kind||'custom'}-${m.id}`;$('#battleRequestRole').textContent=requestRoleText(m);$('#battleRequestInfo').innerHTML=renderRequestInfo(m);$('#battleRequestMsg').textContent='';$('#battleRequestOverlay').classList.remove('hidden');document.body.classList.add('modal-lock')}
+function hideBattleRequest(){$('#battleRequestOverlay').classList.add('hidden');document.body.classList.remove('modal-lock')}
+async function checkMatchNotification(){if(!authToken)return;try{const qr=await api('/api/quick-matches/me');const qm=qr.match||null;if(qm){currentMatch=qm;if(incomingNeedsDecision(qm)){const key=`quick-${qm.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(qm);return}hideBattleRequest();if(['pending','setup','in_progress'].includes(qm.status)){location.href='/hit-blow';return}}const r=await api('/api/matches/me');const m=r.match||null;currentMatch=m;if(!m){hideBattleRequest();return}if(incomingNeedsDecision(m)){const key=`custom-${m.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(m);return}hideBattleRequest();if(['pending','matched','in_progress'].includes(m.status)&&location.pathname!=='/match')location.href='/match'}catch(e){}}
 function startMatchPolling(){clearInterval(matchPollTimer);matchPollTimer=setInterval(checkMatchNotification,3000)}
-$('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{const r=await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});currentMatch=r.match;$('#battleRequestMsg').className='match-action-msg ok';$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(450);location.href='/match'}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
-$('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{await api(`/api/matches/${currentMatch.id}/reject`,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null;$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent='対戦申請を拒否しました'}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`拒否できませんでした：${e.message}`;btn.disabled=false}};
+$('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{if(currentMatch.kind==='quick'){await api(`/api/quick-matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent='承認しました。CODE BREAKへ接続します。';await sleep(350);location.href='/hit-blow'}else{await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(350);location.href='/match'}}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
+$('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{const url=currentMatch.kind==='quick'?`/api/quick-matches/${currentMatch.id}/reject`:`/api/matches/${currentMatch.id}/reject`;await api(url,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=e.message;btn.disabled=false}};
 $('#battleRequestLater').onclick=()=>hideBattleRequest();
-$('#challengeBtn').onclick=async()=>{const btn=$('#challengeBtn');$('#matchCreateMsg').textContent='';$('#matchCreateMsg').className='';try{btn.disabled=true;const r=await api('/api/matches',{method:'POST',body:JSON.stringify({opponentCode:$('#opponentCode').value,refereeCode:$('#refereeCode').value,wager:Number($('#wagerAmount').value)})});$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent=`対戦申請を送信しました / BATTLE POINTS ${r.match.wager}pt`;$('#wagerAmount').value='';await sleep(350);location.href='/match'}catch(e){$('#matchCreateMsg').className='error';$('#matchCreateMsg').textContent=e.message}finally{btn.disabled=false}};
+$('#quickModeBtn').onclick=()=>{$('#quickModeBtn').classList.add('active');$('#customModeBtn').classList.remove('active');$('#quickBattlePanel').classList.remove('hidden');$('#customBattlePanel').classList.add('hidden')};
+$('#customModeBtn').onclick=()=>{$('#customModeBtn').classList.add('active');$('#quickModeBtn').classList.remove('active');$('#customBattlePanel').classList.remove('hidden');$('#quickBattlePanel').classList.add('hidden')};
+$('#quickChallengeBtn').onclick=async()=>{const btn=$('#quickChallengeBtn');const msg=$('#quickMatchCreateMsg');msg.textContent='';try{btn.disabled=true;const wager=Number($('#quickWagerAmount').value);if(!Number.isInteger(wager)||wager<10||wager%10!==0)throw new Error('対戦ポイントは10pt刻みで入力してください');const r=await api('/api/quick-matches',{method:'POST',body:JSON.stringify({opponentCode:$('#quickOpponentCode').value,wager,gameType:'hitblow'})});msg.className='ok';msg.textContent=`HIT & BLOW申請を送信しました / ${r.match.wager}pt`;$('#quickWagerAmount').value='';await sleep(350);location.href='/hit-blow'}catch(e){msg.className='error';msg.textContent=e.message}finally{btn.disabled=false}};
+$('#challengeBtn').onclick=async()=>{const btn=$('#challengeBtn');$('#matchCreateMsg').textContent='';$('#matchCreateMsg').className='';try{btn.disabled=true;const wager=Number($('#wagerAmount').value);if(!Number.isInteger(wager)||wager<10||wager%10!==0)throw new Error('対戦ポイントは10pt刻み（10、20、30…）で入力してください');const r=await api('/api/matches',{method:'POST',body:JSON.stringify({opponentCode:$('#opponentCode').value,refereeCode:$('#refereeCode').value,wager})});$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent=`対戦申請を送信しました / BATTLE POINTS ${r.match.wager}pt`;$('#wagerAmount').value='';await sleep(350);location.href='/match'}catch(e){$('#matchCreateMsg').className='error';$('#matchCreateMsg').textContent=e.message}finally{btn.disabled=false}};
 $('#loginBtn').addEventListener('pointerdown',()=>window.NexusBGM?.prime?.('home'));$('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=()=>loadMe(true);$('#logoutBtn').onclick=async()=>{clearInterval(matchPollTimer);try{await api('/api/logout',{method:'POST'})}catch(e){}localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};
 function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
 document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>scrollToId(b.dataset.scroll));

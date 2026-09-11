@@ -1,3 +1,21 @@
+NEXUS:ZERO v5.26
+
+- 12 avatars replaced with final individual artwork
+- QUICK BATTLE framework added
+- HIT & BLOW / CODE BREAK implemented
+- 10 original PASSKEY images added (0-9)
+- 4 unique PASSKEY secret, alternating turns, HIT/BLOW scoring
+- first player priority; second player receives one INITIAL TRACE key
+- automatic system judgement and point settlement
+- CUSTOM BATTLE / referee mode preserved
+
+NEXUS:ZERO v5.25
+
+- 審判の勝利選択ボタンを自動更新で再生成しないよう修正
+- HOMEランキングで6位以下の自分の順位を確実に表示（TOP100外にも対応）
+- 対戦画面のBATTLE POINTS表示を大型化
+- 対戦ポイントを10pt刻みに制限
+
 NEXUS:ZERO v5.24-light
 
 - BGM 4曲を 128kbps → 64kbps MP3 に軽量化
