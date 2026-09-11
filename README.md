@@ -1,3 +1,10 @@
+NEXUS:ZERO v5.32
+
+- HIT & BLOWのPASSKEY選択画像を拡大
+- 選択中のACCESS CODEを必ず横4列で表示
+- スマホでは入力パネルを上下配置し、画像サイズと操作性を優先
+- 空スロットの「?」を大型化して視認性を改善
+
 NEXUS:ZERO v5.31
 
 - HIT & BLOW専用UIを再設計

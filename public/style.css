@@ -580,3 +580,88 @@
   .hb-full-split{grid-template-columns:1fr;gap:8px}.hb-full-row{grid-template-columns:48px minmax(100px,1fr) 40px 44px}
   .hb-scan-core{padding:22px 10px}.hb-scan-code{gap:4px;margin-bottom:14px}.hb-scan-line{gap:7px}.hb-scan-line span{min-width:95px;font-size:15px;padding:8px}.hb-scan-kicker{font-size:8px}
 }
+
+
+/* v5.32 — CODE BREAK input sizing / horizontal access code */
+.hitblow-page .hb-input-board{
+  grid-template-columns:minmax(0,1.35fr) minmax(240px,.9fr);
+  gap:14px;
+  padding:12px;
+}
+.hitblow-page .hb-input-board .compact-passkey-grid{
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:8px;
+}
+.hitblow-page .hb-input-board .passkey-choice{
+  width:100%;
+  max-width:none;
+  min-width:0;
+  aspect-ratio:1;
+  border-width:1px;
+}
+.hitblow-page .hb-input-board .passkey-choice img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+.hitblow-page .hb-selected-side{
+  min-width:0;
+}
+.hitblow-page .hb-selected-side .selected-slots{
+  width:100%;
+  margin:6px 0 10px;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:6px;
+  flex:0 0 auto;
+  align-content:start;
+}
+.hitblow-page .hb-selected-side .sequence-key{
+  width:100%;
+  min-width:0;
+  max-width:none;
+  aspect-ratio:1;
+}
+.hitblow-page .hb-selected-side .sequence-key.empty{
+  font-size:38px!important;
+  min-height:0!important;
+}
+.hitblow-page .hb-selected-side .sequence-key.empty span{
+  display:grid!important;
+  place-items:center!important;
+  width:100%;
+  height:100%;
+  font-size:38px!important;
+  line-height:1!important;
+  opacity:1!important;
+}
+.hitblow-page .hb-selected-side .sequence-key b{
+  font-size:12px;
+}
+@media(max-width:700px){
+  .hitblow-page .hb-input-board{
+    grid-template-columns:1fr;
+    gap:10px;
+    padding:8px;
+  }
+  .hitblow-page .hb-input-board .compact-passkey-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:6px;
+  }
+  .hitblow-page .hb-input-board .passkey-choice{
+    min-height:58px;
+  }
+  .hitblow-page .hb-selected-side .selected-slots{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:7px;
+    max-width:100%;
+  }
+  .hitblow-page .hb-selected-side .sequence-key.empty,
+  .hitblow-page .hb-selected-side .sequence-key.empty span{
+    font-size:42px!important;
+  }
+  .hitblow-page .hb-lock{
+    min-height:44px;
+    font-size:11px;
+  }
+}
