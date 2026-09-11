@@ -785,3 +785,23 @@
     white-space:nowrap;
   }
 }
+
+/* v5.40 HIT & BLOW answer review + sound setting cleanup */
+.hb-answer-player .answer-code .sequence-key b{display:none!important}
+.hb-answer-legend{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:8px 0 10px;font:900 8px ui-monospace,monospace;letter-spacing:.1em;color:#7f9bac}
+.hb-answer-legend span{padding:4px 7px;border:1px solid rgba(116,170,199,.18);background:rgba(2,9,16,.7)}
+.hb-answer-legend .hit{color:#ff7890;border-color:rgba(255,90,123,.34)}
+.hb-answer-legend .blow{color:#68e6ff;border-color:rgba(82,216,255,.34)}
+.hb-mini-code.answer-mode{gap:4px}
+.hb-mini-key{position:relative;display:inline-grid;place-items:center}
+.hb-mini-key img{display:block}
+.hb-mini-code.answer-mode .hb-mini-key{border:1px solid rgba(105,142,163,.22);border-radius:2px;overflow:hidden}
+.hb-mini-code.answer-mode .hb-mini-key.hit{border-color:#ff6683;box-shadow:0 0 8px rgba(255,83,118,.38)}
+.hb-mini-code.answer-mode .hb-mini-key.blow{border-color:#58dcff;box-shadow:0 0 8px rgba(57,210,255,.32)}
+.hb-mini-code.answer-mode .hb-mini-key.miss{opacity:.5;filter:saturate(.45)}
+.hb-mini-code.answer-mode .hb-mini-key i{position:absolute;left:2px;top:2px;min-width:13px;height:13px;display:grid;place-items:center;padding:0 2px;background:rgba(0,4,10,.88);font:1000 8px/1 ui-monospace,monospace;font-style:normal;color:#8296a4;border:1px solid currentColor}
+.hb-mini-code.answer-mode .hb-mini-key.hit i{color:#ff708b}
+.hb-mini-code.answer-mode .hb-mini-key.blow i{color:#64e5ff}
+@media(max-width:560px){.hb-answer-legend{gap:5px}.hb-answer-legend span{padding:3px 5px}.hb-mini-code.answer-mode{gap:2px}.hb-mini-code.answer-mode .hb-mini-key i{min-width:11px;height:11px;font-size:7px}}
+/* Legacy floating BGM ON/OFF control is retired in favor of SETTING. */
+.bgm-control{display:none!important}

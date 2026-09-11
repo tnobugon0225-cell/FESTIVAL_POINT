@@ -289,3 +289,11 @@ npm start
 - Removed bundled legacy version folder from the release ZIP.
 
 - v5.39: mobile topbar alignment fix for SETTING; HIT & BLOW history modal close button centered.
+
+
+## v5.40
+- HIT & BLOW answer check: removed numeric overlays from revealed secret-code cards.
+- Completed-match history now marks each guessed PASSKEY as H (HIT), B (BLOW), or — (MISS) against the revealed answer.
+- HIT & BLOW 30-second HOME return timer now starts after the successful 4-HIT cut-in has fully closed.
+- SOUND SETTING now uses Web Audio GainNode volume control for reliable MASTER/BGM/SE adjustment on iPhone/Safari.
+- Removed the legacy floating BGM ON/OFF control; sound control is consolidated into SETTING.
