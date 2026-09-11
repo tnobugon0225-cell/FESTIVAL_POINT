@@ -281,3 +281,9 @@ npm start
 ## v5.37
 - JANKEN: next 15-second selection window now begins only after the previous result overlay has fully closed.
 - JANKEN/HIT&BLOW battle-selection click SE is disabled for now.
+
+## v5.38
+- HIT & BLOW: battle-end answer check now reveals both players' access codes only after completion; HOME return extended to 30 seconds for this game.
+- QUICK BATTLE: the first timed input window begins after the VS / GAME START intro finishes. HIT & BLOW keeps 60 seconds; JANKEN keeps 15 seconds.
+- Added global SOUND SETTING from the upper-right navigation with MASTER / BGM / SE volume sliders. Values persist in localStorage and apply immediately.
+- Removed bundled legacy version folder from the release ZIP.

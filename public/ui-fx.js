@@ -1,10 +1,20 @@
 (()=>{
   const clickAudio=new Audio('/se/ui-click.mp3');
-  clickAudio.preload='auto';clickAudio.volume=.58;
+  clickAudio.preload='auto';
   const avatarAudio=new Audio('/se/avatar-select.mp3');
-  avatarAudio.preload='auto';avatarAudio.volume=.66;
+  avatarAudio.preload='auto';
   let navigating=false;
   const TRANSITION_MS=3000;
+  function applySeVolume(){
+    const master=window.NexusAudioSettings?.master ?? Number(localStorage.getItem('nexusMasterVolume') ?? 1);
+    const se=window.NexusAudioSettings?.se ?? Number(localStorage.getItem('nexusSeVolume') ?? .62);
+    const base=Math.max(0,Math.min(1,master*se));
+    clickAudio.volume=Math.max(0,Math.min(1,base*.94));
+    avatarAudio.volume=Math.max(0,Math.min(1,base));
+  }
+  applySeVolume();
+  window.addEventListener('nexus-audio-settings',applySeVolume);
+  window.addEventListener('storage',e=>{if(['nexusMasterVolume','nexusSeVolume'].includes(e.key))applySeVolume()});
 
   function playAudio(a){try{a.currentTime=0;a.play().catch(()=>{});}catch(e){}}
   function playClick(){playAudio(clickAudio)}
