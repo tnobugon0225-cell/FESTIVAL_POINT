@@ -287,3 +287,5 @@ npm start
 - QUICK BATTLE: the first timed input window begins after the VS / GAME START intro finishes. HIT & BLOW keeps 60 seconds; JANKEN keeps 15 seconds.
 - Added global SOUND SETTING from the upper-right navigation with MASTER / BGM / SE volume sliders. Values persist in localStorage and apply immediately.
 - Removed bundled legacy version folder from the release ZIP.
+
+- v5.39: mobile topbar alignment fix for SETTING; HIT & BLOW history modal close button centered.
