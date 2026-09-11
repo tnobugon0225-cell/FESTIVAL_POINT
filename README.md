@@ -1,3 +1,14 @@
+NEXUS:ZERO v5.31
+
+- HIT & BLOW専用UIを再設計
+- リアルタイム入力表示は相手ターンだけ表示
+- HIT & BLOW画面のボタンSEを一時停止
+- PASSKEY 10個を左、選択コード4枠を右へ配置
+- 相手ターンは右側4枠を相手のリアルタイム入力に置換
+- SCAN後は全画面で入力コードとHIT/BLOW結果を表示
+- 4HIT時はコードを発光させ、3秒後にVICTORY/DEFEATへ移行
+- 履歴をYOUR SCANS / RIVAL SCANSに分離し、小型PASSKEY画像で表示
+
 NEXUS:ZERO v5.30
 
 - CODE BREAK専用対戦レイアウトへ刷新
