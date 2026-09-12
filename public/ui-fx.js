@@ -94,7 +94,7 @@
   document.addEventListener('click',e=>{
     const avatar=e.target.closest('.avatar-choice');if(avatar){playAvatar();return}
     const action=e.target.closest('button,a');
-    if(action && !document.body.classList.contains('hitblow-page') && !document.body.classList.contains('janken-page') && !action.classList.contains('bgm-control') && !action.hasAttribute('data-no-se')) playClick();
+    if(action && !document.body.classList.contains('hitblow-page') && !document.body.classList.contains('janken-page') && !document.body.classList.contains('chinchiro-page') && !action.classList.contains('bgm-control') && !action.hasAttribute('data-no-se')) playClick();
     const nav=e.target.closest('[data-nexus-nav]');
     if(nav){e.preventDefault();const url=nav.getAttribute('href')||nav.dataset.href||'/';const label=nav.dataset.nexusNav||labelFor(url);if(window.self!==window.top && window.parent){window.parent.postMessage({type:'nexus-module-nav',url,label},location.origin)}else navigate(url,label)}
   },true);

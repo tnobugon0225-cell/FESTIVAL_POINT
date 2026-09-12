@@ -327,3 +327,12 @@ npm start
 - JANKEN BO5: removed numeric win counters from the score HUD.
 - Replaced them with three circular activation nodes per player; each round win lights one node.
 - Kept the round number centered while making the win state readable at a glance.
+## v5.46
+- QUICK BATTLE に CHINCHIRO を追加。
+- 3ダイスをシステム側で生成し、役判定・勝敗・ポイント移動をサーバー側で自動処理。
+- 役なしの場合のみ最大2回リロール（合計3ロール）。役成立時点で手番終了。
+- 仮ルール順は SHIGORO(4-5-6) > ARASHI(ゾロ目 6→1) > POINT(6→1) > NO ROLE > HIFUMI(1-2-3)。
+- 同格なら新ラウンドへ移行して再勝負。倍率なし、BATTLE POINTS の通常移動のみ。
+- 3秒VSイントロ後にロール可能。CSS製の仮サイバーダイスUI・ロール演出・役カットイン・ロール履歴を実装。
+- HOME の CHINCHIRO COMING SOON を解除し、申請・承認・対戦画面への遷移に対応。
+
