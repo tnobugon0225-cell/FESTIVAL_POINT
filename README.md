@@ -336,3 +336,10 @@ npm start
 - 3秒VSイントロ後にロール可能。CSS製の仮サイバーダイスUI・ロール演出・役カットイン・ロール履歴を実装。
 - HOME の CHINCHIRO COMING SOON を解除し、申請・承認・対戦画面への遷移に対応。
 
+
+
+## v5.47
+- CHINCHIRO remote roll cut-in: rival rolls, including the decisive final roll, are shown on both players' screens.
+- Extended dice cast/lock/reveal timing and rebuilt the dice table as a NEXUS cyber HUD with pip faces.
+- Removed roll history from the live screen; only the first locked hand is shown as the target for the second player.
+- Added a permanent role-strength HUD and stronger role reveal effects.
