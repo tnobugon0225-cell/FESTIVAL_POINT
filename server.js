@@ -186,6 +186,10 @@ async function initDb() {
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS opponent_chinchiro_role VARCHAR(24);
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS opponent_chinchiro_value INTEGER;
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS opponent_chinchiro_dice VARCHAR(8);
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS challenger_chinchiro_wins INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS opponent_chinchiro_wins INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS chinchiro_last_round_winner_id BIGINT;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS chinchiro_last_round_no INTEGER;
 
     CREATE TABLE IF NOT EXISTS chinchiro_rolls (
       id BIGSERIAL PRIMARY KEY,
@@ -591,6 +595,10 @@ function publicQuickMatch(row,viewerId){
     opponentChinchiroRole:row.opponent_chinchiro_role||null,
     opponentChinchiroValue:row.opponent_chinchiro_value==null?null:Number(row.opponent_chinchiro_value),
     opponentChinchiroDice:row.opponent_chinchiro_dice||null,
+    challengerChinchiroWins:Number(row.challenger_chinchiro_wins||0),
+    opponentChinchiroWins:Number(row.opponent_chinchiro_wins||0),
+    chinchiroLastRoundWinnerId:row.chinchiro_last_round_winner_id?Number(row.chinchiro_last_round_winner_id):null,
+    chinchiroLastRoundNo:row.chinchiro_last_round_no==null?null:Number(row.chinchiro_last_round_no),
     winnerUserId:row.winner_user_id?Number(row.winner_user_id):null,winnerName:row.winner_name||null,
     createdAt:row.created_at,matchedAt:row.matched_at,startedAt:row.started_at,completedAt:row.completed_at
   };
@@ -637,7 +645,7 @@ app.post('/api/quick-matches/:id/approve',requireUser,async(req,res,next)=>{
       m=(await client.query(`UPDATE quick_matches SET opponent_approved=TRUE,status='in_progress',matched_at=NOW(),started_at=NOW(),janken_round=1,janken_round_started_at=NOW() + INTERVAL '4 seconds',challenger_janken_choice=NULL,opponent_janken_choice=NULL WHERE id=$1 RETURNING *`,[id])).rows[0];
     }else if(m.game_type==='chinchiro'){
       const first=Math.random()<0.5?Number(m.challenger_id):Number(m.opponent_id);
-      m=(await client.query(`UPDATE quick_matches SET opponent_approved=TRUE,status='in_progress',matched_at=NOW(),started_at=NOW(),first_player_id=$1,turn_player_id=$1,turn_no=1,turn_started_at=NOW() + INTERVAL '4 seconds',chinchiro_round=1,chinchiro_attempt=0,challenger_chinchiro_role=NULL,challenger_chinchiro_value=NULL,challenger_chinchiro_dice=NULL,opponent_chinchiro_role=NULL,opponent_chinchiro_value=NULL,opponent_chinchiro_dice=NULL WHERE id=$2 RETURNING *`,[first,id])).rows[0];
+      m=(await client.query(`UPDATE quick_matches SET opponent_approved=TRUE,status='in_progress',matched_at=NOW(),started_at=NOW(),first_player_id=$1,turn_player_id=$1,turn_no=1,turn_started_at=NOW() + INTERVAL '4 seconds',chinchiro_round=1,chinchiro_attempt=0,challenger_chinchiro_role=NULL,challenger_chinchiro_value=NULL,challenger_chinchiro_dice=NULL,opponent_chinchiro_role=NULL,opponent_chinchiro_value=NULL,opponent_chinchiro_dice=NULL,challenger_chinchiro_wins=0,opponent_chinchiro_wins=0,chinchiro_last_round_winner_id=NULL,chinchiro_last_round_no=NULL WHERE id=$2 RETURNING *`,[first,id])).rows[0];
     }else{
       const first=Math.random()<0.5?Number(m.challenger_id):Number(m.opponent_id);
       m=(await client.query(`UPDATE quick_matches SET opponent_approved=TRUE,status='setup',first_player_id=$1,matched_at=NOW() WHERE id=$2 RETURNING *`,[first,id])).rows[0];
@@ -731,13 +739,24 @@ app.post('/api/quick-matches/:id/chinchiro-roll',requireUser,async(req,res,next)
       await client.query('COMMIT');return res.json({ok:true,roll:{dice,attempt,final:true,...ev},match:publicQuickMatch(m,req.userId)});
     }
     const cv=Number(m.challenger_chinchiro_value),ov=Number(m.opponent_chinchiro_value);
+    const roundNo=Number(m.chinchiro_round||1);
     if(cv===ov){
-      const first=Math.random()<.5?Number(m.challenger_id):Number(m.opponent_id);
-      m=(await client.query(`UPDATE quick_matches SET chinchiro_round=chinchiro_round+1,chinchiro_attempt=0,challenger_chinchiro_role=NULL,challenger_chinchiro_value=NULL,challenger_chinchiro_dice=NULL,opponent_chinchiro_role=NULL,opponent_chinchiro_value=NULL,opponent_chinchiro_dice=NULL,first_player_id=$1,turn_player_id=$1,turn_no=turn_no+1,turn_started_at=NOW() + INTERVAL '3500 milliseconds' WHERE id=$2 RETURNING *`,[first,id])).rows[0];
-      await client.query('COMMIT');return res.json({ok:true,roll:{dice,attempt,final:true,...ev},draw:true,match:publicQuickMatch(m,req.userId)});
+      const nextFirst=Number(m.first_player_id)===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);
+      m=(await client.query(`UPDATE quick_matches SET chinchiro_attempt=0,challenger_chinchiro_role=NULL,challenger_chinchiro_value=NULL,challenger_chinchiro_dice=NULL,opponent_chinchiro_role=NULL,opponent_chinchiro_value=NULL,opponent_chinchiro_dice=NULL,chinchiro_last_round_winner_id=NULL,chinchiro_last_round_no=$1,first_player_id=$2,turn_player_id=$2,turn_no=turn_no+1,turn_started_at=NOW() + INTERVAL '3500 milliseconds' WHERE id=$3 RETURNING *`,[roundNo,nextFirst,id])).rows[0];
+      await client.query('COMMIT');return res.json({ok:true,roll:{dice,attempt,final:true,...ev},draw:true,roundNo,match:publicQuickMatch(m,req.userId)});
     }
-    const winnerId=cv>ov?Number(m.challenger_id):Number(m.opponent_id);
-    const loserId=cv>ov?Number(m.opponent_id):Number(m.challenger_id);
+    const roundWinnerId=cv>ov?Number(m.challenger_id):Number(m.opponent_id);
+    const cWon=roundWinnerId===Number(m.challenger_id);
+    const nextCWins=Number(m.challenger_chinchiro_wins||0)+(cWon?1:0);
+    const nextOWins=Number(m.opponent_chinchiro_wins||0)+(cWon?0:1);
+    const matchWon=nextCWins>=2||nextOWins>=2;
+    if(!matchWon){
+      const nextFirst=Number(m.first_player_id)===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);
+      m=(await client.query(`UPDATE quick_matches SET challenger_chinchiro_wins=$1,opponent_chinchiro_wins=$2,chinchiro_last_round_winner_id=$3,chinchiro_last_round_no=$4,chinchiro_round=chinchiro_round+1,chinchiro_attempt=0,challenger_chinchiro_role=NULL,challenger_chinchiro_value=NULL,challenger_chinchiro_dice=NULL,opponent_chinchiro_role=NULL,opponent_chinchiro_value=NULL,opponent_chinchiro_dice=NULL,first_player_id=$5,turn_player_id=$5,turn_no=turn_no+1,turn_started_at=NOW() + INTERVAL '4200 milliseconds' WHERE id=$6 RETURNING *`,[nextCWins,nextOWins,roundWinnerId,roundNo,nextFirst,id])).rows[0];
+      await client.query('COMMIT');return res.json({ok:true,roll:{dice,attempt,final:true,...ev},roundWinnerId,roundNo,roundComplete:true,match:publicQuickMatch(m,req.userId)});
+    }
+    const winnerId=roundWinnerId;
+    const loserId=winnerId===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);
     const winner=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[winnerId])).rows[0];
     const loser=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[loserId])).rows[0];
     const wager=Number(m.wager);
@@ -745,11 +764,11 @@ app.post('/api/quick-matches/:id/chinchiro-roll',requireUser,async(req,res,next)
     const winnerPoints=Number(winner.points)+wager,loserPoints=Number(loser.points)-wager;
     await client.query('UPDATE users SET points=$1 WHERE id=$2',[winnerPoints,winnerId]);
     await client.query('UPDATE users SET points=$1 WHERE id=$2',[loserPoints,loserId]);
-    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`QUICK CHINCHIRO #${id} 勝利`,'match_win',loserId,loser.username]);
-    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK CHINCHIRO #${id} 敗北`,'match_loss',winnerId,winner.username]);
-    m=(await client.query(`UPDATE quick_matches SET status='completed',winner_user_id=$1,winner_name=$2,completed_at=NOW() WHERE id=$3 RETURNING *`,[winnerId,winner.username,id])).rows[0];
+    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`QUICK CHINCHIRO BO3 #${id} 勝利`,'match_win',loserId,loser.username]);
+    await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK CHINCHIRO BO3 #${id} 敗北`,'match_loss',winnerId,winner.username]);
+    m=(await client.query(`UPDATE quick_matches SET challenger_chinchiro_wins=$1,opponent_chinchiro_wins=$2,chinchiro_last_round_winner_id=$3,chinchiro_last_round_no=$4,status='completed',winner_user_id=$3,winner_name=$5,completed_at=NOW() WHERE id=$6 RETURNING *`,[nextCWins,nextOWins,roundWinnerId,roundNo,winner.username,id])).rows[0];
     await client.query('COMMIT');if(loserPoints===0)scheduleElimination(loserId);
-    res.json({ok:true,roll:{dice,attempt,final:true,...ev},completed:true,match:publicQuickMatch(m,req.userId)});
+    res.json({ok:true,roll:{dice,attempt,final:true,...ev},completed:true,roundWinnerId,roundNo,roundComplete:true,match:publicQuickMatch(m,req.userId)});
   }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });
 

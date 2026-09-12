@@ -861,3 +861,28 @@
 .cc-roll-title{margin:5px 0 0;font:1000 clamp(18px,5vw,30px) ui-monospace,monospace;letter-spacing:.13em;color:#d8fbff;text-shadow:0 0 18px rgba(79,224,255,.35)}
 .cc-roll-status{min-height:94px;margin-top:4px}.cc-roll-status>span{font:900 9px ui-monospace,monospace;letter-spacing:.18em;color:#6e99ab}.cc-roll-status.reveal{position:relative;margin:8px auto 0;padding:14px 12px;max-width:520px;border-top:1px solid currentColor;border-bottom:1px solid currentColor;background:linear-gradient(90deg,transparent,rgba(255,255,255,.025),transparent);text-shadow:0 0 16px currentColor}.cc-roll-status.reveal small{font-size:7px;letter-spacing:.22em;color:#7594a2}.cc-roll-status.reveal strong{font-size:clamp(23px,7vw,42px);line-height:1.05;letter-spacing:.09em}.cc-roll-status.reveal span{font-size:8px;letter-spacing:.13em}.cc-roll-status.reveal.best{color:#ffd968;box-shadow:0 0 36px rgba(255,207,76,.12)}.cc-roll-status.reveal.strong{color:#d38cff;box-shadow:0 0 36px rgba(191,94,255,.12)}.cc-roll-status.reveal.point{color:#65e9ff;box-shadow:0 0 36px rgba(73,218,255,.12)}.cc-roll-status.reveal.bad{color:#ff6f8c;box-shadow:0 0 36px rgba(255,77,111,.12)}.cc-roll-status.reveal.none{color:#7b98a7}.cc-roll-status.reveal em{margin-top:4px;color:#c098ff;font-size:14px}
 @media(max-width:560px){.cc-dice-row{gap:8px}.cc-die{width:min(28vw,102px)}.cc-target-hand{grid-template-columns:minmax(0,1fr) auto}.cc-target-hand .cc-mini-dice{grid-column:1/-1}.cc-rank-list{grid-template-columns:repeat(5,minmax(48px,1fr));overflow-x:auto;padding-bottom:2px}.cc-rank-list b{min-width:48px}.cc-roll-core{padding-left:8px;padding-right:8px}.cc-roll-title{font-size:20px}}
+
+
+/* v5.48 CHINCHIRO BO3 + dedicated dice assets */
+.cc-die{padding:0;background:#01060d;border-color:rgba(94,226,255,.34);box-shadow:0 0 22px rgba(62,207,255,.1),inset 0 0 24px rgba(42,157,255,.06)}
+.cc-die-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none;transform:scale(1.02)}
+.cc-die:before{inset:5px;z-index:2;border-color:rgba(105,230,255,.16);pointer-events:none}
+.cc-die:after{z-index:3}
+.cc-die b{z-index:4;padding:2px 4px;background:rgba(0,7,14,.58);backdrop-filter:blur(3px)}
+.cc-dice-row.rolling .cc-die-image{filter:brightness(1.2) saturate(1.12);}
+.cc-dice-row.locking .cc-die.locked .cc-die-image{filter:brightness(1.16) saturate(1.15)}
+.cc-mini-dice{display:flex;gap:5px;align-items:center;justify-content:center}
+.cc-mini-dice img{width:28px;height:28px;object-fit:cover;border:1px solid rgba(91,224,255,.26);box-shadow:0 0 8px rgba(61,216,255,.08);border-radius:4px}
+.cc-bo3-score{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:12px;margin:12px 0 8px;padding:10px 12px;border-top:1px solid rgba(84,222,255,.18);border-bottom:1px solid rgba(84,222,255,.1);background:linear-gradient(90deg,transparent,rgba(8,26,43,.42),transparent)}
+.cc-bo3-score>div{display:grid;gap:5px;min-width:0}
+.cc-bo3-score>div:last-child{text-align:right}
+.cc-bo3-score span{font:900 8px ui-monospace,monospace;letter-spacing:.1em;color:#8daab8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cc-bo3-score>b{font:1000 11px ui-monospace,monospace;letter-spacing:.16em;color:#d8f9ff;text-shadow:0 0 12px rgba(89,228,255,.45)}
+.cc-bo3-nodes{display:flex;gap:8px;align-items:center}
+.cc-bo3-nodes.right{justify-content:flex-end}
+.cc-bo3-nodes i{position:relative;width:18px;height:18px;border-radius:50%;border:1px solid rgba(91,218,255,.25);background:radial-gradient(circle,rgba(62,122,148,.15) 0 32%,rgba(2,10,18,.9) 35% 100%);box-shadow:inset 0 0 10px rgba(69,208,255,.05)}
+.cc-bo3-nodes i:after{content:"";position:absolute;inset:5px;border-radius:50%;background:#1b3f50;opacity:.55}
+.cc-bo3-nodes i.on{border-color:#7af6ff;box-shadow:0 0 10px rgba(79,230,255,.65),0 0 24px rgba(90,168,255,.25),inset 0 0 12px rgba(90,235,255,.15)}
+.cc-bo3-nodes i.on:after{background:#7ffcff;opacity:1;box-shadow:0 0 8px #7ffcff,0 0 15px rgba(102,229,255,.8)}
+.cc-roll-status em{font-size:clamp(15px,4.6vw,23px);letter-spacing:.14em;text-shadow:0 0 18px currentColor}
+@media(max-width:560px){.cc-bo3-score{gap:7px;padding-left:6px;padding-right:6px}.cc-bo3-nodes{gap:6px}.cc-bo3-nodes i{width:16px;height:16px}.cc-mini-dice img{width:25px;height:25px}.cc-die b{font-size:7px}}

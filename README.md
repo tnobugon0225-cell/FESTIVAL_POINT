@@ -343,3 +343,10 @@ npm start
 - Extended dice cast/lock/reveal timing and rebuilt the dice table as a NEXUS cyber HUD with pip faces.
 - Removed roll history from the live screen; only the first locked hand is shown as the target for the second player.
 - Added a permanent role-strength HUD and stronger role reveal effects.
+
+## v5.48
+- CHINCHIROをBO3（2ラウンド先取）に変更。引き分けは得点なしで同ラウンド再勝負。
+- ラウンド勝者をサーバーで保持し、2勝した時点で初めてBATTLE POINTSを移動して最終勝敗を確定。
+- 専用ダイス画像1〜6を軽量WebPとして実装し、ロール演出・確定表示・先行役表示にも使用。
+- BO3スコアは数字ではなく2つの起動ノードで表示。取得ラウンドごとに発光。
+- ラウンド確定時はROUND WIN / ROUND LOSE / DRAWをロールカットイン内に表示。
