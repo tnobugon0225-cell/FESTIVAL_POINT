@@ -2740,3 +2740,200 @@ body.dm-open{overflow:hidden!important}
     font-size:9px!important;
   }
 }
+
+/* v5.73 — root-cause fix for DM modal flow break + calmer global chat bubble layout */
+/* Cause: v5.71 changed DM children from absolute to relative, which broke the fixed modal layout.
+   Restore the intended positioned layout on the network page only. */
+.network-page .dm-box{
+  display:block!important;
+  position:fixed!important;
+  left:50%!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  width:min(720px,calc(100vw - 18px))!important;
+  height:min(70dvh,650px)!important;
+  max-height:calc(100dvh - 20px)!important;
+  min-height:390px!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+.network-page .dm-head{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:0!important;
+  height:76px!important;
+  z-index:6!important;
+}
+.network-page .dm-messages{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  top:76px!important;
+  bottom:88px!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:12px 10px 18px!important;
+  overflow-y:auto!important;
+  z-index:5!important;
+}
+.network-page .dm-box .dm-compose{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+  z-index:10!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 92px!important;
+  gap:8px!important;
+  width:100%!important;
+  height:68px!important;
+  min-height:68px!important;
+  padding:9px 10px max(10px,env(safe-area-inset-bottom))!important;
+  margin:0!important;
+  background:#020b13!important;
+  border-top:1px solid rgba(73,214,255,.34)!important;
+}
+.network-page #dmStatus{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:68px!important;
+  height:20px!important;
+  min-height:20px!important;
+  z-index:8!important;
+  margin:0!important;
+  padding:2px 10px!important;
+  border-left:0!important;
+  background:#020b13!important;
+}
+.network-page #dmSend,
+.network-page #dmSend.art-small-button{
+  width:92px!important;
+  min-width:92px!important;
+  max-width:92px!important;
+  height:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+}
+.network-page #dmSend.art-small-button img{
+  max-height:38px!important;
+}
+
+/* Global chat: keep time close to the text and reduce the stretched feeling on multi-line bubbles. */
+.network-page .chat-row{
+  grid-template-columns:42px 102px minmax(0,1fr)!important;
+  column-gap:8px!important;
+  align-items:start!important;
+  margin:9px 0!important;
+}
+.network-page .chat-avatar,
+.network-page .chat-avatar img{
+  display:block!important;
+}
+.network-page .chat-id{
+  align-self:start!important;
+  gap:2px!important;
+  padding-top:0!important;
+}
+.network-page .chat-id .mini-title-img{
+  width:96px!important;
+  height:22px!important;
+  object-fit:contain!important;
+  object-position:left top!important;
+  margin:0!important;
+}
+.network-page .chat-id strong{
+  margin:0!important;
+  line-height:1.12!important;
+}
+.network-page .chat-row > .chat-bubble{
+  justify-self:start!important;
+  align-self:start!important;
+  margin-top:0!important;
+}
+.network-page .chat-bubble{
+  width:auto!important;
+  max-width:min(100%, 390px)!important;
+  min-height:0!important;
+  padding:8px 12px 9px 12px!important;
+}
+.network-page .chat-bubble::before{
+  inset:-4px -6px!important;
+}
+.network-page .chat-bubble-main{
+  display:block!important;
+}
+.network-page .chat-bubble-copy{
+  display:block!important;
+  line-height:1.42!important;
+  color:#f2fbff!important;
+}
+.network-page .chat-bubble-text{
+  display:inline!important;
+  padding-right:0!important;
+}
+.network-page .chat-bubble-time,
+.network-page .chat-bubble small{
+  display:inline!important;
+  margin-left:8px!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+  line-height:1!important;
+  opacity:.78!important;
+}
+@media(max-width:620px){
+  .network-page .dm-box{
+    width:calc(100vw - 10px)!important;
+    max-width:calc(100vw - 10px)!important;
+    height:min(68dvh,590px)!important;
+    max-height:calc(100dvh - 18px)!important;
+    min-height:360px!important;
+  }
+  .network-page .dm-head{
+    height:72px!important;
+    padding:24px 10px 10px 14px!important;
+  }
+  .network-page .dm-messages{
+    top:72px!important;
+    bottom:88px!important;
+    padding:10px 8px 14px!important;
+  }
+  .network-page #dmStatus{
+    bottom:68px!important;
+  }
+  .network-page .dm-box .dm-compose{
+    grid-template-columns:minmax(0,1fr) 72px!important;
+    height:68px!important;
+    min-height:68px!important;
+    padding:9px 8px max(10px,env(safe-area-inset-bottom))!important;
+  }
+  .network-page #dmSend,
+  .network-page #dmSend.art-small-button{
+    width:72px!important;
+    min-width:72px!important;
+    max-width:72px!important;
+  }
+  .network-page .chat-row{
+    grid-template-columns:42px 92px minmax(0,1fr)!important;
+    column-gap:8px!important;
+  }
+  .network-page .chat-id .mini-title-img{
+    width:92px!important;
+    height:22px!important;
+  }
+  .network-page .chat-bubble{
+    max-width:min(100%, 370px)!important;
+    padding:8px 11px 9px 11px!important;
+  }
+  .network-page .chat-bubble-copy{
+    line-height:1.38!important;
+  }
+  .network-page .chat-bubble-time,
+  .network-page .chat-bubble small{
+    font-size:9px!important;
+    margin-left:7px!important;
+  }
+}
