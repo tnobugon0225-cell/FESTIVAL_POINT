@@ -1,3 +1,9 @@
+## v5.64 UI adjustments
+- Equalized quick/custom battle entry field sizes.
+- NETWORK opens directly to Global Chat; removed redundant selection/title screen.
+- Enlarged NETWORK tab buttons.
+- Standardized title artwork above player name across chat/battle/watch/request UI.
+
 ## v5.57
 - FRIENDS private-message screen rebuilt as a dedicated responsive modal.
 - Fixed global button CSS leaking into the DM close button and breaking mobile layout.
@@ -433,3 +439,10 @@ npm start
 - 対戦マッチング -> クイックバトル / カスタムバトル
 - クイックバトル -> HIT & BLOW / ジャンケン / チンチロ
 - v5.62 menu emblems use transparent assets in `public/ui/v562/`.
+
+
+## v5.65 asset optimization
+- v5.62 UI emblem PNG assets converted to transparent WebP.
+- Emblems resized from 1254px to 960px maximum dimension (still over 2x the normal UI display size).
+- WebP quality 88 / alpha preserved.
+- BGM left unchanged because it was already encoded around 64 kbps.

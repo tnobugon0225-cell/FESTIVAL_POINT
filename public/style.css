@@ -1979,3 +1979,174 @@ body.dm-open{overflow:hidden!important}
     font-size:9px!important;
   }
 }
+
+
+/* v5.64 — equal battle-entry fields + direct NETWORK tabs + universal title/name order */
+/* Quick/custom entry fields: every input frame gets exactly the same footprint. */
+.battle-stage-panel .quick-entry-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+.battle-stage-panel .match-entry-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:12px!important;
+}
+.battle-stage-panel .quick-entry-grid>div,
+.battle-stage-panel .match-entry-grid>div{
+  min-width:0!important;
+  width:100%!important;
+  grid-column:auto!important;
+}
+.battle-stage-panel .quick-entry-grid .field-art-label,
+.battle-stage-panel .match-entry-grid .field-art-label{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:1400/467!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+.battle-stage-panel .quick-entry-grid input,
+.battle-stage-panel .match-entry-grid input{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  height:76px!important;
+  padding:0 14px!important;
+}
+
+/* NETWORK now opens straight into chat; the redundant full-page title art is gone. */
+.network-page-title{display:none!important}
+.network-screen-nav{
+  position:sticky!important;
+  top:0!important;
+  grid-template-columns:76px repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+  padding:8px 4px 10px!important;
+  margin:-2px -2px 14px!important;
+}
+.network-back,
+.network-screen-nav button{
+  min-height:54px!important;
+  height:54px!important;
+}
+.network-screen-nav img{
+  width:100%!important;
+  height:46px!important;
+  max-height:46px!important;
+  object-fit:contain!important;
+}
+.network-screen-nav button{
+  padding:2px!important;
+  opacity:.62!important;
+}
+.network-screen-nav button.active{
+  opacity:1!important;
+  filter:brightness(1.18) drop-shadow(0 0 9px rgba(62,220,255,.22))!important;
+}
+
+/* Title artwork must always be immediately above the player's name. */
+.chat-id,
+.battle-person,
+.prebattle-player,
+.watch-vs>div,
+.request-player{
+  display:flex!important;
+  flex-direction:column!important;
+}
+.chat-id .mini-title-img{order:1!important}
+.chat-id strong{order:2!important}
+.battle-person .battle-avatar-wrap{order:0!important}
+.battle-person .battle-player-title-img{order:1!important}
+.battle-person>strong{order:2!important}
+.battle-person>small{order:3!important}
+.prebattle-player>img:not(.prebattle-title-img){order:0!important}
+.prebattle-player>.prebattle-title-img{order:1!important}
+.prebattle-player>strong{order:2!important}
+.watch-vs>div>img:not(.watch-title){order:0!important}
+.watch-vs .watch-title{order:1!important}
+.watch-vs>div>strong{order:2!important}
+.request-player>img:not(.request-title-img){order:0!important}
+.request-player>span{order:1!important}
+.request-player>.request-title-img{order:2!important}
+.request-player>strong{order:3!important}
+.request-player>small{order:4!important}
+
+/* Referee identity follows the same TITLE -> NAME rule. */
+.request-referee{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  gap:2px!important;
+  text-align:center!important;
+}
+.request-referee .request-referee-avatar{
+  order:0!important;
+  width:48px!important;
+  height:48px!important;
+  margin:0 auto 2px!important;
+}
+.request-referee>i{order:1!important}
+.request-referee .request-referee-title{
+  order:2!important;
+  width:min(128px,100%)!important;
+  height:28px!important;
+  margin:1px auto!important;
+}
+.request-referee>strong{order:3!important}
+
+@media(max-width:620px){
+  .battle-stage-panel .quick-entry-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  .battle-stage-panel .match-entry-grid{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:8px!important;
+  }
+  .battle-stage-panel .quick-entry-grid input,
+  .battle-stage-panel .match-entry-grid input{
+    height:74px!important;
+    padding:0 12px!important;
+    font-size:17px!important;
+  }
+  .network-screen-nav{
+    grid-template-columns:66px repeat(3,minmax(0,1fr))!important;
+    gap:5px!important;
+    padding:7px 2px 9px!important;
+  }
+  .network-back,
+  .network-screen-nav button{
+    min-height:50px!important;
+    height:50px!important;
+  }
+  .network-screen-nav img{
+    height:42px!important;
+    max-height:42px!important;
+  }
+}
+
+
+/* Custom battle referee: title directly above referee name as well. */
+.battle-referee-copy{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  min-width:0!important;
+}
+.battle-referee-copy>span{order:0!important}
+.battle-referee-copy .battle-referee-title{
+  order:1!important;
+  display:block!important;
+  width:min(138px,100%)!important;
+  height:30px!important;
+  margin:2px 0 1px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  background:transparent!important;
+  transform:none!important;
+}
+.battle-referee-copy>strong{order:2!important}
+.battle-referee-copy>small{order:3!important}
+@media(max-width:620px){
+  .battle-referee-copy .battle-referee-title{width:min(120px,100%)!important;height:26px!important}
+}
