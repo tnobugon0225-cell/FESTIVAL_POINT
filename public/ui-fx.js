@@ -106,5 +106,25 @@
   });
   window.addEventListener('popstate',()=>{if(window.self!==window.top)return;const p=location.pathname;const wrap=document.getElementById('moduleFrameOverlay');if(!wrap)return;if(p==='/'){wrap.classList.add('hidden');return}if(p==='/ranking'||p==='/history'||p==='/rule'){const frame=wrap.querySelector('#moduleFrame');wrap.classList.remove('hidden');frame.src=p+'?embed=1'}});
 
-  window.NexusUI={playClick,playAvatar,navigate};
+  let pressLock=false;
+  function pulsePress(el,done,delay=190){
+    if(pressLock)return;
+    pressLock=true;
+    if(el){el.classList.remove('nexus-pressing');void el.offsetWidth;el.classList.add('nexus-pressing')}
+    document.body.classList.add('nexus-ui-shift');
+    setTimeout(()=>{
+      if(el)el.classList.remove('nexus-pressing');
+      document.body.classList.remove('nexus-ui-shift');
+      pressLock=false;
+      try{done?.()}catch(e){console.error(e)}
+    },delay);
+  }
+  document.addEventListener('pointerdown',e=>{
+    const el=e.target.closest('button,a,.art-choice,.art-menu-root,.quick-game-card');
+    if(!el||el.disabled)return;
+    el.classList.add('nexus-touch-down');
+    setTimeout(()=>el.classList.remove('nexus-touch-down'),140);
+  },{passive:true});
+
+  window.NexusUI={playClick,playAvatar,navigate,pulsePress};
 })();

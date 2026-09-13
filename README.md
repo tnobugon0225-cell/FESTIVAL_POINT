@@ -411,3 +411,8 @@ npm start
 - チャット/フレンド/観戦/申請などの操作UIも専用アートに差し替え。
 - プレイヤー表示順を「称号画像 → 名前」に統一（対戦画面、VSカットイン、チャット/フレンド、観戦）。
 - 個別メッセージの入力欄とSENDがiPhoneでも常に見えるようDMモーダルの高さ/下部composerを再設計。
+
+## v5.59
+- UI artwork backgrounds are now alpha-keyed so dark rectangular canvases no longer show around menu art.
+- Rebuilt FRIENDS private-message composer so the text input and SEND control stay visible on iPhone/Safari.
+- Added tactile press feedback and a short ~190ms HUD transition pulse before battle/network menu screens switch.

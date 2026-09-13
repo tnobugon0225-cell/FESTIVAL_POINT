@@ -1441,3 +1441,146 @@
 }
 .request-title-img{display:block!important;width:min(150px,100%)!important;height:30px!important;object-fit:contain!important;margin:3px auto 1px!important;background:transparent!important;animation:none!important;transition:none!important}
 .request-player{display:flex!important;flex-direction:column!important;align-items:center!important}.request-player>img:not(.request-title-img){order:0}.request-player>span{order:1}.request-player>.request-title-img{order:2}.request-player>strong{order:3}.request-player>small{order:4}
+
+/* v5.59 — transparent art, tactile selection feedback, DM composer hard fix */
+.art-menu-root,.art-choice,.art-action-button,.network-art-menu button,.network-screen-nav button,.profile-art-action,.friend-art-btn,.art-small-button{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+}
+.art-menu-root img,.art-choice img,.art-game-grid .quick-game-card img,.network-art-menu img,.network-screen-nav img,.network-page-title img,.field-art-label,.art-action-button img,.profile-art-action img,.friend-art-btn img,.art-small-button img{
+  background:transparent!important;
+  object-fit:contain!important;
+  filter:none;
+}
+.art-choice,.network-art-menu button,.quick-game-card,.art-menu-root,.art-action-button,.profile-art-action,.friend-art-btn,.art-small-button{
+  transition:transform .14s cubic-bezier(.2,.9,.2,1),filter .14s ease,opacity .14s ease!important;
+  transform-origin:center;
+}
+.nexus-touch-down,.nexus-pressing{
+  transform:scale(.965)!important;
+  filter:brightness(1.28) saturate(1.16)!important;
+}
+.nexus-pressing img,.nexus-touch-down img{
+  filter:brightness(1.2) drop-shadow(0 0 14px rgba(67,220,255,.34))!important;
+}
+body.nexus-ui-shift:after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:9998;
+  pointer-events:none;
+  background:linear-gradient(180deg,transparent 0,rgba(79,224,255,.08) 48%,rgba(143,79,255,.12) 50%,rgba(79,224,255,.08) 52%,transparent 100%);
+  animation:nexusUiShift .19s ease-out both;
+}
+@keyframes nexusUiShift{
+  0%{opacity:0;transform:scaleY(.03)}
+  45%{opacity:1;transform:scaleY(1)}
+  100%{opacity:0;transform:scaleY(1.35)}
+}
+
+/* remove the extra rectangular card feel now that artwork itself is transparent */
+.art-choice-grid,.art-game-grid,.network-art-menu{background:transparent!important}
+.art-choice,.network-art-menu button{padding:3px!important}
+.art-choice img,.network-art-menu img{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:auto!important;
+  max-height:190px;
+}
+.art-game-grid .quick-game-card{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:3px!important;
+}
+.art-game-grid .quick-game-card img{height:auto!important;aspect-ratio:auto!important;max-height:150px}
+.network-page-title img{height:auto!important;max-height:160px!important}
+.network-screen-nav img{object-fit:contain!important;background:transparent!important}
+
+/* DM: use a flex shell so the input row can never be squeezed out by message history */
+body.dm-open{overflow:hidden!important}
+.dm-box{
+  display:flex!important;
+  flex-direction:column!important;
+  grid-template-rows:none!important;
+  width:min(720px,calc(100vw - 20px))!important;
+  height:min(72dvh,680px)!important;
+  max-height:calc(100dvh - 28px)!important;
+  min-height:360px!important;
+  overflow:hidden!important;
+  padding:0!important;
+}
+.dm-box.hidden{display:none!important}
+.dm-head{flex:0 0 auto!important}
+.dm-messages{
+  flex:1 1 auto!important;
+  min-height:90px!important;
+  height:auto!important;
+  overflow-y:auto!important;
+}
+.dm-box .dm-compose{
+  flex:0 0 auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 82px!important;
+  gap:8px!important;
+  width:100%!important;
+  min-height:64px!important;
+  padding:9px 10px max(10px,env(safe-area-inset-bottom))!important;
+  margin:0!important;
+  position:relative!important;
+  bottom:auto!important;
+  z-index:20!important;
+  visibility:visible!important;
+  opacity:1!important;
+  background:#020b13!important;
+  border-top:1px solid rgba(73,214,255,.34)!important;
+}
+#dmInput{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:100%!important;
+  min-width:0!important;
+  height:46px!important;
+  min-height:46px!important;
+  padding:11px 12px!important;
+  margin:0!important;
+  font-size:16px!important;
+  line-height:22px!important;
+  color:#f4fdff!important;
+  caret-color:#62eaff!important;
+  background:#071724!important;
+  border:1px solid rgba(80,220,255,.48)!important;
+  border-radius:4px!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+}
+#dmInput::placeholder{color:#648697!important;opacity:1!important}
+#dmInput:focus{border-color:#53e5ff!important;box-shadow:0 0 0 2px rgba(50,215,255,.09),0 0 18px rgba(50,215,255,.09)!important}
+#dmSend{
+  display:grid!important;
+  place-items:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:82px!important;
+  min-width:82px!important;
+  height:46px!important;
+  min-height:46px!important;
+  padding:0 8px!important;
+  margin:0!important;
+  border:1px solid rgba(95,230,255,.52)!important;
+  background:linear-gradient(135deg,#075873,#3448ff)!important;
+  color:#fff!important;
+  font-size:11px!important;
+}
+#dmStatus{flex:0 0 auto!important;min-height:18px!important;padding:2px 8px 5px!important;margin:0!important}
+@media(max-width:620px){
+  .art-choice img,.network-art-menu img{max-height:135px}
+  .art-game-grid .quick-game-card img{max-height:112px}
+  .network-page-title img{max-height:112px!important}
+  .dm-box{height:min(68dvh,590px)!important;max-height:calc(100dvh - 18px)!important;top:50%!important}
+  .dm-box .dm-compose{grid-template-columns:minmax(0,1fr) 72px!important;padding:8px 8px max(9px,env(safe-area-inset-bottom))!important}
+  #dmSend{width:72px!important;min-width:72px!important}
+}
