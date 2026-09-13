@@ -2453,3 +2453,89 @@ body.dm-open{overflow:hidden!important}
     max-width:84%!important;
   }
 }
+
+/* v5.69 — smaller bubbles + safe DM modal fit */
+.network-page .chat-bubble,
+.network-page .dm-msg span{
+  line-height:1.35!important;
+}
+.network-page .chat-bubble{
+  justify-self:start!important;
+  width:auto!important;
+  max-width:min(100%, 420px)!important;
+  padding:10px 14px 12px 14px!important;
+}
+.network-page .dm-msg span{
+  width:auto!important;
+  max-width:min(70%, 340px)!important;
+  padding:10px 14px 12px 14px!important;
+}
+.network-page .chat-bubble::before,
+.network-page .dm-msg span::before{
+  inset:-4px -7px!important;
+  background-position:center center!important;
+  background-size:100% 100%!important;
+}
+.network-page .chat-bubble small{
+  margin-top:4px!important;
+}
+
+/* Make DM modal fully fit on small screens */
+.network-page .dm-box{
+  box-sizing:border-box!important;
+}
+.network-page .dm-box .dm-compose{
+  grid-template-columns:minmax(0,1fr) 104px!important;
+  gap:10px!important;
+  padding:9px 10px max(10px,env(safe-area-inset-bottom))!important;
+}
+.network-page #dmSend,
+.network-page #dmSend.art-small-button{
+  width:104px!important;
+  min-width:104px!important;
+  max-width:104px!important;
+  height:auto!important;
+  min-height:0!important;
+}
+.network-page #dmSend.art-small-button img{
+  max-height:42px!important;
+}
+@media(max-width:620px){
+  .network-page .chat-bubble{
+    max-width:min(100%, 360px)!important;
+    padding:9px 12px 11px 12px!important;
+  }
+  .network-page .dm-msg span{
+    max-width:66%!important;
+    padding:9px 12px 11px 12px!important;
+  }
+  .network-page .dm-box{
+    width:calc(100vw - 10px)!important;
+    max-width:calc(100vw - 10px)!important;
+    min-height:360px!important;
+    left:50%!important;
+    top:50%!important;
+    transform:translate(-50%,-50%)!important;
+    clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)!important;
+  }
+  .network-page .dm-head{
+    padding:24px 10px 10px 14px!important;
+  }
+  .network-page .dm-messages{
+    padding:10px 8px 14px!important;
+  }
+  .network-page .dm-box .dm-compose{
+    grid-template-columns:minmax(0,1fr) 92px!important;
+    gap:8px!important;
+    padding:8px 8px max(10px,env(safe-area-inset-bottom))!important;
+  }
+  .network-page #dmSend,
+  .network-page #dmSend.art-small-button{
+    width:92px!important;
+    min-width:92px!important;
+    max-width:92px!important;
+  }
+  .network-page #dmSend.art-small-button img{
+    max-height:38px!important;
+  }
+}
