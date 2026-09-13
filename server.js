@@ -98,6 +98,37 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
 
+    CREATE TABLE IF NOT EXISTS global_chat (
+      id BIGSERIAL PRIMARY KEY,
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      message VARCHAR(120) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_global_chat_recent ON global_chat(id DESC);
+
+    CREATE TABLE IF NOT EXISTS friendships (
+      id BIGSERIAL PRIMARY KEY,
+      user_a BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      user_b BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      requested_by BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      status VARCHAR(12) NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      accepted_at TIMESTAMPTZ,
+      CHECK(user_a < user_b),
+      UNIQUE(user_a,user_b)
+    );
+    CREATE INDEX IF NOT EXISTS idx_friendships_a ON friendships(user_a,status);
+    CREATE INDEX IF NOT EXISTS idx_friendships_b ON friendships(user_b,status);
+
+    CREATE TABLE IF NOT EXISTS direct_messages (
+      id BIGSERIAL PRIMARY KEY,
+      sender_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      receiver_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      message VARCHAR(240) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_dm_pair ON direct_messages(sender_id,receiver_id,id DESC);
+
     CREATE TABLE IF NOT EXISTS matches (
       id BIGSERIAL PRIMARY KEY,
       challenger_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
@@ -390,19 +421,19 @@ function scheduleElimination(userId) {
 
 
 const TITLE_DEFS={
-  rookie:{name:'ROOKIE',jp:'ルーキー',tier:'C'},
-  rank1:{name:'APEX // #1',jp:'頂点到達者',tier:'S'},
-  rank2:{name:'VANGUARD // #2',jp:'第二位到達者',tier:'A'},
-  rank3:{name:'ELITE // #3',jp:'第三位到達者',tier:'A'},
-  hitblow5:{name:'CODE HUNTER I',jp:'HIT & BLOW 5戦',tier:'B'},
-  hitblow10:{name:'CODE HUNTER II',jp:'HIT & BLOW 10戦',tier:'A'},
-  hitblow15:{name:'CODE BREAKER',jp:'HIT & BLOW 15戦',tier:'S'},
-  janken5:{name:'SIGNAL FIGHTER I',jp:'JANKEN 5戦',tier:'B'},
-  janken10:{name:'SIGNAL FIGHTER II',jp:'JANKEN 10戦',tier:'A'},
-  janken15:{name:'SIGNAL DOMINATOR',jp:'JANKEN 15戦',tier:'S'},
-  chinchiro5:{name:'DICE RUNNER I',jp:'CHINCHIRO 5戦',tier:'B'},
-  chinchiro10:{name:'DICE RUNNER II',jp:'CHINCHIRO 10戦',tier:'A'},
-  chinchiro15:{name:'DICE MASTER',jp:'CHINCHIRO 15戦',tier:'S'}
+  rookie:{name:'ROOKIE',jp:'ルーキー',tier:'C',image:'/titles/rookie.webp'},
+  rank1:{name:'1ST PLACE',jp:'1位到達者',tier:'S',image:'/titles/rank1.webp'},
+  rank2:{name:'2ND PLACE',jp:'2位到達者',tier:'S',image:'/titles/rank2.webp'},
+  rank3:{name:'3RD PLACE',jp:'3位到達者',tier:'S',image:'/titles/rank3.webp'},
+  hitblow5:{name:'CODE SCOUT',jp:'HIT & BLOW 5戦',tier:'B',image:'/titles/hitblow5.webp'},
+  hitblow10:{name:'CODE HUNTER',jp:'HIT & BLOW 10戦',tier:'A',image:'/titles/hitblow10.webp'},
+  hitblow15:{name:'CODE SOVEREIGN',jp:'HIT & BLOW 15戦',tier:'S',image:'/titles/hitblow15.webp'},
+  janken5:{name:'HAND INITIATE',jp:'JANKEN 5戦',tier:'B',image:'/titles/janken5.webp'},
+  janken10:{name:'HAND DUELIST',jp:'JANKEN 10戦',tier:'A',image:'/titles/janken10.webp'},
+  janken15:{name:'HAND MASTER',jp:'JANKEN 15戦',tier:'S',image:'/titles/janken15.webp'},
+  chinchiro5:{name:'DICE RUNNER',jp:'CHINCHIRO 5戦',tier:'B',image:'/titles/chinchiro5.webp'},
+  chinchiro10:{name:'DICE STRIKER',jp:'CHINCHIRO 10戦',tier:'A',image:'/titles/chinchiro10.webp'},
+  chinchiro15:{name:'DICE EMPEROR',jp:'CHINCHIRO 15戦',tier:'S',image:'/titles/chinchiro15.webp'}
 };
 function titleMeta(key){const k=TITLE_DEFS[key]?key:'rookie';return {key:k,...TITLE_DEFS[k]}}
 async function unlockTitle(userId,key,client=pool){if(!TITLE_DEFS[key])return;await client.query(`INSERT INTO user_titles(user_id,title_key) VALUES($1,$2) ON CONFLICT DO NOTHING`,[userId,key]);}
@@ -441,7 +472,7 @@ app.get('/api/me', requireUser, async (req, res, next) => {
     res.json({ ...u, id:Number(u.id), points:Number(u.points), selectedTitle:titleMeta(u.selected_title_key), titles:titles.rows.map(x=>titleMeta(x.title_key)) });
   } catch(e){ next(e); }
 });
-app.get('/api/titles',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);const u=await one('SELECT selected_title_key FROM users WHERE id=$1',[req.userId]);const r=await query('SELECT title_key,unlocked_at FROM user_titles WHERE user_id=$1 ORDER BY unlocked_at,title_key',[req.userId]);res.json({selectedKey:u?.selected_title_key||'rookie',titles:r.rows.map(x=>({...titleMeta(x.title_key),unlockedAt:x.unlocked_at}))});}catch(e){next(e)}});
+app.get('/api/titles',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);await awardQuickBattleTitles(req.userId,'hitblow');await awardQuickBattleTitles(req.userId,'janken');await awardQuickBattleTitles(req.userId,'chinchiro');await awardPodiumTitles();const u=await one('SELECT selected_title_key FROM users WHERE id=$1',[req.userId]);const r=await query('SELECT title_key,unlocked_at FROM user_titles WHERE user_id=$1',[req.userId]);const owned=new Map(r.rows.map(x=>[x.title_key,x.unlocked_at]));res.json({selectedKey:u?.selected_title_key||'rookie',titles:Object.keys(TITLE_DEFS).map(key=>({...titleMeta(key),owned:owned.has(key),unlockedAt:owned.get(key)||null}))});}catch(e){next(e)}});
 app.post('/api/titles/select',requireUser,async(req,res,next)=>{try{const key=String(req.body.key||'');const owned=await one('SELECT 1 FROM user_titles WHERE user_id=$1 AND title_key=$2',[req.userId,key]);if(!owned)return res.status(403).json({error:'未獲得の称号です'});await query('UPDATE users SET selected_title_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,title:titleMeta(key)});}catch(e){next(e)}});
 app.post('/api/me/avatar',requireUser,async(req,res,next)=>{try{const key=cleanAvatarKey(req.body.avatarKey);if(!key)return res.status(400).json({error:'アイコンを選択してください'});await query('UPDATE users SET avatar_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,avatarKey:key});}catch(e){next(e)}});
 app.post('/api/eliminate-me',requireUser,async(req,res,next)=>{try{const u=await one('SELECT id,points FROM users WHERE id=$1',[req.userId]);if(!u)return res.json({ok:true});if(Number(u.points)!==0)return res.status(409).json({error:'0ptではありません'});await deleteUserHard(req.userId);res.json({ok:true});}catch(e){next(e)}});
@@ -1009,6 +1040,23 @@ app.get('/api/staff/accounts', requireAdmin, async (req,res,next)=>{try{const r=
 app.post('/api/staff/accounts', requireAdmin, async (req,res,next)=>{const username=cleanName(req.body.username),password=String(req.body.password||''),role=req.body.role==='admin'?'admin':'staff';if(username.length<2||username.length>30)return res.status(400).json({error:'スタッフIDは2〜30文字で入力してください'});if(password.length<8||password.length>72)return res.status(400).json({error:'スタッフパスワードは8〜72文字で入力してください'});try{const hash=await bcrypt.hash(password,12),r=await query('INSERT INTO staff(username,password_hash,role) VALUES($1,$2,$3) RETURNING id',[username,hash,role]);res.json({ok:true,id:Number(r.rows[0].id)})}catch(e){if(e.code==='23505')return res.status(409).json({error:'そのスタッフIDは使用済みです'});next(e)}});
 app.delete('/api/staff/accounts/:id', requireAdmin, async (req,res,next)=>{try{const id=Number(req.params.id);if(id===req.staff.id)return res.status(400).json({error:'現在ログイン中の自分自身は削除できません'});const target=await one('SELECT id,username,role FROM staff WHERE id=$1',[id]);if(!target)return res.status(404).json({error:'アカウントが見つかりません'});if(target.role==='admin'){const count=await one("SELECT COUNT(*)::int AS count FROM staff WHERE role='admin'");if(Number(count.count)<=1)return res.status(400).json({error:'最後の管理者は削除できません'})}await query('DELETE FROM staff WHERE id=$1',[id]);res.json({ok:true,username:target.username,role:target.role})}catch(e){next(e)}});
 
+
+// NEXUS NETWORK: GLOBAL CHAT / FRIENDS / LIVE SPECTATE -----------------------
+function socialProfile(row,prefix=''){const g=k=>row[prefix+k];return {id:Number(g('id')),code:g('public_code'),name:g('username'),avatarKey:g('avatar_key')||'avatar-01',title:titleMeta(g('selected_title_key')||'rookie')}}
+function friendPair(a,b){a=Number(a);b=Number(b);return a<b?[a,b]:[b,a]}
+async function acceptedFriend(userId,otherId,client=pool){const [a,b]=friendPair(userId,otherId);const r=await client.query("SELECT id FROM friendships WHERE user_a=$1 AND user_b=$2 AND status='accepted'",[a,b]);return r.rows[0]||null}
+app.get('/api/chat/global',requireUser,async(req,res,next)=>{try{const r=await query(`SELECT c.id,c.message,c.created_at,u.id AS user_id,u.public_code,u.username,u.avatar_key,u.selected_title_key FROM global_chat c JOIN users u ON u.id=c.user_id WHERE u.points>=0 ORDER BY c.id DESC LIMIT 60`);res.json(r.rows.reverse().map(x=>({id:Number(x.id),message:x.message,createdAt:x.created_at,user:{id:Number(x.user_id),code:x.public_code,name:x.username,avatarKey:x.avatar_key||'avatar-01',title:titleMeta(x.selected_title_key||'rookie')}})))}catch(e){next(e)}});
+app.post('/api/chat/global',requireUser,async(req,res,next)=>{try{const message=String(req.body.message||'').trim();if(!message||Array.from(message).length>30)return res.status(400).json({error:'全体メッセージは1〜30文字で入力してください'});const last=await one('SELECT created_at FROM global_chat WHERE user_id=$1 ORDER BY id DESC LIMIT 1',[req.userId]);if(last){const wait=15000-(Date.now()-new Date(last.created_at).getTime());if(wait>0)return res.status(429).json({error:`あと${Math.ceil(wait/1000)}秒待ってください`,retryAfterMs:wait})}const r=await query('INSERT INTO global_chat(user_id,message) VALUES($1,$2) RETURNING id,created_at',[req.userId,message]);res.json({ok:true,id:Number(r.rows[0].id),createdAt:r.rows[0].created_at,cooldownMs:15000})}catch(e){next(e)}});
+app.get('/api/friends/search',requireUser,async(req,res,next)=>{try{const code=String(req.query.code||'').trim();if(!/^\d{4}$/.test(code))return res.status(400).json({error:'4桁のPLAYER IDを入力してください'});const u=await one('SELECT id,public_code,username,avatar_key,selected_title_key FROM users WHERE public_code=$1 AND points>=0',[code]);if(!u)return res.status(404).json({error:'PLAYERが見つかりません'});if(Number(u.id)===Number(req.userId))return res.status(400).json({error:'自分自身です'});const [a,b]=friendPair(req.userId,u.id);const f=await one('SELECT id,status,requested_by FROM friendships WHERE user_a=$1 AND user_b=$2',[a,b]);res.json({user:socialProfile(u),friendship:f?{id:Number(f.id),status:f.status,requestedBy:Number(f.requested_by)}:null})}catch(e){next(e)}});
+app.get('/api/friends',requireUser,async(req,res,next)=>{try{const r=await query(`SELECT f.*,u.id AS other_id,u.public_code AS other_public_code,u.username AS other_username,u.avatar_key AS other_avatar_key,u.selected_title_key AS other_selected_title_key FROM friendships f JOIN users u ON u.id=CASE WHEN f.user_a=$1 THEN f.user_b ELSE f.user_a END WHERE f.user_a=$1 OR f.user_b=$1 ORDER BY f.status DESC,f.id DESC`,[req.userId]);res.json(r.rows.map(x=>({id:Number(x.id),status:x.status,direction:Number(x.requested_by)===Number(req.userId)?'outgoing':'incoming',user:socialProfile(x,'other_')})))}catch(e){next(e)}});
+app.post('/api/friends/request',requireUser,async(req,res,next)=>{const targetId=Number(req.body.userId);if(!targetId||targetId===Number(req.userId))return res.status(400).json({error:'申請先が不正です'});try{const u=await one('SELECT id FROM users WHERE id=$1',[targetId]);if(!u)return res.status(404).json({error:'PLAYERが見つかりません'});const [a,b]=friendPair(req.userId,targetId);const ex=await one('SELECT id,status,requested_by FROM friendships WHERE user_a=$1 AND user_b=$2',[a,b]);if(ex){if(ex.status==='accepted')return res.status(409).json({error:'すでにフレンドです'});if(Number(ex.requested_by)===targetId){await query("UPDATE friendships SET status='accepted',accepted_at=NOW() WHERE id=$1",[ex.id]);return res.json({ok:true,accepted:true})}return res.status(409).json({error:'すでに申請済みです'})}await query('INSERT INTO friendships(user_a,user_b,requested_by) VALUES($1,$2,$3)',[a,b,req.userId]);res.json({ok:true,accepted:false})}catch(e){next(e)}});
+app.post('/api/friends/:id/accept',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const f=await one("SELECT * FROM friendships WHERE id=$1 AND status='pending'",[id]);if(!f)return res.status(404).json({error:'申請が見つかりません'});if(Number(f.requested_by)===Number(req.userId)||![Number(f.user_a),Number(f.user_b)].includes(Number(req.userId)))return res.status(403).json({error:'承認できません'});await query("UPDATE friendships SET status='accepted',accepted_at=NOW() WHERE id=$1",[id]);res.json({ok:true})}catch(e){next(e)}});
+app.delete('/api/friends/:id',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const r=await query('DELETE FROM friendships WHERE id=$1 AND (user_a=$2 OR user_b=$2) RETURNING id',[id,req.userId]);if(!r.rows[0])return res.status(404).json({error:'フレンド情報が見つかりません'});res.json({ok:true})}catch(e){next(e)}});
+app.get('/api/friends/:userId/messages',requireUser,async(req,res,next)=>{try{const otherId=Number(req.params.userId);if(!await acceptedFriend(req.userId,otherId))return res.status(403).json({error:'フレンドのみ個別メッセージを利用できます'});const r=await query(`SELECT d.id,d.sender_id,d.receiver_id,d.message,d.created_at,s.username AS sender_name,s.avatar_key AS sender_avatar_key,s.selected_title_key AS sender_selected_title_key FROM direct_messages d JOIN users s ON s.id=d.sender_id WHERE (d.sender_id=$1 AND d.receiver_id=$2) OR (d.sender_id=$2 AND d.receiver_id=$1) ORDER BY d.id DESC LIMIT 100`,[req.userId,otherId]);res.json(r.rows.reverse().map(x=>({id:Number(x.id),senderId:Number(x.sender_id),receiverId:Number(x.receiver_id),message:x.message,createdAt:x.created_at,sender:{name:x.sender_name,avatarKey:x.sender_avatar_key||'avatar-01',title:titleMeta(x.sender_selected_title_key||'rookie')}})))}catch(e){next(e)}});
+app.post('/api/friends/:userId/messages',requireUser,async(req,res,next)=>{try{const otherId=Number(req.params.userId),message=String(req.body.message||'').trim();if(!message||Array.from(message).length>100)return res.status(400).json({error:'個別メッセージは1〜100文字で入力してください'});if(!await acceptedFriend(req.userId,otherId))return res.status(403).json({error:'フレンドのみ個別メッセージを利用できます'});await query('INSERT INTO direct_messages(sender_id,receiver_id,message) VALUES($1,$2,$3)',[req.userId,otherId,message]);res.json({ok:true})}catch(e){next(e)}});
+app.get('/api/live-matches',requireUser,async(req,res,next)=>{try{const q=await query(`${quickSelect} WHERE q.status IN ('setup','in_progress') ORDER BY q.id DESC LIMIT 40`);const c=await query(`SELECT m.*,cu.avatar_key challenger_avatar,cu.selected_title_key challenger_title,ou.avatar_key opponent_avatar,ou.selected_title_key opponent_title,ru.avatar_key referee_avatar,ru.selected_title_key referee_title FROM matches m LEFT JOIN users cu ON cu.id=m.challenger_id LEFT JOIN users ou ON ou.id=m.opponent_id LEFT JOIN users ru ON ru.id=m.referee_id WHERE m.status IN ('matched','in_progress') ORDER BY m.id DESC LIMIT 20`);res.json({quick:q.rows.map(x=>publicQuickMatch(x,0)),custom:c.rows.map(x=>publicMatch(x,0))})}catch(e){next(e)}});
+app.get('/api/spectate/quick/:id',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const r=await query(`${quickSelect} WHERE q.id=$1`,[id]);if(!r.rows[0])return res.status(404).json({error:'試合が見つかりません'});const m=publicQuickMatch(r.rows[0],0);const out={match:m,guesses:[],rounds:[],rolls:[]};if(m.gameType==='hitblow'){const g=await query('SELECT player_id,player_name,turn_no,guess,hits,blows,created_at FROM hit_blow_guesses WHERE match_id=$1 ORDER BY id',[id]);out.guesses=g.rows.map(x=>({...x,player_id:Number(x.player_id),turn_no:Number(x.turn_no),hits:Number(x.hits),blows:Number(x.blows)}))}else if(m.gameType==='janken'){const j=await query('SELECT round_no,challenger_choice,opponent_choice,winner_user_id,result,created_at FROM janken_rounds WHERE match_id=$1 ORDER BY id',[id]);out.rounds=j.rows.map(x=>({...x,round_no:Number(x.round_no),winner_user_id:x.winner_user_id?Number(x.winner_user_id):null}))}else if(m.gameType==='chinchiro'){const c=await query('SELECT round_no,player_id,player_name,attempt_no,dice,role,role_value,created_at FROM chinchiro_rolls WHERE match_id=$1 ORDER BY id',[id]);out.rolls=c.rows.map(x=>({...x,round_no:Number(x.round_no),player_id:Number(x.player_id),attempt_no:Number(x.attempt_no),role_value:Number(x.role_value)}))}res.json(out)}catch(e){next(e)}});
+
 app.use(express.static(path.join(__dirname,'public')));
 app.get('/admin',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));
 app.get('/ranking',(req,res)=>res.sendFile(path.join(__dirname,'public','ranking.html')));
@@ -1018,6 +1066,8 @@ app.get('/match',(req,res)=>res.sendFile(path.join(__dirname,'public','match.htm
 app.get('/hit-blow',(req,res)=>res.sendFile(path.join(__dirname,'public','hit-blow.html')));
 app.get('/janken',(req,res)=>res.sendFile(path.join(__dirname,'public','janken.html')));
 app.get('/chinchiro',(req,res)=>res.sendFile(path.join(__dirname,'public','chinchiro.html')));
+app.get('/network',(req,res)=>res.sendFile(path.join(__dirname,'public','network.html')));
+app.get('/watch',(req,res)=>res.sendFile(path.join(__dirname,'public','watch.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(err);res.status(500).json({error:'サーバー処理でエラーが発生しました'})});
 
@@ -1025,7 +1075,7 @@ app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(e
   try{
     await initDb();
     app.listen(PORT,'0.0.0.0',()=>{
-      console.log(`NEXUS:ZERO v5.49: http://localhost:${PORT}`);
+      console.log(`NEXUS:ZERO v5.50: http://localhost:${PORT}`);
       console.log('Database: PostgreSQL');
       console.log(`Starting points: ${STARTING_POINTS}`);
       if(SESSION_SECRET.startsWith('replace-this'))console.log('WARNING: SESSION_SECRETを本番用に変更してください。');

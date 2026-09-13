@@ -57,12 +57,12 @@
     <div class="player-status-line"><span><i></i> PLAYER STATUS</span><strong>ONLINE</strong></div>
     <div class="arena-player-grid">
       <div class="arena-identity">
-        <button type="button" id="avatarChangeBtn" class="identity-core avatar-core avatar-change-btn" aria-label="アイコン変更"><img id="playerAvatar" src="/avatars/avatar-01.webp" alt="PLAYER AVATAR"><span>CHANGE</span></button>
+        <button type="button" id="avatarChangeBtn" class="identity-core avatar-core avatar-change-btn" aria-label="アイコン変更"><img id="playerAvatar" src="/avatars/avatar-01.webp" alt="PLAYER AVATAR"></button>
         <div class="identity-data">
           <span class="micro-label">PLAYER ID</span>
           <div class="id-display" id="customerCode">----</div>
           <span class="micro-label">PLAYER NAME</span>
-          <h1 id="name"></h1><button type="button" id="titleBadgeBtn" class="player-title-badge tier-C"><span>TITLE</span><strong id="selectedTitleName">ROOKIE</strong><small id="selectedTitleJp">ルーキー</small></button>
+          <h1 id="name"></h1><button type="button" id="titleBadgeBtn" class="player-title-badge tier-C"><img id="selectedTitleImage" src="/titles/rookie.webp" alt="ROOKIE"><span class="title-text-fallback"><strong id="selectedTitleName">ROOKIE</strong><small id="selectedTitleJp">ルーキー</small></span></button>
         </div>
       </div>
       <div class="metric-block points-block arena-metric">
@@ -108,6 +108,8 @@
     </div>
     <p class="system-note">対戦ポイントは10pt刻み。上限は対戦する2人のうち所持ポイントが低い方です。</p>
   </section>
+
+<section class="system-panel nexus-network-panel"><div class="panel-head"><div><div class="eyebrow">NEXUS NETWORK</div><h2>ソーシャルリンク</h2></div><span class="hud-icon">◎</span></div><div class="network-link-grid"><a href="/network#chat" class="network-link-card"><b>GLOBAL CHAT</b><span>全体メッセージ</span></a><a href="/network#friends" class="network-link-card"><b>FRIENDS</b><span>検索・申請・個別メッセージ</span></a><a href="/network#live" class="network-link-card"><b>LIVE BATTLE</b><span>進行中の試合を観戦</span></a></div></section>
 
   <div class="system-panel logout-card arena-controls"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
 
@@ -163,8 +165,8 @@ $('#avatarChangeBtn')?.addEventListener('click',()=>$('#avatarPicker').classList
 document.addEventListener('click',async e=>{const close=e.target.closest('[data-close-picker]');if(close){$('#'+close.dataset.closePicker+'Picker')?.classList.add('hidden');return}const title=e.target.closest('[data-title-key]');if(title){try{const r=await api('/api/titles/select',{method:'POST',body:JSON.stringify({key:title.dataset.titleKey})});renderSelectedTitle(r.title);$('#titlePicker').classList.add('hidden')}catch(err){alert(err.message)}return}const av=e.target.closest('[data-avatar-change]');if(av){try{const r=await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarKey:av.dataset.avatarChange})});setImgSrc($('#playerAvatar'),avatarSrc(r.avatarKey));$('#avatarPicker').classList.add('hidden')}catch(err){alert(err.message)}}});
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
 const TITLE_FALLBACK={key:'rookie',name:'ROOKIE',jp:'ルーキー',tier:'C'};
-function renderSelectedTitle(t){t=t||TITLE_FALLBACK;const b=$('#titleBadgeBtn');if(!b)return;b.className=`player-title-badge tier-${t.tier||'C'}`;$('#selectedTitleName').textContent=t.name||'ROOKIE';$('#selectedTitleJp').textContent=t.jp||'ルーキー'}
-async function openTitlePicker(){try{const d=await api('/api/titles');$('#titlePickerList').innerHTML=d.titles.map(t=>`<button type="button" class="title-option tier-${t.tier} ${t.key===d.selectedKey?'selected':''}" data-title-key="${t.key}"><span>${t.tier}</span><div><strong>${esc(t.name)}</strong><small>${esc(t.jp)}</small></div>${t.key===d.selectedKey?'<em>EQUIPPED</em>':''}</button>`).join('');$('#titlePicker').classList.remove('hidden')}catch(e){alert(e.message)}}
+function renderSelectedTitle(t){t=t||TITLE_FALLBACK;const b=$('#titleBadgeBtn');if(!b)return;b.className=`player-title-badge tier-${t.tier||'C'}`;$('#selectedTitleName').textContent=t.name||'ROOKIE';$('#selectedTitleJp').textContent=t.jp||'ルーキー';setImgSrc($('#selectedTitleImage'),t.image||'/titles/rookie.webp')}
+async function openTitlePicker(){try{const d=await api('/api/titles');$('#titlePickerList').innerHTML=d.titles.map(t=>`<button type="button" class="title-option image-title ${t.owned?'':'locked'} ${t.key===d.selectedKey?'selected':''}" ${t.owned?`data-title-key="${t.key}"`:'disabled'}><img src="${t.image}" alt="${esc(t.name)}"><span class="title-lock">${t.owned?'':'🔒'}</span>${t.key===d.selectedKey?'<em>EQUIPPED</em>':''}</button>`).join('');$('#titlePicker').classList.remove('hidden')}catch(e){alert(e.message)}}
 function setImgSrc(el,src){if(!el)return;const abs=new URL(src,location.href).href;if(el.src!==abs)el.src=src}
 function setStableHTML(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken;}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const err=new Error('ネットワーク通信に失敗しました');err.status=0;throw err}const d=await r.json().catch(()=>({}));if(!r.ok){const err=new Error(d.error||'通信に失敗しました');err.status=r.status;err.code=d.code||'';throw err}return d}
@@ -249,6 +251,7 @@ $('#challengeBtn').onclick=async()=>{const btn=$('#challengeBtn');$('#matchCreat
 $('#loginBtn').addEventListener('pointerdown',()=>{window.NexusBGM?.unlock?.();window.NexusBGM?.prime?.('home')});$('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=()=>loadMe(true);$('#logoutBtn').onclick=async()=>{clearInterval(matchPollTimer);try{await api('/api/logout',{method:'POST'})}catch(e){}localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};
 function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
 document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>scrollToId(b.dataset.scroll));
+const challengeCode=new URLSearchParams(location.search).get('challenge');if(challengeCode&&/^\d{4}$/.test(challengeCode)){const q=$('#quickOpponentCode');if(q)q.value=challengeCode;}
 loadMe();
 </script>
 </body></html>

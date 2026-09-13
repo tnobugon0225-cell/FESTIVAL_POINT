@@ -364,3 +364,8 @@ npm start
 - 各対戦結果画面にHOMEへ戻るボタンを追加。
 - 対戦申請ポップアップの「あとで確認する」を削除。
 - 称号バナーはv5.49では機能確認しやすいネオンUI版。画像アセット版へ後から差し替え可能な構造。
+
+
+## v5.50
+- Title image library with locked titles, avatar tap-only change UI.
+- NEXUS NETWORK: global chat (30 chars / 15s cooldown), friend requests/search/DM, live match list and quick-battle spectating.
