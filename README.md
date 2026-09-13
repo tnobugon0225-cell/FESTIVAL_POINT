@@ -1,3 +1,7 @@
+## v5.57
+- FRIENDS private-message screen rebuilt as a dedicated responsive modal.
+- Fixed global button CSS leaking into the DM close button and breaking mobile layout.
+
 
 ## v5.34
 - HIT & BLOW の制限時間を 60 秒へ変更。
@@ -392,3 +396,9 @@ npm start
 - 称号選択モーダルの閉じる×ボタンを中央揃えに修正。
 - 未獲得称号のロック表示を絵文字からNEXUS専用ロック画像へ変更。
 - ロック画像は透過WebPで中央表示し、未獲得称号のみ選択不可のまま維持。
+
+## v5.56
+- 個別メッセージ送受信を安定化（連打防止・送信状態表示・Enter送信・再読込競合対策）。
+- LIVE BATTLE / 観戦画面の定期更新で内容が変わっていない時は再描画しないようにし、チラつきを抑制。
+- グローバルチャットのメッセージ欄およびアイコンから開くプロフィールからPLAYER ID表示を削除。
+- HIT & BLOW / JANKEN / CHINCHIRO / CUSTOM BATTLEの対戦中プレイヤー表示とVSイントロの称号を、文字列ではなく装備中の称号画像へ変更。
