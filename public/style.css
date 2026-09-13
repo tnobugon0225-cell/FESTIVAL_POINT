@@ -2937,3 +2937,107 @@ body.dm-open{overflow:hidden!important}
     margin-left:7px!important;
   }
 }
+
+/* v5.74 — fix DM blank modal flow and align global-chat profile block to bubble center */
+.network-page #dmBox{
+  pointer-events:auto!important;
+}
+.network-page .dm-box.hidden{
+  display:none!important;
+}
+.network-page .dm-head{
+  align-items:center!important;
+}
+.network-page #dmName{
+  position:relative!important;
+  z-index:11!important;
+  display:flex!important;
+  align-items:center!important;
+  min-height:24px!important;
+}
+.network-page #dmClose{
+  position:relative!important;
+  z-index:12!important;
+  pointer-events:auto!important;
+}
+.network-page .dm-messages .system-note{
+  margin:10px 0!important;
+}
+
+/* Global chat row alignment */
+.network-page .chat-row{
+  grid-template-columns:42px 98px minmax(0,1fr)!important;
+  column-gap:8px!important;
+  align-items:center!important;
+  margin:10px 0!important;
+}
+.network-page .chat-avatar{
+  align-self:center!important;
+}
+.network-page .chat-id{
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:center!important;
+  align-self:center!important;
+  gap:3px!important;
+  min-height:42px!important;
+}
+.network-page .chat-id .mini-title-img{
+  width:96px!important;
+  height:22px!important;
+  object-position:left center!important;
+  margin:0!important;
+}
+.network-page .chat-id strong{
+  line-height:1.12!important;
+  margin:0!important;
+}
+.network-page .chat-row > .chat-bubble{
+  align-self:center!important;
+  justify-self:start!important;
+}
+.network-page .chat-bubble{
+  box-sizing:border-box!important;
+  max-width:min(100%, 420px)!important;
+  padding:10px 14px 11px 18px!important;
+}
+.network-page .chat-bubble-copy{
+  display:inline!important;
+  line-height:1.4!important;
+}
+.network-page .chat-bubble-text{
+  display:inline!important;
+}
+.network-page .chat-bubble-time,
+.network-page .chat-bubble small{
+  display:inline!important;
+  margin-left:8px!important;
+  vertical-align:baseline!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+}
+
+@media(max-width:620px){
+  .network-page .chat-row{
+    grid-template-columns:42px 92px minmax(0,1fr)!important;
+    column-gap:8px!important;
+    margin:10px 0!important;
+  }
+  .network-page .chat-id{
+    min-height:42px!important;
+    gap:2px!important;
+  }
+  .network-page .chat-id .mini-title-img{
+    width:92px!important;
+    height:20px!important;
+  }
+  .network-page .chat-bubble{
+    max-width:min(100%, 392px)!important;
+    padding:10px 13px 11px 18px!important;
+  }
+  .network-page .chat-bubble-time,
+  .network-page .chat-bubble small{
+    margin-left:7px!important;
+    font-size:9px!important;
+  }
+}
