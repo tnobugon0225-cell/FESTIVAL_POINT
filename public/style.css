@@ -2343,3 +2343,113 @@ body.dm-open{overflow:hidden!important}
     margin-top:8px!important;
   }
 }
+
+/* v5.68 — network asset swap (SEARCH / MESSAGE / SEND) + shared chat bubble art */
+.network-page .friend-search{
+  grid-template-columns:minmax(0,1fr) clamp(138px,28vw,210px)!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.network-page .network-image-button,
+.network-page .dm-open-btn,
+.network-page #friendSearchBtn,
+.network-page #dmSend.art-small-button{
+  margin:0!important;
+  padding:0!important;
+  width:100%!important;
+  min-width:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.network-page #friendSearchBtn{max-width:210px!important}
+.network-page #friendSearchBtn img,
+.network-page .dm-open-btn img,
+.network-page #dmSend.art-small-button img{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  object-fit:contain!important;
+}
+.network-page #friendSearchBtn img{max-height:68px!important}
+.network-page .dm-open-btn{
+  width:min(176px,42vw)!important;
+  justify-self:end!important;
+}
+.network-page .dm-open-btn img{max-height:58px!important}
+.network-page .friend-actions{
+  justify-items:end!important;
+  align-items:end!important;
+  gap:6px!important;
+}
+.network-page #dmSend.art-small-button{
+  width:110px!important;
+  min-width:110px!important;
+  height:auto!important;
+  min-height:0!important;
+}
+.network-page #dmSend.art-small-button img{max-height:48px!important}
+.network-page .chat-bubble,
+.network-page .dm-msg span{
+  position:relative!important;
+  z-index:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.network-page .chat-bubble{
+  padding:16px 18px 18px 18px!important;
+  max-width:100%!important;
+}
+.network-page .dm-msg span{
+  padding:15px 18px 16px!important;
+}
+.network-page .chat-bubble::before,
+.network-page .dm-msg span::before{
+  content:"";
+  position:absolute;
+  inset:-8px -12px;
+  background:url('/ui/chat-bubble.webp') center/100% 100% no-repeat;
+  z-index:-1;
+  pointer-events:none;
+}
+.network-page .chat-bubble::before,
+.network-page .dm-msg.other span::before{
+  transform:scaleX(-1);
+  transform-origin:center;
+}
+.network-page .dm-msg.mine span::before{
+  transform:none;
+}
+.network-page .chat-bubble small{
+  display:block!important;
+  margin-top:6px!important;
+  text-align:right!important;
+  font-size:8px!important;
+  color:#9ab1c1!important;
+}
+@media(max-width:620px){
+  .network-page .friend-search{
+    grid-template-columns:minmax(0,1fr) 140px!important;
+    gap:8px!important;
+  }
+  .network-page #friendSearchBtn img{max-height:56px!important}
+  .network-page .dm-open-btn{width:138px!important}
+  .network-page .dm-open-btn img{max-height:46px!important}
+  .network-page #dmSend.art-small-button{
+    width:96px!important;
+    min-width:96px!important;
+  }
+  .network-page .chat-bubble{
+    padding:14px 16px 16px 16px!important;
+  }
+  .network-page .dm-msg span{
+    padding:14px 16px 15px!important;
+    max-width:84%!important;
+  }
+}
