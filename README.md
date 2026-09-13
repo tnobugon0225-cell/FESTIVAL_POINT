@@ -369,3 +369,8 @@ npm start
 ## v5.50
 - Title image library with locked titles, avatar tap-only change UI.
 - NEXUS NETWORK: global chat (30 chars / 15s cooldown), friend requests/search/DM, live match list and quick-battle spectating.
+
+## v5.51
+- Fixed NEXUS NETWORK client-side JavaScript syntax error that prevented GLOBAL CHAT sending and tab switching.
+- GLOBAL / FRIENDS / LIVE tabs now have a clear active state and short transition.
+- GLOBAL CHAT now supports Enter-to-send and shows send/cooldown/error status inline.
