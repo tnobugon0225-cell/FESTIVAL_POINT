@@ -82,8 +82,8 @@
     setTimeout(()=>{Promise.resolve().then(done).finally(()=>{setTimeout(()=>{el.classList.remove('active');setTimeout(()=>{el.classList.add('hidden');navigating=false;},180)},120)})},TRANSITION_MS);
   }
 
-  function isModulePath(url){try{const u=new URL(url,location.href);return u.origin===location.origin && ['/','/ranking','/history','/rule'].includes(u.pathname)}catch(e){return false}}
-  function labelFor(url,fallback='MODULE'){try{const p=new URL(url,location.href).pathname;return p==='/'?'HOME':p==='/ranking'?'RANKING':p==='/history'?'HISTORY':p==='/rule'?'RULE':fallback}catch(e){return fallback}}
+  function isModulePath(url){try{const u=new URL(url,location.href);return u.origin===location.origin && ['/','/ranking','/history','/rule','/network'].includes(u.pathname)}catch(e){return false}}
+  function labelFor(url,fallback='MODULE'){try{const p=new URL(url,location.href).pathname;return p==='/'?'HOME':p==='/ranking'?'RANKING':p==='/history'?'HISTORY':p==='/rule'?'RULE':p==='/network'?'NETWORK':fallback}catch(e){return fallback}}
 
   function showModule(url,label){
     const wrap=ensureModuleFrame();if(!wrap){location.href=url;return}
@@ -104,7 +104,7 @@
     if(e.data.type==='nexus-open-settings'){window.NexusAudioSettings?.open?.();return}
     if(e.data.type==='nexus-module-nav'){showModule(e.data.url||'/',e.data.label||labelFor(e.data.url||'/'))}
   });
-  window.addEventListener('popstate',()=>{if(window.self!==window.top)return;const p=location.pathname;const wrap=document.getElementById('moduleFrameOverlay');if(!wrap)return;if(p==='/'){wrap.classList.add('hidden');return}if(p==='/ranking'||p==='/history'||p==='/rule'){const frame=wrap.querySelector('#moduleFrame');wrap.classList.remove('hidden');frame.src=p+'?embed=1'}});
+  window.addEventListener('popstate',()=>{if(window.self!==window.top)return;const p=location.pathname;const wrap=document.getElementById('moduleFrameOverlay');if(!wrap)return;if(p==='/'){wrap.classList.add('hidden');return}if(p==='/ranking'||p==='/history'||p==='/rule'||p==='/network'){const frame=wrap.querySelector('#moduleFrame');wrap.classList.remove('hidden');frame.src=p+'?embed=1'}});
 
   let pressLock=false;
   function pulsePress(el,done,delay=190){

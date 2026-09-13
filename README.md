@@ -416,3 +416,14 @@ npm start
 - UI artwork backgrounds are now alpha-keyed so dark rectangular canvases no longer show around menu art.
 - Rebuilt FRIENDS private-message composer so the text input and SEND control stay visible on iPhone/Safari.
 - Added tactile press feedback and a short ~190ms HUD transition pulse before battle/network menu screens switch.
+
+
+## v5.60
+- NETWORK opens through the persistent NEXUS module frame so HOME BGM and saved MASTER/BGM/SE gain do not reset during the screen switch.
+- Rebuilt private-message composer with an absolute iPhone-safe footer; input and SEND remain visible regardless of message history height/browser chrome.
+
+
+## v5.61
+- Unified display boxes for side-by-side artwork so QUICK/CUSTOM, QUICK game trio, NETWORK trio and network tabs align consistently.
+- Standardized input-label, action-button and title artwork heights across desktop/mobile.
+- Kept mobile QUICK and NETWORK trios in matching three-column rows while preserving equal visual weight.

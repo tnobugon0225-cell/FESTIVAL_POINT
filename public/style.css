@@ -1584,3 +1584,266 @@ body.dm-open{overflow:hidden!important}
   .dm-box .dm-compose{grid-template-columns:minmax(0,1fr) 72px!important;padding:8px 8px max(9px,env(safe-area-inset-bottom))!important}
   #dmSend{width:72px!important;min-width:72px!important}
 }
+
+
+/* v5.60 — iPhone-safe DM composer + persistent module audio */
+.dm-box{
+  display:block!important;
+  position:fixed!important;
+  left:50%!important;
+  top:50%!important;
+  right:auto!important;
+  bottom:auto!important;
+  transform:translate(-50%,-50%)!important;
+  width:min(720px,calc(100vw - 18px))!important;
+  height:min(70dvh,650px)!important;
+  max-height:calc(100dvh - 20px)!important;
+  min-height:390px!important;
+  padding:0!important;
+  overflow:hidden!important;
+}
+.dm-head{
+  position:absolute!important;
+  left:0!important;right:0!important;top:0!important;
+  height:76px!important;
+  z-index:6!important;
+}
+.dm-messages{
+  position:absolute!important;
+  left:0!important;right:0!important;
+  top:76px!important;
+  bottom:86px!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  padding:12px 10px 18px!important;
+}
+#dmStatus{
+  position:absolute!important;
+  left:0!important;right:0!important;
+  bottom:66px!important;
+  height:20px!important;
+  min-height:20px!important;
+  z-index:8!important;
+  padding:2px 10px!important;
+  margin:0!important;
+  background:#020b13!important;
+}
+.dm-box .dm-compose{
+  position:absolute!important;
+  left:0!important;right:0!important;bottom:0!important;
+  z-index:10!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) 78px!important;
+  gap:8px!important;
+  width:100%!important;
+  height:66px!important;
+  min-height:66px!important;
+  padding:9px 10px max(10px,env(safe-area-inset-bottom))!important;
+  margin:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  background:#020b13!important;
+  border-top:1px solid rgba(73,214,255,.34)!important;
+}
+#dmInput{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:relative!important;
+  width:100%!important;
+  height:46px!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:11px 12px!important;
+  font-size:16px!important;
+  line-height:22px!important;
+  background:#071724!important;
+  color:#f5fdff!important;
+  border:1px solid rgba(80,220,255,.52)!important;
+  border-radius:4px!important;
+  -webkit-appearance:none!important;
+  appearance:none!important;
+}
+#dmSend{
+  display:grid!important;
+  place-items:center!important;
+  visibility:visible!important;
+  opacity:1!important;
+  width:78px!important;
+  min-width:78px!important;
+  height:46px!important;
+  min-height:46px!important;
+  padding:0!important;
+  margin:0!important;
+}
+@media(max-width:620px){
+  .dm-box{height:min(68dvh,590px)!important;max-height:calc(100dvh - 18px)!important;top:50%!important}
+  .dm-head{height:72px!important}
+  .dm-messages{top:72px!important;bottom:88px!important}
+  #dmStatus{bottom:68px!important}
+  .dm-box .dm-compose{height:68px!important;min-height:68px!important;grid-template-columns:minmax(0,1fr) 72px!important;padding:9px 8px max(10px,env(safe-area-inset-bottom))!important}
+  #dmSend{width:72px!important;min-width:72px!important}
+}
+
+/* v5.61 — unified artwork sizing / visual rhythm */
+:root{
+  --nexus-art-ratio-wide:3.15/1;
+  --nexus-art-ratio-card:3/1;
+}
+
+/* Same-row cards always occupy the same visual box, regardless of source image canvas. */
+.art-choice-grid.two{
+  align-items:stretch;
+}
+.art-choice-grid.two .art-choice{
+  min-width:0;
+  min-height:0;
+  display:flex!important;
+  align-items:center;
+  justify-content:center;
+  aspect-ratio:var(--nexus-art-ratio-card);
+}
+.art-choice-grid.two .art-choice img{
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+/* QUICK game trio: identical cards and identical artwork footprint. */
+.art-game-grid{
+  align-items:stretch!important;
+}
+.art-game-grid .quick-game-card{
+  min-width:0!important;
+  min-height:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  aspect-ratio:var(--nexus-art-ratio-card)!important;
+}
+.art-game-grid .quick-game-card img{
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+/* NETWORK hub trio: keep all three banners on exactly the same stage. */
+.network-art-menu{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+  align-items:stretch!important;
+}
+.network-art-menu button{
+  min-width:0!important;
+  min-height:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  aspect-ratio:var(--nexus-art-ratio-wide)!important;
+  padding:2px!important;
+}
+.network-art-menu img{
+  width:100%!important;
+  height:100%!important;
+  max-height:none!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+/* Network page switcher: equal button widths and equal artwork heights. */
+.network-screen-nav{
+  grid-template-columns:74px repeat(3,minmax(0,1fr))!important;
+  align-items:stretch!important;
+}
+.network-screen-nav button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:34px!important;
+}
+.network-screen-nav img{
+  width:100%!important;
+  height:32px!important;
+  max-height:32px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+/* Input label artwork: same baseline and same perceived height. */
+.art-input-grid>div{
+  min-width:0;
+}
+.field-art-label{
+  width:100%!important;
+  height:58px!important;
+  max-height:58px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+}
+
+/* Primary action artwork uses a single shared stage. */
+.art-action-button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:76px!important;
+}
+.art-action-button img{
+  width:100%!important;
+  height:76px!important;
+  max-height:76px!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+/* Small artwork buttons also line up, even when text lengths differ. */
+.profile-art-action,.friend-art-btn,.art-small-button{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.profile-art-action img,.friend-art-btn img{
+  width:100%!important;
+  height:50px!important;
+  max-height:50px!important;
+  object-fit:contain!important;
+}
+
+/* Title artwork shown above names: consistent footprint across chat / battle / watch. */
+.battle-player-title-img,.prebattle-title-img,.request-title-img,.watch-title,.mini-title-img{
+  object-fit:contain!important;
+  object-position:center!important;
+}
+.battle-player-title-img,.prebattle-title-img,.request-title-img,.watch-title{
+  width:min(138px,100%)!important;
+  height:32px!important;
+  max-height:32px!important;
+}
+
+@media(max-width:620px){
+  /* Keep paired mode cards visually identical even when stacked. */
+  .art-choice-grid.two{grid-template-columns:1fr!important;gap:7px!important}
+  .art-choice-grid.two .art-choice{aspect-ratio:3.35/1!important}
+
+  /* Three QUICK games remain one row on phone, compact but perfectly matched. */
+  .art-game-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+  .art-game-grid .quick-game-card{aspect-ratio:1.55/1!important;padding:1px!important}
+
+  /* NETWORK options also remain one row, matching the requested menu hierarchy. */
+  .network-art-menu{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
+  .network-art-menu button{aspect-ratio:1.65/1!important;padding:1px!important}
+
+  .network-screen-nav{grid-template-columns:64px repeat(3,minmax(0,1fr))!important;gap:3px!important}
+  .network-screen-nav img{height:26px!important;max-height:26px!important}
+  .field-art-label{height:46px!important;max-height:46px!important}
+  .art-action-button{min-height:62px!important}
+  .art-action-button img{height:62px!important;max-height:62px!important}
+  .profile-art-action img,.friend-art-btn img{height:44px!important;max-height:44px!important}
+  .battle-player-title-img,.prebattle-title-img,.request-title-img,.watch-title{height:28px!important;max-height:28px!important;width:min(124px,100%)!important}
+}
