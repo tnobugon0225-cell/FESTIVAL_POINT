@@ -2539,3 +2539,133 @@ body.dm-open{overflow:hidden!important}
     max-height:38px!important;
   }
 }
+
+/* v5.70 — compact chat time row + refreshed rule page copy */
+.network-page .chat-bubble{
+  max-width:min(100%, 440px)!important;
+  padding:8px 12px 9px 12px!important;
+}
+.network-page .chat-bubble-main{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  flex-wrap:nowrap!important;
+}
+.network-page .chat-bubble-text{
+  min-width:0!important;
+  flex:1 1 auto!important;
+  overflow-wrap:anywhere!important;
+}
+.network-page .chat-bubble small{
+  margin:0!important;
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+  font-size:10px!important;
+  line-height:1!important;
+  opacity:.78!important;
+}
+@media(max-width:620px){
+  .network-page .chat-bubble{
+    max-width:min(100%, 390px)!important;
+    padding:8px 11px 9px 11px!important;
+  }
+  .network-page .chat-bubble-main{
+    gap:8px!important;
+  }
+  .network-page .chat-bubble small{
+    font-size:9px!important;
+  }
+}
+
+/* v5.71 — friend identity alignment + DM frame restore */
+.network-page #friendSearchResult .friend-card,
+.network-page #friendList .friend-card{
+  grid-template-columns:52px minmax(0,1fr) auto!important;
+  align-items:start!important;
+  column-gap:10px!important;
+  row-gap:0!important;
+  padding:12px 0!important;
+}
+.network-page #friendSearchResult .friend-card .chat-avatar,
+.network-page #friendList .friend-card .chat-avatar{
+  align-self:start!important;
+  margin:0!important;
+}
+.network-page #friendSearchResult .friend-card .chat-avatar img,
+.network-page #friendList .friend-card .chat-avatar img{
+  width:46px!important;
+  height:46px!important;
+}
+.network-page #friendSearchResult .friend-card .chat-id,
+.network-page #friendList .friend-card .chat-id{
+  align-self:start!important;
+  display:grid!important;
+  align-content:start!important;
+  gap:3px!important;
+  padding-top:1px!important;
+  min-width:0!important;
+}
+.network-page #friendSearchResult .friend-card .mini-title-img,
+.network-page #friendList .friend-card .mini-title-img{
+  width:102px!important;
+  height:24px!important;
+  object-fit:contain!important;
+  object-position:left top!important;
+  display:block!important;
+  margin:0!important;
+}
+.network-page #friendSearchResult .friend-card .chat-id strong,
+.network-page #friendList .friend-card .chat-id strong{
+  display:block!important;
+  margin:0!important;
+  line-height:1.12!important;
+  font-size:11px!important;
+}
+.network-page #friendSearchResult .friend-card .friend-actions,
+.network-page #friendList .friend-card .friend-actions,
+.network-page #friendSearchResult .friend-card .friend-state,
+.network-page #friendList .friend-card .friend-state{
+  align-self:start!important;
+  margin-top:1px!important;
+}
+
+.network-page .dm-box{
+  border:1px solid rgba(69,223,248,.64)!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.72),0 0 24px rgba(29,205,255,.12),inset 0 0 0 1px rgba(71,211,255,.12)!important;
+  background:linear-gradient(180deg,rgba(5,18,31,.985),rgba(2,7,14,.99))!important;
+}
+.network-page .dm-box::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:1px solid rgba(74,213,255,.26);
+  pointer-events:none;
+  clip-path:inherit;
+  box-sizing:border-box;
+}
+.network-page .dm-head,
+.network-page .dm-messages,
+.network-page .dm-box .dm-compose,
+.network-page #dmStatus{
+  position:relative!important;
+  z-index:1!important;
+}
+@media(max-width:620px){
+  .network-page #friendSearchResult .friend-card,
+  .network-page #friendList .friend-card{
+    grid-template-columns:48px minmax(0,1fr) auto!important;
+    column-gap:9px!important;
+    padding:11px 0!important;
+  }
+  .network-page #friendSearchResult .friend-card .chat-avatar img,
+  .network-page #friendList .friend-card .chat-avatar img{
+    width:42px!important;
+    height:42px!important;
+  }
+  .network-page #friendSearchResult .friend-card .mini-title-img,
+  .network-page #friendList .friend-card .mini-title-img{
+    width:92px!important;
+    height:22px!important;
+  }
+}
