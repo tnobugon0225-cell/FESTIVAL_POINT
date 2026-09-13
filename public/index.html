@@ -80,37 +80,54 @@
     </div>
   </section>
 
-  <section class="system-panel transfer-card arena-transfer match-create-card">
-    <div class="panel-head arena-section-head"><div><div class="eyebrow">BATTLE MATCHING</div><h2>対戦マッチング</h2></div><span class="hud-icon">⚔</span></div>
-    <div class="battle-mode-switch">
-      <button type="button" id="quickModeBtn" class="battle-mode-btn active"><strong>QUICK BATTLE</strong><span>2人で対戦 / SYSTEM JUDGEMENT</span></button>
-      <button type="button" id="customModeBtn" class="battle-mode-btn"><strong>CUSTOM BATTLE</strong><span>自由対戦 / REFEREE REQUIRED</span></button>
-    </div>
-    <div id="quickBattlePanel" class="battle-mode-panel">
-      <div class="quick-game-grid">
-        <button type="button" class="quick-game-card active" data-game="hitblow"><b>CODE BREAK</b><strong>HIT &amp; BLOW</strong><span>4つのPASSKEYを解析</span></button>
-        <button type="button" class="quick-game-card" data-game="janken"><b>BO5</b><strong>JANKEN</strong><span>3本先取 / 同時選択</span></button>
-        <button type="button" class="quick-game-card" data-game="chinchiro"><b>3 DICE</b><strong>CHINCHIRO BO3</strong><span>2ラウンド先取 // 最大3ロール</span></button>
+  <section class="system-panel transfer-card arena-transfer match-create-card battle-hub">
+    <button type="button" id="battleHubOpen" class="art-menu-root">
+      <img src="/ui/battle-matching.webp" alt="対戦マッチング">
+    </button>
+
+    <div id="battleStepModes" class="battle-wizard-step hidden">
+      <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="root">‹ BACK</button><span>SELECT BATTLE TYPE</span></div>
+      <div class="art-choice-grid two">
+        <button type="button" id="quickModeBtn" class="art-choice"><img src="/ui/quick-battle.webp" alt="クイックバトル"></button>
+        <button type="button" id="customModeBtn" class="art-choice"><img src="/ui/custom-battle.webp" alt="カスタムマッチング"></button>
       </div>
-      <div class="transfer-grid transfer-grid-v52 quick-entry-grid">
-        <div><label>対戦相手ID</label><input id="quickOpponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
-        <div><label>対戦ポイント</label><input id="quickWagerAmount" type="number" inputmode="numeric" min="10" step="10" placeholder="10 / 20 / 30 ..."></div>
-      </div>
-      <button id="quickChallengeBtn" class="primary-action transfer-action"><span>≫≫</span>HIT &amp; BLOW を申し込む<span>≪≪</span></button>
-      <p id="quickMatchCreateMsg"></p>
     </div>
+
+    <div id="quickBattlePanel" class="battle-mode-panel hidden">
+      <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="modes">‹ BACK</button><span>SELECT QUICK GAME</span></div>
+      <div id="quickGameSelect" class="quick-game-grid art-game-grid">
+        <button type="button" class="quick-game-card art-choice" data-game="hitblow"><img src="/ui/hitblow.webp" alt="ヒットアンドブロー"></button>
+        <button type="button" class="quick-game-card art-choice" data-game="janken"><img src="/ui/janken.webp" alt="ジャンケン"></button>
+        <button type="button" class="quick-game-card art-choice" data-game="chinchiro"><img src="/ui/chinchiro.webp" alt="チンチロ"></button>
+      </div>
+      <div id="quickEntryPanel" class="hidden">
+        <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="games">‹ BACK</button><span id="quickEntryName">HIT &amp; BLOW</span></div>
+        <div class="transfer-grid transfer-grid-v52 quick-entry-grid art-input-grid">
+          <div><img class="field-art-label" src="/ui/rival-id.webp" alt="対戦相手ID"><input id="quickOpponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
+          <div><img class="field-art-label" src="/ui/battle-points.webp" alt="対戦ポイント"><input id="quickWagerAmount" type="number" inputmode="numeric" min="10" step="10" placeholder="10 / 20 / 30 ..."></div>
+        </div>
+        <button id="quickChallengeBtn" class="art-action-button"><img src="/ui/battle-request.webp" alt="対戦申請"></button>
+        <p id="quickMatchCreateMsg"></p>
+      </div>
+    </div>
+
     <div id="customBattlePanel" class="battle-mode-panel hidden">
-      <div class="transfer-grid transfer-grid-v52 match-entry-grid">
-        <div><label>対戦相手ID</label><input id="opponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
-        <div><label>審判ID</label><input id="refereeCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
-        <div><label>対戦ポイント</label><input id="wagerAmount" type="number" inputmode="numeric" min="10" step="10" placeholder="10 / 20 / 30 ..."></div>
+      <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="modes">‹ BACK</button><span>CUSTOM BATTLE</span></div>
+      <div class="transfer-grid transfer-grid-v52 match-entry-grid art-input-grid">
+        <div><img class="field-art-label" src="/ui/rival-id.webp" alt="対戦相手ID"><input id="opponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
+        <div><img class="field-art-label" src="/ui/referee-id.webp" alt="審判ID"><input id="refereeCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
+        <div><img class="field-art-label" src="/ui/battle-points.webp" alt="対戦ポイント"><input id="wagerAmount" type="number" inputmode="numeric" min="10" step="10" placeholder="10 / 20 / 30 ..."></div>
       </div>
-      <button id="challengeBtn" class="primary-action transfer-action"><span>≫≫</span>対戦を申し込む<span>≪≪</span></button><p id="matchCreateMsg"></p>
+      <button id="challengeBtn" class="art-action-button"><img src="/ui/battle-request.webp" alt="対戦申請"></button><p id="matchCreateMsg"></p>
     </div>
-    <p class="system-note">対戦ポイントは10pt刻み。上限は対戦する2人のうち所持ポイントが低い方です。</p>
+    <p id="battleHubNote" class="system-note">対戦ポイントは10pt刻み。上限は対戦する2人のうち所持ポイントが低い方です。</p>
   </section>
 
-<section class="system-panel nexus-network-panel"><div class="panel-head"><div><div class="eyebrow">NEXUS NETWORK</div><h2>ソーシャルリンク</h2></div><span class="hud-icon">◎</span></div><div class="network-link-grid"><a href="/network#chat" class="network-link-card"><b>GLOBAL CHAT</b><span>全体メッセージ</span></a><a href="/network#friends" class="network-link-card"><b>FRIENDS</b><span>検索・申請・個別メッセージ</span></a><a href="/network#live" class="network-link-card"><b>LIVE BATTLE</b><span>進行中の試合を観戦</span></a></div></section>
+  <section class="system-panel nexus-network-panel network-hub-card">
+    <a href="/network" class="art-menu-root network-main-link">
+      <img src="/ui/network-main.webp" alt="ネットワーク">
+    </a>
+  </section>
 
   <div class="system-panel logout-card arena-controls"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
 
@@ -236,23 +253,34 @@ function incomingNeedsDecision(m){return m&&m.status==='pending'&&((m.kind==='qu
 function quickGameName(m){return m.gameType==='janken'?'JANKEN BO5':m.gameType==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW'}
 function quickGamePath(m){return m.gameType==='janken'?'/janken':m.gameType==='chinchiro'?'/chinchiro':'/hit-blow'}
 function requestRoleText(m){if(m.kind==='quick')return `QUICK BATTLE / ${quickGameName(m)} の対戦申請です`; return m.role==='referee'?'あなたは審判として指名されています':'あなたに対戦が申し込まれています'}
-function renderRequestInfo(m){if(m.kind==='quick')return `<div class="request-game-tag">QUICK BATTLE // ${m.gameType==='janken'?'JANKEN BO5':m.gameType==='chinchiro'?'CHINCHIRO BO3':'CODE BREAK'}</div><div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta quick-request-meta"><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`;return `<div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span class="request-referee"><img src="${avatarSrc(m.referee.avatarKey)}" alt=""><i>REFEREE</i><strong>${esc(m.referee.name)}</strong></span><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`}
+function requestTitle(p){return p?.title?.image||'/titles/rookie.webp'}function renderRequestInfo(m){if(m.kind==='quick')return `<div class="request-game-tag">QUICK BATTLE // ${m.gameType==='janken'?'JANKEN BO5':m.gameType==='chinchiro'?'CHINCHIRO BO3':'CODE BREAK'}</div><div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><img class="request-title-img" src="${requestTitle(m.challenger)}" alt=""><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><img class="request-title-img" src="${requestTitle(m.opponent)}" alt=""><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta quick-request-meta"><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`;return `<div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><img class="request-title-img" src="${requestTitle(m.challenger)}" alt=""><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><img class="request-title-img" src="${requestTitle(m.opponent)}" alt=""><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span class="request-referee"><img src="${avatarSrc(m.referee.avatarKey)}" alt=""><i>REFEREE</i><strong>${esc(m.referee.name)}</strong></span><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`}
 function showBattleRequest(m){currentMatch=m;lastRequestNoticeId=`${m.kind||'custom'}-${m.id}`;$('#battleRequestRole').textContent=requestRoleText(m);$('#battleRequestInfo').innerHTML=renderRequestInfo(m);$('#battleRequestMsg').textContent='';$('#battleRequestOverlay').classList.remove('hidden');document.body.classList.add('modal-lock')}
 function hideBattleRequest(){$('#battleRequestOverlay').classList.add('hidden');document.body.classList.remove('modal-lock')}
 async function checkMatchNotification(){if(!authToken)return;try{const qr=await api('/api/quick-matches/me');const qm=qr.match||null;if(qm){currentMatch=qm;if(incomingNeedsDecision(qm)){const key=`quick-${qm.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(qm);return}hideBattleRequest();if(['pending','setup','in_progress'].includes(qm.status)){location.href=quickGamePath(qm);return}}const r=await api('/api/matches/me');const m=r.match||null;currentMatch=m;if(!m){hideBattleRequest();return}if(incomingNeedsDecision(m)){const key=`custom-${m.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(m);return}hideBattleRequest();if(['pending','matched','in_progress'].includes(m.status)&&location.pathname!=='/match')location.href='/match'}catch(e){}}
 function startMatchPolling(){clearInterval(matchPollTimer);matchPollTimer=setInterval(checkMatchNotification,3000)}
 $('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{if(currentMatch.kind==='quick'){await api(`/api/quick-matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent=`承認しました。${quickGameName(currentMatch)}へ接続します。`;await sleep(350);location.href=quickGamePath(currentMatch)}else{await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(350);location.href='/match'}}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
 $('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{const url=currentMatch.kind==='quick'?`/api/quick-matches/${currentMatch.id}/reject`:`/api/matches/${currentMatch.id}/reject`;await api(url,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=e.message;btn.disabled=false}};
-$('#quickModeBtn').onclick=()=>{$('#quickModeBtn').classList.add('active');$('#customModeBtn').classList.remove('active');$('#quickBattlePanel').classList.remove('hidden');$('#customBattlePanel').classList.add('hidden')};
-$('#customModeBtn').onclick=()=>{$('#customModeBtn').classList.add('active');$('#quickModeBtn').classList.remove('active');$('#customBattlePanel').classList.remove('hidden');$('#quickBattlePanel').classList.add('hidden')};
+function showBattleWizard(step){
+  $('#battleHubOpen').classList.toggle('hidden',step!=='root');
+  $('#battleStepModes').classList.toggle('hidden',step!=='modes');
+  $('#quickBattlePanel').classList.toggle('hidden',!['games','quick-entry'].includes(step));
+  $('#customBattlePanel').classList.toggle('hidden',step!=='custom');
+  $('#quickGameSelect')?.classList.toggle('hidden',step!=='games');
+  $('#quickEntryPanel')?.classList.toggle('hidden',step!=='quick-entry');
+  $('#battleHubNote')?.classList.toggle('hidden',step==='root'||step==='modes'||step==='games');
+}
+$('#battleHubOpen').onclick=()=>showBattleWizard('modes');
+$('#quickModeBtn').onclick=()=>showBattleWizard('games');
+$('#customModeBtn').onclick=()=>showBattleWizard('custom');
+document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>showBattleWizard(b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games'));
 let selectedQuickGame='hitblow';
-document.querySelectorAll('.quick-game-card[data-game]').forEach(card=>card.addEventListener('click',()=>{document.querySelectorAll('.quick-game-card[data-game]').forEach(x=>x.classList.remove('active'));card.classList.add('active');selectedQuickGame=card.dataset.game;const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';$('#quickChallengeBtn').innerHTML=`<span>≫≫</span>${label} を申し込む<span>≪≪</span>`;}));
+document.querySelectorAll('.quick-game-card[data-game]').forEach(card=>card.addEventListener('click',()=>{selectedQuickGame=card.dataset.game;const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';$('#quickEntryName').textContent=label;showBattleWizard('quick-entry');}));
 $('#quickChallengeBtn').onclick=async()=>{const btn=$('#quickChallengeBtn');const msg=$('#quickMatchCreateMsg');msg.textContent='';try{btn.disabled=true;const wager=Number($('#quickWagerAmount').value);if(!Number.isInteger(wager)||wager<10||wager%10!==0)throw new Error('対戦ポイントは10pt刻みで入力してください');const r=await api('/api/quick-matches',{method:'POST',body:JSON.stringify({opponentCode:$('#quickOpponentCode').value,wager,gameType:selectedQuickGame})});const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';msg.className='ok';msg.textContent=`${label}申請を送信しました / ${r.match.wager}pt`;$('#quickWagerAmount').value='';await sleep(350);location.href=selectedQuickGame==='janken'?'/janken':selectedQuickGame==='chinchiro'?'/chinchiro':'/hit-blow'}catch(e){msg.className='error';msg.textContent=e.message}finally{btn.disabled=false}};
 $('#challengeBtn').onclick=async()=>{const btn=$('#challengeBtn');$('#matchCreateMsg').textContent='';$('#matchCreateMsg').className='';try{btn.disabled=true;const wager=Number($('#wagerAmount').value);if(!Number.isInteger(wager)||wager<10||wager%10!==0)throw new Error('対戦ポイントは10pt刻み（10、20、30…）で入力してください');const r=await api('/api/matches',{method:'POST',body:JSON.stringify({opponentCode:$('#opponentCode').value,refereeCode:$('#refereeCode').value,wager})});$('#matchCreateMsg').className='ok';$('#matchCreateMsg').textContent=`対戦申請を送信しました / BATTLE POINTS ${r.match.wager}pt`;$('#wagerAmount').value='';await sleep(350);location.href='/match'}catch(e){$('#matchCreateMsg').className='error';$('#matchCreateMsg').textContent=e.message}finally{btn.disabled=false}};
 $('#loginBtn').addEventListener('pointerdown',()=>{window.NexusBGM?.unlock?.();window.NexusBGM?.prime?.('home')});$('#loginBtn').onclick=()=>auth('login');$('#refreshBtn').onclick=()=>loadMe(true);$('#logoutBtn').onclick=async()=>{clearInterval(matchPollTimer);try{await api('/api/logout',{method:'POST'})}catch(e){}localStorage.removeItem('nexusParticipantToken');authToken='';location.reload()};
 function scrollToId(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})}
 document.querySelectorAll('[data-scroll]').forEach(b=>b.onclick=()=>scrollToId(b.dataset.scroll));
-const challengeCode=new URLSearchParams(location.search).get('challenge');if(challengeCode&&/^\d{4}$/.test(challengeCode)){const q=$('#quickOpponentCode');if(q)q.value=challengeCode;}
+const challengeCode=new URLSearchParams(location.search).get('challenge');if(challengeCode&&/^\d{4}$/.test(challengeCode)){const q=$('#quickOpponentCode');if(q)q.value=challengeCode;showBattleWizard('games');}
 loadMe();
 </script>
 </body></html>
