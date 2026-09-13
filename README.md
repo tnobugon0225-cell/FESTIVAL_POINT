@@ -374,3 +374,9 @@ npm start
 - Fixed NEXUS NETWORK client-side JavaScript syntax error that prevented GLOBAL CHAT sending and tab switching.
 - GLOBAL / FRIENDS / LIVE tabs now have a clear active state and short transition.
 - GLOBAL CHAT now supports Enter-to-send and shows send/cooldown/error status inline.
+
+
+## v5.52
+- NEXUS NETWORK の定期更新で内容が変わっていない場合はDOMを再描画しないよう変更。
+- GLOBAL CHAT / LIVE BATTLE は表示中タブだけポーリング。DMも新着がある時だけ再描画。
+- タブ切替のフェードアニメーションと画像の再アニメーションを停止し、画面・アイコン・称号画像のちらつきを抑制。

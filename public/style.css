@@ -922,3 +922,108 @@
 .chat-compose input,.friend-search input{min-width:0}
 #chatCooldown{min-height:20px;margin-top:6px}
 @media(max-width:560px){.network-tabs{position:sticky;top:66px;z-index:8;background:rgba(2,7,13,.94);backdrop-filter:blur(8px);padding:5px 0}.network-tabs button{font-size:9px;letter-spacing:.03em}.chat-list{height:52vh}.chat-row{grid-template-columns:40px 78px 1fr}.chat-avatar img{width:38px;height:38px}.mini-title-img{width:72px;height:20px}.chat-bubble{font-size:12px}}
+
+/* v5.52 network anti-flicker */
+.network-tab{animation:none!important}.chat-avatar img,.mini-title-img,.live-match-card img,.friend-card img{animation:none!important;transition:none!important;backface-visibility:hidden;transform:translateZ(0)}
+
+
+/* v5.53 profile / title presentation polish */
+.arena-identity .player-title-badge{
+  display:block!important;
+  width:min(100%,360px);
+  min-width:0!important;
+  max-width:360px;
+  margin-top:10px;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible;
+}
+.arena-identity .player-title-badge>img{
+  display:block;
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:3/1;
+  object-fit:contain;
+  object-position:left center;
+}
+
+.title-option.image-title{grid-template-columns:1fr!important}
+.title-option.image-title .title-lock{
+  position:absolute!important;
+  inset:0!important;
+  width:auto!important;
+  height:auto!important;
+  border:0!important;
+  border-radius:0!important;
+  display:grid!important;
+  place-items:center!important;
+  font-size:34px!important;
+  color:#eaf8ff!important;
+  background:rgba(0,6,12,.26);
+  text-shadow:0 0 8px #000,0 0 22px rgba(89,226,255,.65)!important;
+  pointer-events:none;
+}
+.title-option.image-title:not(.locked) .title-lock{display:none!important}
+.title-option.image-title.locked img{filter:grayscale(1) brightness(.24)!important;opacity:.72!important}
+
+#profileAction{padding:18px}
+#profileAction .compact-profile-card{
+  position:relative;
+  width:min(430px,calc(100vw - 36px));
+  max-height:none;
+  overflow:visible;
+  padding:22px 18px 18px;
+  border:1px solid rgba(74,220,255,.42);
+  background:
+    radial-gradient(circle at 50% 0,rgba(54,178,255,.10),transparent 42%),
+    linear-gradient(180deg,#071523 0%,#02070d 100%);
+  box-shadow:0 24px 70px rgba(0,0,0,.72),inset 0 0 32px rgba(45,205,255,.05);
+}
+#profileAction #profileClose{
+  position:absolute;
+  top:10px;
+  right:10px;
+  z-index:4;
+  width:38px!important;
+  height:38px!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  line-height:1!important;
+  font-size:24px!important;
+}
+#profileBody{
+  display:grid;
+  grid-template-columns:96px minmax(0,1fr);
+  gap:14px;
+  align-items:center;
+  min-height:128px;
+  padding:10px 48px 16px 0;
+  border-bottom:1px solid rgba(74,220,255,.14);
+  margin-bottom:14px;
+}
+.profile-avatar-large{width:96px;height:96px;padding:3px;border:1px solid #43e0ff;background:#020812;box-shadow:0 0 20px rgba(51,210,255,.14)}
+.profile-avatar-large img{display:block;width:100%;height:100%;object-fit:cover}
+.profile-copy{display:grid;gap:5px;min-width:0;align-content:center}
+.profile-kicker{font-size:8px;letter-spacing:.18em;color:#5ddfff}
+.profile-name{font-size:22px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f6fbff}
+.profile-title-large{display:block;width:min(100%,230px);height:auto;aspect-ratio:3/1;object-fit:contain;object-position:left center}
+.profile-code{font:700 11px ui-monospace,monospace;letter-spacing:.14em;color:#8499aa}
+#profileAction #profileFriend,#profileAction #profileBattle{
+  width:100%;
+  min-height:46px;
+  margin:7px 0 0!important;
+  font-size:13px;
+  letter-spacing:.04em;
+}
+@media(max-width:560px){
+  .arena-identity .player-title-badge{width:min(100%,300px);max-width:300px}
+  #profileAction .compact-profile-card{width:min(390px,calc(100vw - 28px));padding:20px 14px 14px}
+  #profileBody{grid-template-columns:82px minmax(0,1fr);gap:12px;padding-right:40px;min-height:112px}
+  .profile-avatar-large{width:82px;height:82px}
+  .profile-name{font-size:20px}
+  .profile-title-large{width:min(100%,210px)}
+}
