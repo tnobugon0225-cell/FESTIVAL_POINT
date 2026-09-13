@@ -77,6 +77,26 @@ async function initDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_history_user ON point_history(user_id, id DESC);
     ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_key VARCHAR(20);
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS selected_title_key VARCHAR(64) NOT NULL DEFAULT 'rookie';
+
+    CREATE TABLE IF NOT EXISTS user_titles (
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title_key VARCHAR(64) NOT NULL,
+      unlocked_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY(user_id,title_key)
+    );
+    CREATE INDEX IF NOT EXISTS idx_user_titles_user ON user_titles(user_id, unlocked_at);
+
+    CREATE TABLE IF NOT EXISTS admin_audit_log (
+      id BIGSERIAL PRIMARY KEY,
+      category VARCHAR(16) NOT NULL CHECK(category IN ('adjust','battle')),
+      summary TEXT NOT NULL,
+      user_name TEXT,
+      delta INTEGER,
+      counterpart_name TEXT,
+      staff_name TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
 
     CREATE TABLE IF NOT EXISTS matches (
       id BIGSERIAL PRIMARY KEY,
@@ -205,6 +225,8 @@ async function initDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_chinchiro_rolls_match ON chinchiro_rolls(match_id,id);
   `);
+
+  await query(`DELETE FROM admin_audit_log WHERE id NOT IN (SELECT id FROM admin_audit_log ORDER BY id DESC LIMIT 20)`);
 
   const existingAdmin = await one('SELECT id FROM staff LIMIT 1');
   if (!existingAdmin) {
@@ -362,9 +384,32 @@ function scheduleElimination(userId) {
       const u = await one('SELECT id,points FROM users WHERE id=$1', [userId]);
       if (u && Number(u.points) === 0) await deleteUserHard(userId);
     } catch (e) { console.error('Delayed elimination failed:', e); }
-  }, 5000);
+  }, 60000);
   eliminationTimers.set(userId, timer);
 }
+
+
+const TITLE_DEFS={
+  rookie:{name:'ROOKIE',jp:'ルーキー',tier:'C'},
+  rank1:{name:'APEX // #1',jp:'頂点到達者',tier:'S'},
+  rank2:{name:'VANGUARD // #2',jp:'第二位到達者',tier:'A'},
+  rank3:{name:'ELITE // #3',jp:'第三位到達者',tier:'A'},
+  hitblow5:{name:'CODE HUNTER I',jp:'HIT & BLOW 5戦',tier:'B'},
+  hitblow10:{name:'CODE HUNTER II',jp:'HIT & BLOW 10戦',tier:'A'},
+  hitblow15:{name:'CODE BREAKER',jp:'HIT & BLOW 15戦',tier:'S'},
+  janken5:{name:'SIGNAL FIGHTER I',jp:'JANKEN 5戦',tier:'B'},
+  janken10:{name:'SIGNAL FIGHTER II',jp:'JANKEN 10戦',tier:'A'},
+  janken15:{name:'SIGNAL DOMINATOR',jp:'JANKEN 15戦',tier:'S'},
+  chinchiro5:{name:'DICE RUNNER I',jp:'CHINCHIRO 5戦',tier:'B'},
+  chinchiro10:{name:'DICE RUNNER II',jp:'CHINCHIRO 10戦',tier:'A'},
+  chinchiro15:{name:'DICE MASTER',jp:'CHINCHIRO 15戦',tier:'S'}
+};
+function titleMeta(key){const k=TITLE_DEFS[key]?key:'rookie';return {key:k,...TITLE_DEFS[k]}}
+async function unlockTitle(userId,key,client=pool){if(!TITLE_DEFS[key])return;await client.query(`INSERT INTO user_titles(user_id,title_key) VALUES($1,$2) ON CONFLICT DO NOTHING`,[userId,key]);}
+async function ensureBaseTitle(userId,client=pool){await unlockTitle(userId,'rookie',client);}
+async function awardPodiumTitles(client=pool){const r=await client.query(`SELECT id FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 3`);for(let i=0;i<r.rows.length;i++)await unlockTitle(Number(r.rows[i].id),`rank${i+1}`,client);}
+async function awardQuickBattleTitles(userId,gameType,client=pool){const r=await client.query(`SELECT COUNT(*)::int AS n FROM quick_matches WHERE status='completed' AND game_type=$1 AND (challenger_id=$2 OR opponent_id=$2)`,[gameType,userId]);const n=Number(r.rows[0]?.n||0);for(const t of [5,10,15])if(n>=t)await unlockTitle(userId,`${gameType}${t}`,client);}
+async function addAudit(category,summary,{userName=null,delta=null,counterpartName=null,staffName=null}={},client=pool){await client.query(`INSERT INTO admin_audit_log(category,summary,user_name,delta,counterpart_name,staff_name) VALUES($1,$2,$3,$4,$5,$6)`,[category,summary,userName,delta,counterpartName,staffName]);await client.query(`DELETE FROM admin_audit_log WHERE id NOT IN (SELECT id FROM admin_audit_log ORDER BY id DESC LIMIT 20)`);}
 
 app.post('/api/register', (req, res) => res.status(403).json({ error: '参加者アカウントはスタッフのみ作成できます' }));
 
@@ -379,6 +424,8 @@ app.post('/api/login', loginGuard('participant'), async (req, res, next) => {
     if (!avatarKey) return res.status(400).json({ error: 'ログインするアイコンを選択してください' });
     await query('UPDATE users SET avatar_key=$1 WHERE id=$2', [avatarKey, user.id]);
     user.avatar_key = avatarKey;
+    await ensureBaseTitle(Number(user.id));
+    await awardPodiumTitles();
     await regenerate(req); req.session.userId = Number(user.id); req.session.staffId = null; await saveSession(req); clearAttempt(req);
     const authToken = issueParticipantToken(user.id);
     res.json({ ok: true, user: { id:Number(user.id), public_code:user.public_code, username:user.username, points:Number(user.points), avatar_key:user.avatar_key, created_at:user.created_at }, authToken });
@@ -387,8 +434,18 @@ app.post('/api/login', loginGuard('participant'), async (req, res, next) => {
 app.post('/api/logout', requireUser, (req, res) => req.session.destroy(() => res.json({ ok: true })));
 
 app.get('/api/me', requireUser, async (req, res, next) => {
-  try { const u = await one('SELECT id,public_code,username,points,avatar_key,created_at FROM users WHERE id=$1', [req.userId]); res.json({ ...u, id:Number(u.id), points:Number(u.points) }); } catch(e){ next(e); }
+  try {
+    await ensureBaseTitle(req.userId); await awardQuickBattleTitles(req.userId,'hitblow'); await awardQuickBattleTitles(req.userId,'janken'); await awardQuickBattleTitles(req.userId,'chinchiro'); await awardPodiumTitles();
+    const u = await one('SELECT id,public_code,username,points,avatar_key,selected_title_key,created_at FROM users WHERE id=$1', [req.userId]);
+    const titles=await query('SELECT title_key,unlocked_at FROM user_titles WHERE user_id=$1 ORDER BY unlocked_at,title_key',[req.userId]).catch(()=>({rows:[]}));
+    res.json({ ...u, id:Number(u.id), points:Number(u.points), selectedTitle:titleMeta(u.selected_title_key), titles:titles.rows.map(x=>titleMeta(x.title_key)) });
+  } catch(e){ next(e); }
 });
+app.get('/api/titles',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);const u=await one('SELECT selected_title_key FROM users WHERE id=$1',[req.userId]);const r=await query('SELECT title_key,unlocked_at FROM user_titles WHERE user_id=$1 ORDER BY unlocked_at,title_key',[req.userId]);res.json({selectedKey:u?.selected_title_key||'rookie',titles:r.rows.map(x=>({...titleMeta(x.title_key),unlockedAt:x.unlocked_at}))});}catch(e){next(e)}});
+app.post('/api/titles/select',requireUser,async(req,res,next)=>{try{const key=String(req.body.key||'');const owned=await one('SELECT 1 FROM user_titles WHERE user_id=$1 AND title_key=$2',[req.userId,key]);if(!owned)return res.status(403).json({error:'未獲得の称号です'});await query('UPDATE users SET selected_title_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,title:titleMeta(key)});}catch(e){next(e)}});
+app.post('/api/me/avatar',requireUser,async(req,res,next)=>{try{const key=cleanAvatarKey(req.body.avatarKey);if(!key)return res.status(400).json({error:'アイコンを選択してください'});await query('UPDATE users SET avatar_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,avatarKey:key});}catch(e){next(e)}});
+app.post('/api/eliminate-me',requireUser,async(req,res,next)=>{try{const u=await one('SELECT id,points FROM users WHERE id=$1',[req.userId]);if(!u)return res.json({ok:true});if(Number(u.points)!==0)return res.status(409).json({error:'0ptではありません'});await deleteUserHard(req.userId);res.json({ok:true});}catch(e){next(e)}});
+
 app.get('/api/my-history', requireUser, async (req, res, next) => {
   try {
     const r = await query(`SELECT h.id,h.delta,h.reason,h.action_type,h.created_at,COALESCE(c.username,h.counterpart_name) counterpart
@@ -397,7 +454,7 @@ app.get('/api/my-history', requireUser, async (req, res, next) => {
   } catch(e){ next(e); }
 });
 app.get('/api/ranking', async (req, res, next) => {
-  try { const r=await query('SELECT public_code,username,points,avatar_key FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 100'); res.json(r.rows.map(x=>({...x,points:Number(x.points)}))); } catch(e){ next(e); }
+  try { await awardPodiumTitles(); const r=await query('SELECT public_code,username,points,avatar_key,selected_title_key FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 100'); res.json(r.rows.map(x=>({...x,points:Number(x.points)}))); } catch(e){ next(e); }
 });
 
 app.get('/api/my-rank', requireUser, async (req,res,next)=>{
@@ -427,9 +484,9 @@ function publicMatch(row, viewerId) {
   return {
     id:Number(row.id), role, status:row.status, wager:Number(row.wager),
     opponentApproved:!!row.opponent_approved, refereeApproved:!!row.referee_approved,
-    challenger:{id:row.challenger_id?Number(row.challenger_id):null,name:row.challenger_name,code:row.challenger_code,avatarKey:row.challenger_avatar||null},
-    opponent:{id:row.opponent_id?Number(row.opponent_id):null,name:row.opponent_name,code:row.opponent_code,avatarKey:row.opponent_avatar||null},
-    referee:{id:row.referee_id?Number(row.referee_id):null,name:row.referee_name,code:row.referee_code,avatarKey:row.referee_avatar||null},
+    challenger:{id:row.challenger_id?Number(row.challenger_id):null,name:row.challenger_name,code:row.challenger_code,avatarKey:row.challenger_avatar||null,titleKey:row.challenger_title||'rookie'},
+    opponent:{id:row.opponent_id?Number(row.opponent_id):null,name:row.opponent_name,code:row.opponent_code,avatarKey:row.opponent_avatar||null,titleKey:row.opponent_title||'rookie'},
+    referee:{id:row.referee_id?Number(row.referee_id):null,name:row.referee_name,code:row.referee_code,avatarKey:row.referee_avatar||null,titleKey:row.referee_title||'rookie'},
     winnerUserId:row.winner_user_id?Number(row.winner_user_id):null,winnerName:row.winner_name||null,
     createdAt:row.created_at,matchedAt:row.matched_at,startedAt:row.started_at,completedAt:row.completed_at
   };
@@ -466,7 +523,7 @@ app.post('/api/matches', requireUser, async (req,res,next)=>{
 
 app.get('/api/matches/me', requireUser, async (req,res,next)=>{
   try{
-    const matchSelect = `SELECT m.*, cu.avatar_key AS challenger_avatar, ou.avatar_key AS opponent_avatar, ru.avatar_key AS referee_avatar
+    const matchSelect = `SELECT m.*, cu.avatar_key AS challenger_avatar, cu.selected_title_key AS challenger_title, ou.avatar_key AS opponent_avatar, ou.selected_title_key AS opponent_title, ru.avatar_key AS referee_avatar, ru.selected_title_key AS referee_title
       FROM matches m
       LEFT JOIN users cu ON cu.id=m.challenger_id
       LEFT JOIN users ou ON ou.id=m.opponent_id
@@ -550,7 +607,7 @@ app.post('/api/matches/:id/result', requireUser, async (req,res,next)=>{
     await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`MATCH #${id} 勝利`,'match_win',loserId,loser.username]);
     await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`MATCH #${id} 敗北`,'match_loss',winnerId,winner.username]);
     const ur=await client.query("UPDATE matches SET status='completed',winner_user_id=$1,winner_name=$2,completed_at=NOW(),started_at=COALESCE(started_at,NOW()) WHERE id=$3 RETURNING *",[winnerId,winner.username,id]);
-    await client.query('COMMIT');if(loserPoints===0)scheduleElimination(loserId);
+    await addAudit('battle',`CUSTOM MATCH // ${winner.username} WIN ${wager}pt`,{userName:winner.username,delta:wager,counterpartName:loser.username},client);await client.query('COMMIT');await awardPodiumTitles();if(loserPoints===0)scheduleElimination(loserId);
     res.json({ok:true,match:publicMatch(ur.rows[0],req.userId),winner:{id:winnerId,name:winner.username,points:winnerPoints},loser:{id:loserId,name:loser.username,points:loserPoints},wager,eliminated:loserPoints===0});
   }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
 });
@@ -571,8 +628,8 @@ function publicQuickMatch(row,viewerId){
   const otherReady=role==='challenger'?!!row.opponent_secret:role==='opponent'?!!row.challenger_secret:false;
   return {
     id:Number(row.id),kind:'quick',gameType:row.game_type,status:row.status,role,wager:Number(row.wager),opponentApproved:!!row.opponent_approved,
-    challenger:{id:challengerId,name:row.challenger_name,code:row.challenger_code,avatarKey:row.challenger_avatar||null},
-    opponent:{id:opponentId,name:row.opponent_name,code:row.opponent_code,avatarKey:row.opponent_avatar||null},
+    challenger:{id:challengerId,name:row.challenger_name,code:row.challenger_code,avatarKey:row.challenger_avatar||null,titleKey:row.challenger_title||'rookie'},
+    opponent:{id:opponentId,name:row.opponent_name,code:row.opponent_code,avatarKey:row.opponent_avatar||null,titleKey:row.opponent_title||'rookie'},
     firstPlayerId:firstId,secondPlayerId:secondId,turnPlayerId:row.turn_player_id?Number(row.turn_player_id):null,turnNo:Number(row.turn_no||1),
     mySecret:mySecret||null,myReady:!!mySecret,otherReady,
     challengerSecret:row.status==='completed'?(row.challenger_secret||null):null,
@@ -603,7 +660,7 @@ function publicQuickMatch(row,viewerId){
     createdAt:row.created_at,matchedAt:row.matched_at,startedAt:row.started_at,completedAt:row.completed_at
   };
 }
-const quickSelect=`SELECT q.*, cu.avatar_key AS challenger_avatar, ou.avatar_key AS opponent_avatar
+const quickSelect=`SELECT q.*, cu.avatar_key AS challenger_avatar, cu.selected_title_key AS challenger_title, ou.avatar_key AS opponent_avatar, ou.selected_title_key AS opponent_title
   FROM quick_matches q LEFT JOIN users cu ON cu.id=q.challenger_id LEFT JOIN users ou ON ou.id=q.opponent_id`;
 
 app.post('/api/quick-matches',requireUser,async(req,res,next)=>{
@@ -685,7 +742,7 @@ app.post('/api/quick-matches/:id/selection',requireUser,async(req,res,next)=>{
   }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });
 
-app.post('/api/quick-matches/:id/guess',requireUser,async(req,res,next)=>{const id=Number(req.params.id);const code=Array.isArray(req.body.keys)?req.body.keys.map(String).join(''):String(req.body.code||'');if(!validKeyCode(code))return res.status(400).json({error:'重複なしで4つのPASSKEYを選択してください'});const client=await pool.connect();try{await client.query('BEGIN');let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}if(m.status!=='in_progress'){await client.query('ROLLBACK');return res.status(409).json({error:'対戦は進行中ではありません'})}if(Number(m.turn_player_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(409).json({error:'現在は相手のターンです'})}if(m.turn_started_at&&Date.now()<new Date(m.turn_started_at).getTime()){await client.query('ROLLBACK');return res.status(409).json({error:'BATTLE STARTING...'})}if(m.turn_started_at&&new Date(m.turn_started_at).getTime()<=Date.now()-60000){const next=Number(m.turn_player_id)===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);await client.query(`UPDATE quick_matches SET turn_player_id=$1,turn_no=turn_no+1,turn_started_at=NOW(),live_selection='' WHERE id=$2`,[next,id]);await client.query('COMMIT');return res.status(409).json({error:'TIME OUT：相手のターンへ移行しました'})}const isChallenger=Number(m.challenger_id)===Number(req.userId);if(!isChallenger&&Number(m.opponent_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(403).json({error:'このマッチに参加していません'})}const targetSecret=isChallenger?m.opponent_secret:m.challenger_secret;const playerName=isChallenger?m.challenger_name:m.opponent_name;const score=hbScore(targetSecret,code);await client.query(`INSERT INTO hit_blow_guesses(match_id,player_id,player_name,turn_no,guess,hits,blows) VALUES($1,$2,$3,$4,$5,$6,$7)`,[id,req.userId,playerName,m.turn_no,code,score.hits,score.blows]);if(score.hits===4){const winnerId=Number(req.userId),loserId=isChallenger?Number(m.opponent_id):Number(m.challenger_id);const winner=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[winnerId])).rows[0];const loser=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[loserId])).rows[0];const wager=Number(m.wager);if(!winner||!loser||Number(loser.points)<wager){await client.query('ROLLBACK');return res.status(409).json({error:'ポイント状態が変化したため勝敗を確定できません。運営に確認してください'})}const winnerPoints=Number(winner.points)+wager,loserPoints=Number(loser.points)-wager;await client.query('UPDATE users SET points=$1 WHERE id=$2',[winnerPoints,winnerId]);await client.query('UPDATE users SET points=$1 WHERE id=$2',[loserPoints,loserId]);await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`QUICK HIT&BLOW #${id} 勝利`,'match_win',loserId,loser.username]);await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK HIT&BLOW #${id} 敗北`,'match_loss',winnerId,winner.username]);m=(await client.query(`UPDATE quick_matches SET status='completed',winner_user_id=$1,winner_name=$2,completed_at=NOW(),live_selection='' WHERE id=$3 RETURNING *`,[winnerId,winner.username,id])).rows[0];await client.query('COMMIT');if(loserPoints===0)scheduleElimination(loserId);return res.json({ok:true,result:score,completed:true,match:publicQuickMatch(m,req.userId)});}const next=isChallenger?Number(m.opponent_id):Number(m.challenger_id);m=(await client.query(`UPDATE quick_matches SET turn_player_id=$1,turn_no=turn_no+1,turn_started_at=NOW(),live_selection='' WHERE id=$2 RETURNING *`,[next,id])).rows[0];await client.query('COMMIT');res.json({ok:true,result:score,completed:false,match:publicQuickMatch(m,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
+app.post('/api/quick-matches/:id/guess',requireUser,async(req,res,next)=>{const id=Number(req.params.id);const code=Array.isArray(req.body.keys)?req.body.keys.map(String).join(''):String(req.body.code||'');if(!validKeyCode(code))return res.status(400).json({error:'重複なしで4つのPASSKEYを選択してください'});const client=await pool.connect();try{await client.query('BEGIN');let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}if(m.status!=='in_progress'){await client.query('ROLLBACK');return res.status(409).json({error:'対戦は進行中ではありません'})}if(Number(m.turn_player_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(409).json({error:'現在は相手のターンです'})}if(m.turn_started_at&&Date.now()<new Date(m.turn_started_at).getTime()){await client.query('ROLLBACK');return res.status(409).json({error:'BATTLE STARTING...'})}if(m.turn_started_at&&new Date(m.turn_started_at).getTime()<=Date.now()-60000){const next=Number(m.turn_player_id)===Number(m.challenger_id)?Number(m.opponent_id):Number(m.challenger_id);await client.query(`UPDATE quick_matches SET turn_player_id=$1,turn_no=turn_no+1,turn_started_at=NOW(),live_selection='' WHERE id=$2`,[next,id]);await client.query('COMMIT');return res.status(409).json({error:'TIME OUT：相手のターンへ移行しました'})}const isChallenger=Number(m.challenger_id)===Number(req.userId);if(!isChallenger&&Number(m.opponent_id)!==Number(req.userId)){await client.query('ROLLBACK');return res.status(403).json({error:'このマッチに参加していません'})}const targetSecret=isChallenger?m.opponent_secret:m.challenger_secret;const playerName=isChallenger?m.challenger_name:m.opponent_name;const score=hbScore(targetSecret,code);await client.query(`INSERT INTO hit_blow_guesses(match_id,player_id,player_name,turn_no,guess,hits,blows) VALUES($1,$2,$3,$4,$5,$6,$7)`,[id,req.userId,playerName,m.turn_no,code,score.hits,score.blows]);if(score.hits===4){const winnerId=Number(req.userId),loserId=isChallenger?Number(m.opponent_id):Number(m.challenger_id);const winner=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[winnerId])).rows[0];const loser=(await client.query('SELECT id,username,points FROM users WHERE id=$1 FOR UPDATE',[loserId])).rows[0];const wager=Number(m.wager);if(!winner||!loser||Number(loser.points)<wager){await client.query('ROLLBACK');return res.status(409).json({error:'ポイント状態が変化したため勝敗を確定できません。運営に確認してください'})}const winnerPoints=Number(winner.points)+wager,loserPoints=Number(loser.points)-wager;await client.query('UPDATE users SET points=$1 WHERE id=$2',[winnerPoints,winnerId]);await client.query('UPDATE users SET points=$1 WHERE id=$2',[loserPoints,loserId]);await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`QUICK HIT&BLOW #${id} 勝利`,'match_win',loserId,loser.username]);await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK HIT&BLOW #${id} 敗北`,'match_loss',winnerId,winner.username]);m=(await client.query(`UPDATE quick_matches SET status='completed',winner_user_id=$1,winner_name=$2,completed_at=NOW(),live_selection='' WHERE id=$3 RETURNING *`,[winnerId,winner.username,id])).rows[0];await addAudit('battle',`HIT & BLOW // ${winner.username} WIN ${wager}pt`,{userName:winner.username,delta:wager,counterpartName:loser.username},client);await client.query('COMMIT');await awardQuickBattleTitles(winnerId,'hitblow');await awardQuickBattleTitles(loserId,'hitblow');await awardPodiumTitles();if(loserPoints===0)scheduleElimination(loserId);return res.json({ok:true,result:score,completed:true,match:publicQuickMatch(m,req.userId)});}const next=isChallenger?Number(m.opponent_id):Number(m.challenger_id);m=(await client.query(`UPDATE quick_matches SET turn_player_id=$1,turn_no=turn_no+1,turn_started_at=NOW(),live_selection='' WHERE id=$2 RETURNING *`,[next,id])).rows[0];await client.query('COMMIT');res.json({ok:true,result:score,completed:false,match:publicQuickMatch(m,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
 
 
 // QUICK BATTLE: CHINCHIRO -----------------------------------------------------
@@ -767,7 +824,7 @@ app.post('/api/quick-matches/:id/chinchiro-roll',requireUser,async(req,res,next)
     await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[winnerId,wager,`QUICK CHINCHIRO BO3 #${id} 勝利`,'match_win',loserId,loser.username]);
     await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK CHINCHIRO BO3 #${id} 敗北`,'match_loss',winnerId,winner.username]);
     m=(await client.query(`UPDATE quick_matches SET challenger_chinchiro_wins=$1,opponent_chinchiro_wins=$2,chinchiro_last_round_winner_id=$3,chinchiro_last_round_no=$4,status='completed',winner_user_id=$3,winner_name=$5,completed_at=NOW() WHERE id=$6 RETURNING *`,[nextCWins,nextOWins,roundWinnerId,roundNo,winner.username,id])).rows[0];
-    await client.query('COMMIT');if(loserPoints===0)scheduleElimination(loserId);
+    await addAudit('battle',`CHINCHIRO BO3 // ${winner.username} WIN ${wager}pt`,{userName:winner.username,delta:wager,counterpartName:loser.username},client);await client.query('COMMIT');await awardQuickBattleTitles(winnerId,'chinchiro');await awardQuickBattleTitles(loserId,'chinchiro');await awardPodiumTitles();if(loserPoints===0)scheduleElimination(loserId);
     res.json({ok:true,roll:{dice,attempt,final:true,...ev},completed:true,roundWinnerId,roundNo,roundComplete:true,match:publicQuickMatch(m,req.userId)});
   }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });
@@ -808,7 +865,7 @@ async function resolveJankenRound(client,m){
     await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[finalWinnerId,wager,`QUICK JANKEN #${m.id} 勝利`,'match_win',loserId,loser.username]);
     await client.query(`INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name) VALUES($1,$2,$3,$4,$5,$6)`,[loserId,-wager,`QUICK JANKEN #${m.id} 敗北`,'match_loss',finalWinnerId,winner.username]);
     m=(await client.query(`UPDATE quick_matches SET challenger_janken_wins=$1,opponent_janken_wins=$2,challenger_janken_choice=NULL,opponent_janken_choice=NULL,status='completed',winner_user_id=$3,winner_name=$4,completed_at=NOW() WHERE id=$5 RETURNING *`,[cw,ow,finalWinnerId,winner.username,m.id])).rows[0];
-    if(lp===0)scheduleElimination(loserId);
+    await addAudit('battle',`JANKEN BO5 // ${winner.username} WIN ${wager}pt`,{userName:winner.username,delta:wager,counterpartName:loser.username},client);await awardQuickBattleTitles(finalWinnerId,'janken',client);await awardQuickBattleTitles(loserId,'janken',client);await awardPodiumTitles(client);if(lp===0)scheduleElimination(loserId);
     return m;
   }
 
@@ -888,7 +945,7 @@ app.post('/api/staff/participants', requireStaff, async (req,res,next)=>{
   try{
     await client.query('BEGIN');const hash=await bcrypt.hash(password,12), code=await makeCode(client), cipher=encryptPassword(password);
     const r=await client.query('INSERT INTO users(public_code,username,password_hash,password_ciphertext,points) VALUES($1,$2,$3,$4,$5) RETURNING id',[code,username,hash,cipher,STARTING_POINTS]);
-    await client.query('COMMIT');res.json({ok:true,id:Number(r.rows[0].id),username,code,startingPoints:STARTING_POINTS,password});
+    await client.query('COMMIT');await ensureBaseTitle(Number(r.rows[0].id));res.json({ok:true,id:Number(r.rows[0].id),username,code,startingPoints:STARTING_POINTS,password});
   }catch(e){await client.query('ROLLBACK');if(e.code==='23505')return res.status(409).json({error:'その参加者名は現在使用中です'});next(e)}finally{client.release()}
 });
 
@@ -923,7 +980,7 @@ app.post('/api/staff/users/:id/points', requireStaff, async (req,res,next)=>{
     const nextPoints=Number(u.points)+delta;if(nextPoints<0){await client.query('ROLLBACK');return res.status(400).json({error:'ポイントは0未満にできません'})}
     await client.query('UPDATE users SET points=$1 WHERE id=$2',[nextPoints,id]);
     await client.query('INSERT INTO point_history(user_id,delta,reason,action_type,staff_id) VALUES($1,$2,$3,$4,$5)',[id,delta,reason||null,'adjust',req.staff.id]);
-    await client.query('COMMIT');if(nextPoints===0)scheduleElimination(id);res.json({id,username:u.username,points:nextPoints,eliminated:nextPoints===0});
+    await addAudit('adjust',`POINT ADJUST ${delta>0?'+':''}${delta}pt`,{userName:u.username,delta,staffName:req.staff.username},client);await client.query('COMMIT');await awardPodiumTitles();if(nextPoints===0)scheduleElimination(id);res.json({id,username:u.username,points:nextPoints,eliminated:nextPoints===0});
   }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
 });
 
@@ -942,12 +999,12 @@ app.post('/api/staff/transfer', requireStaff, async (req,res,next)=>{
     await client.query('UPDATE users SET points=$1 WHERE id=$2',[fromPoints,fromId]);await client.query('UPDATE users SET points=$1 WHERE id=$2',[toPoints,toId]);
     await client.query('INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name,staff_id) VALUES($1,$2,$3,$4,$5,$6,$7)',[fromId,-amount,reason||null,'transfer_out',toId,to.username,req.staff.id]);
     await client.query('INSERT INTO point_history(user_id,delta,reason,action_type,counterpart_user_id,counterpart_name,staff_id) VALUES($1,$2,$3,$4,$5,$6,$7)',[toId,amount,reason||null,'transfer_in',fromId,from.username,req.staff.id]);
-    await client.query('COMMIT');if(fromPoints===0)scheduleElimination(fromId);res.json({ok:true,eliminated:fromPoints===0,from:{id:fromId,username:from.username,points:fromPoints},to:{id:toId,username:to.username,points:toPoints}});
+    await addAudit('adjust',`STAFF TRANSFER ${amount}pt`,{userName:from.username,delta:-amount,counterpartName:to.username,staffName:req.staff.username},client);await client.query('COMMIT');await awardPodiumTitles();if(fromPoints===0)scheduleElimination(fromId);res.json({ok:true,eliminated:fromPoints===0,from:{id:fromId,username:from.username,points:fromPoints},to:{id:toId,username:to.username,points:toPoints}});
   }catch(e){await client.query('ROLLBACK');next(e)}finally{client.release()}
 });
 
 app.delete('/api/staff/users/:id', requireAdmin, async (req,res,next)=>{try{const u=await deleteUserHard(Number(req.params.id));if(!u)return res.status(404).json({error:'参加者が見つかりません'});res.json({ok:true,username:u.username})}catch(e){next(e)}});
-app.get('/api/staff/history', requireStaff, async (req,res,next)=>{try{const all=String(req.query.all||'')==='1';const limit=all?150:3;const r=await query(`SELECT h.id,u.username,h.delta,h.reason,h.action_type,COALESCE(c.username,h.counterpart_name) counterpart,s.username staff_name,h.created_at FROM point_history h JOIN users u ON u.id=h.user_id LEFT JOIN users c ON c.id=h.counterpart_user_id LEFT JOIN staff s ON s.id=h.staff_id ORDER BY h.id DESC LIMIT ${limit}`);res.json(r.rows.map(x=>({...x,id:Number(x.id),delta:Number(x.delta)})))}catch(e){next(e)}});
+app.get('/api/staff/history', requireStaff, async (req,res,next)=>{try{const type=String(req.query.type||'adjust');const category=type==='battle'?'battle':'adjust';const r=await query(`SELECT id,category,summary,user_name,delta,counterpart_name,staff_name,created_at FROM admin_audit_log WHERE category=$1 ORDER BY id DESC LIMIT 20`,[category]);res.json(r.rows.map(x=>({...x,id:Number(x.id),delta:x.delta==null?null:Number(x.delta)})));}catch(e){next(e)}});
 app.get('/api/staff/accounts', requireAdmin, async (req,res,next)=>{try{const r=await query('SELECT id,username,role,created_at FROM staff ORDER BY role,LOWER(username)');res.json(r.rows.map(x=>({...x,id:Number(x.id)})))}catch(e){next(e)}});
 app.post('/api/staff/accounts', requireAdmin, async (req,res,next)=>{const username=cleanName(req.body.username),password=String(req.body.password||''),role=req.body.role==='admin'?'admin':'staff';if(username.length<2||username.length>30)return res.status(400).json({error:'スタッフIDは2〜30文字で入力してください'});if(password.length<8||password.length>72)return res.status(400).json({error:'スタッフパスワードは8〜72文字で入力してください'});try{const hash=await bcrypt.hash(password,12),r=await query('INSERT INTO staff(username,password_hash,role) VALUES($1,$2,$3) RETURNING id',[username,hash,role]);res.json({ok:true,id:Number(r.rows[0].id)})}catch(e){if(e.code==='23505')return res.status(409).json({error:'そのスタッフIDは使用済みです'});next(e)}});
 app.delete('/api/staff/accounts/:id', requireAdmin, async (req,res,next)=>{try{const id=Number(req.params.id);if(id===req.staff.id)return res.status(400).json({error:'現在ログイン中の自分自身は削除できません'});const target=await one('SELECT id,username,role FROM staff WHERE id=$1',[id]);if(!target)return res.status(404).json({error:'アカウントが見つかりません'});if(target.role==='admin'){const count=await one("SELECT COUNT(*)::int AS count FROM staff WHERE role='admin'");if(Number(count.count)<=1)return res.status(400).json({error:'最後の管理者は削除できません'})}await query('DELETE FROM staff WHERE id=$1',[id]);res.json({ok:true,username:target.username,role:target.role})}catch(e){next(e)}});
@@ -968,7 +1025,7 @@ app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(e
   try{
     await initDb();
     app.listen(PORT,'0.0.0.0',()=>{
-      console.log(`NEXUS:ZERO v5.8: http://localhost:${PORT}`);
+      console.log(`NEXUS:ZERO v5.49: http://localhost:${PORT}`);
       console.log('Database: PostgreSQL');
       console.log(`Starting points: ${STARTING_POINTS}`);
       if(SESSION_SECRET.startsWith('replace-this'))console.log('WARNING: SESSION_SECRETを本番用に変更してください。');
