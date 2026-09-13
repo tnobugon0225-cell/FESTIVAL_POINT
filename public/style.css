@@ -2243,3 +2243,103 @@ body.dm-open{overflow:hidden!important}
     max-height:54px!important;
   }
 }
+
+/* v5.67 — NETWORK chat spacing / alignment refinement */
+.network-page .network-stage-panel{
+  height:calc(100dvh - 84px)!important;
+  min-height:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+}
+.network-page #networkScreen{
+  display:flex!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  flex-direction:column!important;
+}
+.network-page #chat.network-tab:not(.hidden){
+  display:flex!important;
+  flex:1 1 auto!important;
+  min-height:0!important;
+  flex-direction:column!important;
+}
+.network-page .network-screen-nav{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  height:auto!important;
+  gap:6px!important;
+  padding:2px 2px 3px!important;
+  margin:-2px -2px 5px!important;
+  background:rgba(2,8,15,.86)!important;
+}
+.network-page .network-screen-nav button{
+  min-height:50px!important;
+  height:50px!important;
+  margin:0!important;
+  padding:1px 3px!important;
+}
+.network-page .network-screen-nav img{
+  height:46px!important;
+  max-height:46px!important;
+}
+.network-page .chat-list{
+  flex:1 1 auto!important;
+  height:auto!important;
+  min-height:0!important;
+  margin-top:0!important;
+  padding-top:10px!important;
+  padding-bottom:10px!important;
+}
+.network-page .global-compose{
+  flex:0 0 auto!important;
+  margin-top:10px!important;
+}
+.network-page #chatCooldown{
+  flex:0 0 auto!important;
+  min-height:8px!important;
+  margin:3px 0 0!important;
+  padding:2px 0 0 6px!important;
+  background:transparent!important;
+  border-left:0!important;
+  line-height:1.1!important;
+}
+/* Generic button rules add margin-top; neutralize it so avatar top aligns with title top. */
+.network-page .chat-avatar{
+  margin:0!important;
+  align-self:start!important;
+}
+.network-page .chat-row{
+  align-items:start!important;
+}
+.network-page .chat-id{
+  padding-top:0!important;
+  margin-top:0!important;
+}
+
+@media(max-width:620px){
+  .network-page .network-stage-panel{
+    height:calc(100dvh - 76px)!important;
+  }
+  .network-page .network-screen-nav{
+    gap:4px!important;
+    padding:1px 1px 2px!important;
+    margin:-2px -2px 4px!important;
+  }
+  .network-page .network-screen-nav button{
+    min-height:46px!important;
+    height:46px!important;
+    padding:1px!important;
+  }
+  .network-page .network-screen-nav img{
+    height:43px!important;
+    max-height:43px!important;
+  }
+  .network-page .chat-list{
+    height:auto!important;
+    min-height:0!important;
+  }
+  .network-page .global-compose{
+    margin-top:8px!important;
+  }
+}
