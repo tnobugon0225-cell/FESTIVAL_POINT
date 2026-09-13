@@ -80,12 +80,21 @@
     </div>
   </section>
 
-  <div id="homePrimaryMenu" class="home-primary-menu">
+  <div id="homePrimaryMenu" class="home-primary-menu" data-battle-step="root">
   <section class="system-panel transfer-card arena-transfer match-create-card battle-hub">
     <button type="button" id="battleHubOpen" class="art-menu-root">
       <img src="/ui/v562/battle-matching.png" alt="対戦マッチング">
     </button>
+  </section>
 
+  <section class="system-panel nexus-network-panel network-hub-card">
+    <a href="/network" class="art-menu-root network-main-link" data-nexus-nav="NETWORK">
+      <img src="/ui/network-main.webp" alt="ネットワーク">
+    </a>
+  </section>
+</div>
+
+  <section id="battleStage" class="system-panel battle-stage-panel hidden" data-battle-step="root">
     <div id="battleStepModes" class="battle-wizard-step hidden">
       <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="root">‹ BACK</button><span>SELECT BATTLE TYPE</span></div>
       <div class="art-choice-grid two">
@@ -121,15 +130,7 @@
       </div>
       <button id="challengeBtn" class="art-action-button"><img src="/ui/battle-request.webp" alt="対戦申請"></button><p id="matchCreateMsg"></p>
     </div>
-    <p id="battleHubNote" class="system-note">対戦ポイントは10pt刻み。上限は対戦する2人のうち所持ポイントが低い方です。</p>
   </section>
-
-  <section class="system-panel nexus-network-panel network-hub-card">
-    <a href="/network" class="art-menu-root network-main-link" data-nexus-nav="NETWORK">
-      <img src="/ui/network-main.webp" alt="ネットワーク">
-    </a>
-  </section>
-</div>
 
   <div class="system-panel logout-card arena-controls"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
 
@@ -263,17 +264,21 @@ function startMatchPolling(){clearInterval(matchPollTimer);matchPollTimer=setInt
 $('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{if(currentMatch.kind==='quick'){await api(`/api/quick-matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent=`承認しました。${quickGameName(currentMatch)}へ接続します。`;await sleep(350);location.href=quickGamePath(currentMatch)}else{await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(350);location.href='/match'}}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
 $('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{const url=currentMatch.kind==='quick'?`/api/quick-matches/${currentMatch.id}/reject`:`/api/matches/${currentMatch.id}/reject`;await api(url,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=e.message;btn.disabled=false}};
 function showBattleWizard(step){
-  $('#battleHubOpen').classList.toggle('hidden',step!=='root');
+  const homeMenu=$('#homePrimaryMenu');
+  const battleStage=$('#battleStage');
+  const isRoot=step==='root';
   $('#battleStepModes').classList.toggle('hidden',step!=='modes');
   $('#quickBattlePanel').classList.toggle('hidden',!['games','quick-entry'].includes(step));
   $('#customBattlePanel').classList.toggle('hidden',step!=='custom');
   $('#quickGameSelect')?.classList.toggle('hidden',step!=='games');
   $('#quickEntryPanel')?.classList.toggle('hidden',step!=='quick-entry');
-  $('#battleHubNote')?.classList.toggle('hidden',step==='root'||step==='modes'||step==='games');
-  const homeMenu=$('#homePrimaryMenu');
   if(homeMenu){
-    homeMenu.classList.toggle('battle-active',step!=='root');
+    homeMenu.classList.toggle('hidden',!isRoot);
     homeMenu.dataset.battleStep=step;
+  }
+  if(battleStage){
+    battleStage.classList.toggle('hidden',isRoot);
+    battleStage.dataset.battleStep=step;
   }
 }
 $('#battleHubOpen').onclick=()=>pressRun($('#battleHubOpen'),()=>showBattleWizard('modes'));

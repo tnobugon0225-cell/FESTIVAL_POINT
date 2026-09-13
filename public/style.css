@@ -1848,7 +1848,7 @@ body.dm-open{overflow:hidden!important}
   .battle-player-title-img,.prebattle-title-img,.request-title-img,.watch-title{height:28px!important;max-height:28px!important;width:min(124px,100%)!important}
 }
 
-/* v5.62 — emblem-based hierarchical HOME menu */
+/* v5.63 — emblem-based hierarchical HOME menu */
 .home-primary-menu{
   display:grid;
   grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
@@ -1890,24 +1890,30 @@ body.dm-open{overflow:hidden!important}
   transform:translateY(-2px) scale(1.012);
   filter:drop-shadow(0 0 25px rgba(50,211,255,.24)) brightness(1.04);
 }
-.home-primary-menu.battle-active{
-  grid-template-columns:1fr;
-}
-.home-primary-menu.battle-active>.network-hub-card{
-  display:none!important;
-}
-.home-primary-menu.battle-active>.battle-hub{
-  min-height:0;
+
+.battle-stage-panel{
+  margin:0 0 16px!important;
   padding:12px!important;
+  background:linear-gradient(180deg,rgba(4,16,30,.40),rgba(1,8,16,.20))!important;
+  border-color:rgba(77,216,255,.14)!important;
 }
-.home-primary-menu.battle-active .battle-hub .art-choice-grid.two{
+.battle-stage-panel .battle-mode-panel,
+.battle-stage-panel .battle-wizard-step{
+  width:100%;
+}
+.battle-stage-panel .wizard-bar{
+  max-width:1050px;
+  width:100%;
+  margin:0 auto 10px;
+}
+.battle-stage-panel .art-choice-grid.two{
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:14px!important;
   max-width:920px;
   margin:0 auto;
 }
-.home-primary-menu.battle-active .art-choice-grid.two .art-choice,
-.home-primary-menu.battle-active .art-game-grid .quick-game-card{
+.battle-stage-panel .art-choice-grid.two .art-choice,
+.battle-stage-panel .art-game-grid .quick-game-card{
   aspect-ratio:1/1!important;
   padding:0!important;
   border:0!important;
@@ -1917,8 +1923,8 @@ body.dm-open{overflow:hidden!important}
   place-items:center;
   overflow:visible!important;
 }
-.home-primary-menu.battle-active .art-choice-grid.two .art-choice img,
-.home-primary-menu.battle-active .art-game-grid .quick-game-card img{
+.battle-stage-panel .art-choice-grid.two .art-choice img,
+.battle-stage-panel .art-game-grid .quick-game-card img{
   width:100%!important;
   height:100%!important;
   max-height:none!important;
@@ -1926,25 +1932,16 @@ body.dm-open{overflow:hidden!important}
   aspect-ratio:1/1!important;
   filter:drop-shadow(0 0 14px rgba(37,192,255,.13));
 }
-.home-primary-menu.battle-active .art-game-grid{
+.battle-stage-panel .art-game-grid{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:12px!important;
   max-width:1050px;
   margin:0 auto 12px;
 }
-.home-primary-menu.battle-active .art-choice:hover img,
-.home-primary-menu.battle-active .quick-game-card:hover img{
+.battle-stage-panel .art-choice:hover img,
+.battle-stage-panel .quick-game-card:hover img{
   transform:scale(1.018);
   filter:drop-shadow(0 0 22px rgba(52,214,255,.24)) brightness(1.04);
-}
-.home-primary-menu .wizard-bar{
-  max-width:1050px;
-  width:100%;
-  margin:0 auto 10px;
-}
-.home-primary-menu .battle-mode-panel,
-.home-primary-menu .battle-wizard-step{
-  width:100%;
 }
 
 @media(max-width:760px){
@@ -1962,24 +1959,21 @@ body.dm-open{overflow:hidden!important}
   .home-primary-menu .art-menu-root>img{
     width:100%!important;
   }
-  .home-primary-menu.battle-active{
-    grid-template-columns:1fr;
-  }
-  .home-primary-menu.battle-active>.battle-hub{
+  .battle-stage-panel{
     padding:7px!important;
   }
-  .home-primary-menu.battle-active .battle-hub .art-choice-grid.two{
+  .battle-stage-panel .art-choice-grid.two{
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
     gap:5px!important;
   }
-  .home-primary-menu.battle-active .art-game-grid{
+  .battle-stage-panel .art-game-grid{
     grid-template-columns:repeat(3,minmax(0,1fr))!important;
     gap:3px!important;
   }
-  .home-primary-menu .wizard-bar{
+  .battle-stage-panel .wizard-bar{
     margin-bottom:5px;
   }
-  .home-primary-menu .wizard-back{
+  .battle-stage-panel .wizard-back{
     min-width:58px!important;
     height:30px!important;
     font-size:9px!important;
