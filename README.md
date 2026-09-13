@@ -424,6 +424,12 @@ npm start
 
 
 ## v5.61
-- Unified QUICK/CUSTOM opponent/referee/battle-point label sizing.
-- Moved PRIVATE LINK DM modal to document body to avoid transformed-panel fixed-position bugs on iPhone Safari.
-- Rebuilt DM layout so the input + SEND row is always visible.
+- Unified display boxes for side-by-side artwork so QUICK/CUSTOM, QUICK game trio, NETWORK trio and network tabs align consistently.
+- Standardized input-label, action-button and title artwork heights across desktop/mobile.
+- Kept mobile QUICK and NETWORK trios in matching three-column rows while preserving equal visual weight.
+
+## v5.62 UI update
+- HOME first row: 対戦マッチング / ネットワーク
+- 対戦マッチング -> クイックバトル / カスタムバトル
+- クイックバトル -> HIT & BLOW / ジャンケン / チンチロ
+- v5.62 menu emblems use transparent assets in `public/ui/v562/`.

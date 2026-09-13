@@ -80,26 +80,26 @@
     </div>
   </section>
 
-  <div id="homeActionGrid" class="home-action-grid">
+  <div id="homePrimaryMenu" class="home-primary-menu">
   <section class="system-panel transfer-card arena-transfer match-create-card battle-hub">
     <button type="button" id="battleHubOpen" class="art-menu-root">
-      <img src="/ui/battle-matching.webp" alt="対戦マッチング">
+      <img src="/ui/v562/battle-matching.png" alt="対戦マッチング">
     </button>
 
     <div id="battleStepModes" class="battle-wizard-step hidden">
       <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="root">‹ BACK</button><span>SELECT BATTLE TYPE</span></div>
       <div class="art-choice-grid two">
-        <button type="button" id="quickModeBtn" class="art-choice"><img src="/ui/quick-battle.webp" alt="クイックバトル"></button>
-        <button type="button" id="customModeBtn" class="art-choice"><img src="/ui/custom-battle.webp" alt="カスタムマッチング"></button>
+        <button type="button" id="quickModeBtn" class="art-choice"><img src="/ui/v562/quick-battle.png" alt="クイックバトル"></button>
+        <button type="button" id="customModeBtn" class="art-choice"><img src="/ui/v562/custom-battle.png" alt="カスタムマッチング"></button>
       </div>
     </div>
 
     <div id="quickBattlePanel" class="battle-mode-panel hidden">
       <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="modes">‹ BACK</button><span>SELECT QUICK GAME</span></div>
       <div id="quickGameSelect" class="quick-game-grid art-game-grid">
-        <button type="button" class="quick-game-card art-choice" data-game="hitblow"><img src="/ui/hitblow.webp" alt="ヒットアンドブロー"></button>
-        <button type="button" class="quick-game-card art-choice" data-game="janken"><img src="/ui/janken.webp" alt="ジャンケン"></button>
-        <button type="button" class="quick-game-card art-choice" data-game="chinchiro"><img src="/ui/chinchiro.webp" alt="チンチロ"></button>
+        <button type="button" class="quick-game-card art-choice" data-game="hitblow"><img src="/ui/v562/hitblow.png" alt="ヒットアンドブロー"></button>
+        <button type="button" class="quick-game-card art-choice" data-game="janken"><img src="/ui/v562/janken.png" alt="ジャンケン"></button>
+        <button type="button" class="quick-game-card art-choice" data-game="chinchiro"><img src="/ui/v562/chinchiro.png" alt="チンチロ"></button>
       </div>
       <div id="quickEntryPanel" class="hidden">
         <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="games">‹ BACK</button><span id="quickEntryName">HIT &amp; BLOW</span></div>
@@ -129,7 +129,7 @@
       <img src="/ui/network-main.webp" alt="ネットワーク">
     </a>
   </section>
-  </div>
+</div>
 
   <div class="system-panel logout-card arena-controls"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
 
@@ -263,7 +263,6 @@ function startMatchPolling(){clearInterval(matchPollTimer);matchPollTimer=setInt
 $('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{if(currentMatch.kind==='quick'){await api(`/api/quick-matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent=`承認しました。${quickGameName(currentMatch)}へ接続します。`;await sleep(350);location.href=quickGamePath(currentMatch)}else{await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(350);location.href='/match'}}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
 $('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{const url=currentMatch.kind==='quick'?`/api/quick-matches/${currentMatch.id}/reject`:`/api/matches/${currentMatch.id}/reject`;await api(url,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=e.message;btn.disabled=false}};
 function showBattleWizard(step){
-  $('#homeActionGrid')?.classList.toggle('battle-expanded',step!=='root');
   $('#battleHubOpen').classList.toggle('hidden',step!=='root');
   $('#battleStepModes').classList.toggle('hidden',step!=='modes');
   $('#quickBattlePanel').classList.toggle('hidden',!['games','quick-entry'].includes(step));
@@ -271,6 +270,11 @@ function showBattleWizard(step){
   $('#quickGameSelect')?.classList.toggle('hidden',step!=='games');
   $('#quickEntryPanel')?.classList.toggle('hidden',step!=='quick-entry');
   $('#battleHubNote')?.classList.toggle('hidden',step==='root'||step==='modes'||step==='games');
+  const homeMenu=$('#homePrimaryMenu');
+  if(homeMenu){
+    homeMenu.classList.toggle('battle-active',step!=='root');
+    homeMenu.dataset.battleStep=step;
+  }
 }
 $('#battleHubOpen').onclick=()=>pressRun($('#battleHubOpen'),()=>showBattleWizard('modes'));
 $('#quickModeBtn').onclick=()=>pressRun($('#quickModeBtn'),()=>showBattleWizard('games'));
