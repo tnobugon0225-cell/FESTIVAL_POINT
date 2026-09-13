@@ -3041,3 +3041,97 @@ body.dm-open{overflow:hidden!important}
     font-size:9px!important;
   }
 }
+
+/* v5.75 — profile action simplification + tighter friend identity block */
+#profileAction .compact-profile-card{
+  width:min(430px,calc(100vw - 34px))!important;
+}
+#profileAction #profileFriend.profile-friend-only{
+  display:block!important;
+  width:min(260px,100%)!important;
+  margin:10px auto 0!important;
+  min-height:58px!important;
+}
+#profileAction #profileFriend.profile-friend-only img{
+  height:64px!important;
+  max-height:64px!important;
+}
+#profileAction #profileBattle{display:none!important}
+
+.network-page #friendSearchResult .friend-card,
+.network-page #friendList .friend-card{
+  grid-template-columns:58px minmax(104px,132px) auto!important;
+  column-gap:7px!important;
+  align-items:center!important;
+  padding:12px 0!important;
+}
+.network-page #friendSearchResult .friend-card .chat-avatar,
+.network-page #friendList .friend-card .chat-avatar{
+  align-self:center!important;
+}
+.network-page #friendSearchResult .friend-card .chat-avatar img,
+.network-page #friendList .friend-card .chat-avatar img{
+  width:54px!important;
+  height:54px!important;
+}
+.network-page #friendSearchResult .friend-card .chat-id,
+.network-page #friendList .friend-card .chat-id{
+  align-self:center!important;
+  justify-content:center!important;
+  gap:2px!important;
+  min-height:54px!important;
+  padding-top:0!important;
+}
+.network-page #friendSearchResult .friend-card .mini-title-img,
+.network-page #friendList .friend-card .mini-title-img{
+  width:112px!important;
+  height:24px!important;
+  object-position:left center!important;
+}
+.network-page #friendSearchResult .friend-card .chat-id strong,
+.network-page #friendList .friend-card .chat-id strong{
+  font-size:13px!important;
+  line-height:1.08!important;
+}
+.network-page #friendSearchResult .friend-card .friend-actions,
+.network-page #friendList .friend-card .friend-actions,
+.network-page #friendSearchResult .friend-card .friend-state,
+.network-page #friendList .friend-card .friend-state{
+  align-self:center!important;
+  margin-top:0!important;
+}
+
+@media(max-width:620px){
+  #profileAction #profileFriend.profile-friend-only{
+    width:min(244px,100%)!important;
+    min-height:54px!important;
+  }
+  #profileAction #profileFriend.profile-friend-only img{
+    height:58px!important;
+    max-height:58px!important;
+  }
+  .network-page #friendSearchResult .friend-card,
+  .network-page #friendList .friend-card{
+    grid-template-columns:54px minmax(96px,120px) auto!important;
+    column-gap:6px!important;
+    padding:11px 0!important;
+  }
+  .network-page #friendSearchResult .friend-card .chat-avatar img,
+  .network-page #friendList .friend-card .chat-avatar img{
+    width:50px!important;
+    height:50px!important;
+  }
+  .network-page #friendSearchResult .friend-card .chat-id,
+  .network-page #friendList .friend-card .chat-id{
+    min-height:50px!important;
+  }
+  .network-page #friendSearchResult .friend-card .mini-title-img,
+  .network-page #friendList .friend-card .mini-title-img{
+    width:104px!important;
+    height:22px!important;
+  }
+  .network-page #friendSearchResult .friend-card .chat-id strong,
+  .network-page #friendList .friend-card .chat-id strong{
+    font-size:12px!important;
+  }
+}
