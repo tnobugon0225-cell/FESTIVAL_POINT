@@ -96,7 +96,7 @@
 
   <section id="battleStage" class="system-panel battle-stage-panel hidden" data-battle-step="root">
     <div id="battleStepModes" class="battle-wizard-step hidden">
-      <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="root">‹ BACK</button><span>SELECT BATTLE TYPE</span></div>
+      <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="root" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span>SELECT BATTLE TYPE</span></div>
       <div class="art-choice-grid two">
         <button type="button" id="quickModeBtn" class="art-choice"><img src="/ui/v562/quick-battle.webp" alt="クイックバトル"></button>
         <button type="button" id="customModeBtn" class="art-choice"><img src="/ui/v562/custom-battle.webp" alt="カスタムマッチング"></button>
@@ -104,14 +104,14 @@
     </div>
 
     <div id="quickBattlePanel" class="battle-mode-panel hidden">
-      <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="modes">‹ BACK</button><span>SELECT QUICK GAME</span></div>
+      <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="modes" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span>SELECT QUICK GAME</span></div>
       <div id="quickGameSelect" class="quick-game-grid art-game-grid">
         <button type="button" class="quick-game-card art-choice" data-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="ヒットアンドブロー"></button>
         <button type="button" class="quick-game-card art-choice" data-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button>
         <button type="button" class="quick-game-card art-choice" data-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
       </div>
       <div id="quickEntryPanel" class="hidden">
-        <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="games">‹ BACK</button><span id="quickEntryName">HIT &amp; BLOW</span></div>
+        <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="games" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span id="quickEntryName">HIT &amp; BLOW</span></div>
         <div class="transfer-grid transfer-grid-v52 quick-entry-grid art-input-grid">
           <div><img class="field-art-label" src="/ui/rival-id.webp" alt="対戦相手ID"><input id="quickOpponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
           <div><img class="field-art-label" src="/ui/battle-points.webp" alt="対戦ポイント"><input id="quickWagerAmount" type="number" inputmode="numeric" min="10" step="10" placeholder="10 / 20 / 30 ..."></div>
@@ -122,7 +122,7 @@
     </div>
 
     <div id="customBattlePanel" class="battle-mode-panel hidden">
-      <div class="wizard-bar"><button type="button" class="wizard-back" data-battle-back="modes">‹ BACK</button><span>CUSTOM BATTLE</span></div>
+      <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="modes" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span>CUSTOM BATTLE</span></div>
       <div class="transfer-grid transfer-grid-v52 match-entry-grid art-input-grid">
         <div><img class="field-art-label" src="/ui/rival-id.webp" alt="対戦相手ID"><input id="opponentCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>
         <div><img class="field-art-label" src="/ui/referee-id.webp" alt="審判ID"><input id="refereeCode" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="0000"></div>

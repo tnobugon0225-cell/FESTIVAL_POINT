@@ -3226,3 +3226,32 @@ body.dm-open{overflow:hidden!important}
     min-height:42px!important;
   }
 }
+
+
+/* v5.76.2 — HOME battle flow BACK art only */
+.battle-stage-panel .wizard-back.wizard-back-art{
+  width:118px!important;
+  min-width:118px!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.battle-stage-panel .wizard-back.wizard-back-art img{
+  display:block;
+  width:100%;
+  height:auto;
+  object-fit:contain;
+  pointer-events:none;
+}
+@media(max-width:760px){
+  .battle-stage-panel .wizard-back.wizard-back-art{
+    width:96px!important;
+    min-width:96px!important;
+    height:auto!important;
+  }
+}
