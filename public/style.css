@@ -1027,3 +1027,74 @@
   .profile-name{font-size:20px}
   .profile-title-large{width:min(100%,210px)}
 }
+
+
+/* v5.54 title layout / transparency fit */
+.arena-identity .identity-data{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+}
+.arena-identity .player-title-badge{
+  order:-10;
+  width:100%!important;
+  max-width:280px!important;
+  height:74px!important;
+  min-height:0!important;
+  margin:0 0 10px!important;
+  overflow:visible!important;
+}
+.arena-identity .player-title-badge>img{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  background:transparent!important;
+}
+.arena-identity .id-display{
+  margin:4px 0 12px!important;
+}
+.arena-identity .identity-data h1{
+  margin:5px 0 0!important;
+}
+.title-option.image-title,
+.title-option.image-title img,
+.profile-title-large,
+.mini-title-img{
+  background:transparent!important;
+}
+.title-option.image-title{
+  background:linear-gradient(90deg,rgba(4,16,27,.74),rgba(7,27,42,.38))!important;
+}
+#profileBody .profile-copy{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:4px;
+}
+#profileBody .profile-title-large{
+  order:0;
+  width:100%!important;
+  max-width:245px!important;
+  height:74px!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+  margin:0 0 4px;
+}
+#profileBody .profile-kicker{order:1}
+#profileBody .profile-code{order:2}
+#profileBody .profile-name-label{order:3;margin-top:5px}
+#profileBody .profile-name{order:4}
+@media(max-width:560px){
+  .arena-identity .player-title-badge{
+    max-width:235px!important;
+    height:64px!important;
+    margin-bottom:7px!important;
+  }
+  #profileBody .profile-title-large{
+    max-width:205px!important;
+    height:60px!important;
+  }
+}
