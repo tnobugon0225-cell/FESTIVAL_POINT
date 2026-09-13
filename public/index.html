@@ -80,6 +80,7 @@
     </div>
   </section>
 
+  <div id="homeActionGrid" class="home-action-grid">
   <section class="system-panel transfer-card arena-transfer match-create-card battle-hub">
     <button type="button" id="battleHubOpen" class="art-menu-root">
       <img src="/ui/battle-matching.webp" alt="対戦マッチング">
@@ -128,6 +129,7 @@
       <img src="/ui/network-main.webp" alt="ネットワーク">
     </a>
   </section>
+  </div>
 
   <div class="system-panel logout-card arena-controls"><button id="refreshBtn" class="secondary">今すぐ更新</button><button id="logoutBtn" class="ghost">ログアウト</button></div>
 
@@ -261,6 +263,7 @@ function startMatchPolling(){clearInterval(matchPollTimer);matchPollTimer=setInt
 $('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{if(currentMatch.kind==='quick'){await api(`/api/quick-matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent=`承認しました。${quickGameName(currentMatch)}へ接続します。`;await sleep(350);location.href=quickGamePath(currentMatch)}else{await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(350);location.href='/match'}}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
 $('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{const url=currentMatch.kind==='quick'?`/api/quick-matches/${currentMatch.id}/reject`:`/api/matches/${currentMatch.id}/reject`;await api(url,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=e.message;btn.disabled=false}};
 function showBattleWizard(step){
+  $('#homeActionGrid')?.classList.toggle('battle-expanded',step!=='root');
   $('#battleHubOpen').classList.toggle('hidden',step!=='root');
   $('#battleStepModes').classList.toggle('hidden',step!=='modes');
   $('#quickBattlePanel').classList.toggle('hidden',!['games','quick-entry'].includes(step));
