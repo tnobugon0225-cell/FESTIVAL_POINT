@@ -2150,3 +2150,96 @@ body.dm-open{overflow:hidden!important}
 @media(max-width:620px){
   .battle-referee-copy .battle-referee-title{width:min(120px,100%)!important;height:26px!important}
 }
+
+
+/* v5.65 NETWORK mobile usability polish */
+.network-page .app-shell{
+  padding-bottom:8px!important;
+}
+.network-page .network-stage-panel{
+  margin-bottom:0!important;
+  min-height:calc(100dvh - 92px)!important;
+}
+.network-screen-nav{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:10px!important;
+  padding:9px 5px 11px!important;
+}
+.network-screen-nav button{
+  min-height:64px!important;
+  height:64px!important;
+  padding:3px 5px!important;
+}
+.network-screen-nav img{
+  height:56px!important;
+  max-height:56px!important;
+  width:100%!important;
+  object-fit:contain!important;
+}
+.global-compose{
+  grid-template-columns:minmax(0,1fr) 118px!important;
+  gap:10px!important;
+  align-items:stretch!important;
+}
+.global-compose input{
+  min-height:64px!important;
+  height:64px!important;
+}
+.global-compose .art-small-button{
+  width:118px!important;
+  min-width:118px!important;
+  min-height:64px!important;
+  height:64px!important;
+  margin:0!important;
+  padding:2px!important;
+}
+.global-compose .art-small-button img{
+  width:100%!important;
+  height:56px!important;
+  max-height:56px!important;
+  object-fit:contain!important;
+}
+
+@media(max-width:620px){
+  .network-page .app-shell{
+    padding:8px 8px 4px!important;
+  }
+  .network-page .network-stage-panel{
+    min-height:calc(100dvh - 78px)!important;
+    padding:7px!important;
+  }
+  .network-screen-nav{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:6px!important;
+    padding:7px 2px 10px!important;
+    margin:-2px -2px 10px!important;
+  }
+  .network-screen-nav button{
+    min-height:60px!important;
+    height:60px!important;
+    padding:2px!important;
+  }
+  .network-screen-nav img{
+    height:54px!important;
+    max-height:54px!important;
+  }
+  .global-compose{
+    grid-template-columns:minmax(0,1fr) 104px!important;
+    gap:8px!important;
+  }
+  .global-compose input{
+    min-height:62px!important;
+    height:62px!important;
+    font-size:16px!important;
+  }
+  .global-compose .art-small-button{
+    width:104px!important;
+    min-width:104px!important;
+    min-height:62px!important;
+    height:62px!important;
+  }
+  .global-compose .art-small-button img{
+    height:54px!important;
+    max-height:54px!important;
+  }
+}
