@@ -3135,3 +3135,94 @@ body.dm-open{overflow:hidden!important}
     font-size:12px!important;
   }
 }
+
+
+/* v5.76 home ui asset swap */
+.art-connect-btn{
+  width:min(100%,420px)!important;
+  margin:18px auto 0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  display:block;
+}
+.art-connect-btn::after{display:none!important}
+.art-connect-btn img{
+  display:block;
+  width:100%;
+  height:auto;
+  pointer-events:none;
+}
+
+.asset-back-link,
+.asset-close,
+.picker-close.asset-close,
+.nexus-settings-close.asset-close,
+#dmClose.asset-close,
+#profileAction #profileClose.asset-close{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  border-radius:0!important;
+  overflow:visible!important;
+}
+.asset-back-link img,
+.asset-close img,
+.picker-close.asset-close img,
+.nexus-settings-close.asset-close img,
+#dmClose.asset-close img,
+#profileAction #profileClose.asset-close img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  pointer-events:none;
+}
+.asset-back-link{
+  width:min(180px,42vw);
+  height:auto;
+  flex:0 0 auto;
+}
+.asset-back-link img{width:100%;height:auto}
+
+#titlePicker .nexus-picker-head .picker-close.asset-close,
+#avatarPicker .nexus-picker-head .picker-close.asset-close{
+  width:44px!important;
+  height:44px!important;
+  min-width:44px!important;
+  min-height:44px!important;
+  font-size:0!important;
+}
+#titlePicker .nexus-picker-head .picker-close.asset-close::before,
+#avatarPicker .nexus-picker-head .picker-close.asset-close::before{display:none!important}
+
+#profileAction #profileClose.asset-close,
+#dmClose.asset-close,
+.nexus-settings-close.asset-close{
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  font-size:0!important;
+  color:transparent!important;
+}
+
+@media(max-width:560px){
+  .art-connect-btn{width:min(100%,360px)!important}
+  .asset-back-link{width:min(156px,40vw)}
+  #titlePicker .nexus-picker-head .picker-close.asset-close,
+  #avatarPicker .nexus-picker-head .picker-close.asset-close,
+  #profileAction #profileClose.asset-close,
+  #dmClose.asset-close,
+  .nexus-settings-close.asset-close{
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    min-height:42px!important;
+  }
+}
