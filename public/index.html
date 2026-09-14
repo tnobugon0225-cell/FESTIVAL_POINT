@@ -55,24 +55,30 @@
 
   <section class="system-panel arena-status-panel">
     <div class="player-status-line"><span><i></i> PLAYER STATUS</span><strong>ONLINE</strong></div>
-    <div class="arena-player-grid">
+    <div class="arena-player-grid home-profile-v577">
       <div class="arena-identity">
-        <button type="button" id="avatarChangeBtn" class="identity-core avatar-core avatar-change-btn" aria-label="アイコン変更"><img id="playerAvatar" src="/avatars/avatar-01.webp" alt="PLAYER AVATAR"></button>
-        <div class="identity-data">
-          <button type="button" id="titleBadgeBtn" class="player-title-badge tier-C" aria-label="称号を変更"><img id="selectedTitleImage" src="/titles/rookie.webp" alt="ROOKIE"><span class="title-text-fallback"><strong id="selectedTitleName">ROOKIE</strong><small id="selectedTitleJp">ルーキー</small></span></button>
-          <span class="micro-label">PLAYER ID</span>
-          <div class="id-display" id="customerCode">----</div>
-          <span class="micro-label">PLAYER NAME</span>
-          <h1 id="name"></h1>
+        <button type="button" id="titleBadgeBtn" class="player-title-badge tier-C" aria-label="称号を変更"><img id="selectedTitleImage" src="/titles/rookie.webp" alt="ROOKIE"><span class="title-text-fallback"><strong id="selectedTitleName">ROOKIE</strong><small id="selectedTitleJp">ルーキー</small></span></button>
+        <div class="arena-profile-row">
+          <button type="button" id="avatarChangeBtn" class="identity-core avatar-core avatar-change-btn" aria-label="アイコン変更"><img id="playerAvatar" src="/avatars/avatar-01.webp" alt="PLAYER AVATAR"></button>
+          <div class="identity-data">
+            <div class="profile-field profile-name-field">
+              <img class="home-profile-label" src="/ui/v577/player-name.webp" alt="PLAYER NAME">
+              <h1 id="name"></h1>
+            </div>
+            <div class="profile-field profile-id-field">
+              <img class="home-profile-label" src="/ui/v577/player-id.webp" alt="PLAYER ID">
+              <div class="id-display" id="customerCode">----</div>
+            </div>
+          </div>
         </div>
       </div>
       <div class="metric-block points-block arena-metric">
-        <span class="micro-label">TOTAL POINT</span>
+        <img class="home-stat-label" src="/ui/v577/total-point.webp" alt="TOTAL POINT">
         <div class="metric-grid"></div>
         <div id="points" class="points">0 pt</div>
       </div>
       <div class="metric-block rank-block arena-metric rank-metric">
-        <span class="micro-label">RANK</span>
+        <img class="home-stat-label" src="/ui/v577/rank.webp" alt="RANK">
         <div class="rank-orbit" aria-hidden="true"></div>
         <div id="rankText" class="rank-display">#--</div>
         <span class="live-chip">● LIVE</span>
