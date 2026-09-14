@@ -3850,3 +3850,98 @@ body.dm-open{overflow:hidden!important}
 .cc-role-sheet>p{margin:5px 2px 1px;color:#718d9d;font-size:9px;line-height:1.6}
 .chinchiro-page .cc-role-now.pinzoro,.chinchiro-page .cc-roll-status .pinzoro{color:#ffe071}.chinchiro-page .cc-role-now.shigoro,.chinchiro-page .cc-roll-status .shigoro{color:#74ebff}
 @media(max-width:620px){.chinchiro-page .cc-role-open>i{display:none}.chinchiro-page .cc-role-open{grid-template-columns:1fr;padding-right:46px}.cc-role-sheet{padding:12px}.cc-role-ladder>div{grid-template-columns:30px 1fr auto;padding:9px 8px}.cc-role-ladder b{font-size:12px}.cc-role-ladder em{font-size:8px}}
+
+/* v5.84 — CHINCHIRO role guide: NO ROLE rank + visual dice examples */
+.cc-role-ladder>div{
+  grid-template-columns:30px 106px minmax(0,1fr) auto!important;
+  grid-template-rows:1fr!important;
+  column-gap:10px!important;
+  min-height:66px!important;
+}
+.cc-role-ladder i{
+  grid-row:1!important;
+  align-self:center!important;
+}
+.cc-role-dice{
+  display:flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  min-width:0!important;
+}
+.cc-role-dice img{
+  display:block!important;
+  width:31px!important;
+  height:31px!important;
+  object-fit:contain!important;
+  border:1px solid rgba(101,214,255,.22)!important;
+  background:#020b14!important;
+  box-shadow:0 0 10px rgba(75,207,255,.07)!important;
+}
+.cc-role-copy{
+  min-width:0!important;
+  display:grid!important;
+  gap:3px!important;
+}
+.cc-role-copy b{
+  display:block!important;
+}
+.cc-role-copy span{
+  display:block!important;
+  margin:0!important;
+}
+.cc-role-ladder em{
+  grid-column:4!important;
+  grid-row:1!important;
+  align-self:center!important;
+  white-space:nowrap!important;
+}
+.cc-role-ladder .none{
+  border-color:rgba(121,151,171,.30)!important;
+  background:rgba(4,12,20,.82)!important;
+}
+.cc-role-ladder .none b,
+.cc-role-ladder .none em{
+  color:#9bb2c0!important;
+}
+.cc-role-sheet>p strong{
+  color:#dff8ff!important;
+}
+@media(max-width:620px){
+  .cc-role-sheet{
+    max-height:88dvh!important;
+    overflow-y:auto!important;
+  }
+  .cc-role-ladder>div{
+    grid-template-columns:24px 82px minmax(0,1fr)!important;
+    grid-template-rows:auto auto!important;
+    column-gap:7px!important;
+    row-gap:2px!important;
+    min-height:62px!important;
+    padding:8px 7px!important;
+  }
+  .cc-role-ladder i{
+    grid-column:1!important;
+    grid-row:1/3!important;
+  }
+  .cc-role-dice{
+    grid-column:2!important;
+    grid-row:1/3!important;
+    gap:2px!important;
+  }
+  .cc-role-dice img{
+    width:25px!important;
+    height:25px!important;
+  }
+  .cc-role-copy{
+    grid-column:3!important;
+    grid-row:1!important;
+  }
+  .cc-role-ladder em{
+    grid-column:3!important;
+    grid-row:2!important;
+    justify-self:start!important;
+    font-size:7px!important;
+  }
+  .cc-role-copy b{font-size:11px!important}
+  .cc-role-copy span{font-size:8px!important}
+}
