@@ -16,23 +16,27 @@
       if(seCtx&&seGain&&!avatarSource){avatarSource=seCtx.createMediaElementSource(avatarAudio);avatarSource.connect(seGain)}
     }catch(e){}
   }
-  function resumeSeGraph(){try{if(seCtx&&seCtx.state==='suspended')seCtx.resume().catch(()=>{})}catch(e){}}
+  function resumeSeGraph(){
+    try{
+      if(seCtx&&seCtx.state!=='running'&&typeof seCtx.resume==='function')seCtx.resume().then(applySeVolume).catch(()=>{});
+    }catch(e){}
+  }
   function applySeVolume(){
     const master=window.NexusAudioSettings?.master ?? Number(localStorage.getItem('nexusMasterVolume') ?? 1);
     const se=window.NexusAudioSettings?.se ?? Number(localStorage.getItem('nexusSeVolume') ?? .62);
     const base=clamp(master*se);
-    ensureSeGraph();
     if(seGain&&seCtx){
-      try{seGain.gain.setTargetAtTime(base,seCtx.currentTime,.015)}catch(e){seGain.gain.value=base}
-      try{clickAudio.volume=1;avatarAudio.volume=1}catch(e){}
+      try{seGain.gain.cancelScheduledValues(seCtx.currentTime)}catch(e){}
+      try{seGain.gain.setTargetAtTime(base,seCtx.currentTime,.012)}catch(e){seGain.gain.value=base}
+      try{clickAudio.volume=1;avatarAudio.volume=1;clickAudio.muted=false;avatarAudio.muted=false}catch(e){}
     }else{
-      try{clickAudio.volume=clamp(base*.94);avatarAudio.volume=base}catch(e){}
+      try{clickAudio.volume=clamp(base*.94);avatarAudio.volume=base;clickAudio.muted=base<=0;avatarAudio.muted=base<=0}catch(e){}
     }
   }
   applySeVolume();
   window.addEventListener('nexus-audio-settings',applySeVolume);
   window.addEventListener('storage',e=>{if(['nexusMasterVolume','nexusSeVolume'].includes(e.key))applySeVolume()});
-  document.addEventListener('pointerdown',()=>{ensureSeGraph();resumeSeGraph()},{passive:true});
+  document.addEventListener('pointerdown',()=>{ensureSeGraph();resumeSeGraph();applySeVolume()},{passive:true});
 
   function playAudio(a){try{ensureSeGraph();resumeSeGraph();applySeVolume();a.currentTime=0;a.play().catch(()=>{});}catch(e){}}
   function playClick(){playAudio(clickAudio)}

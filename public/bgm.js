@@ -27,27 +27,35 @@
       const Ctx=window.AudioContext||window.webkitAudioContext;
       if(!Ctx)return false;
       if(!ctx)ctx=new Ctx();
-      if(ctx.state==='suspended')await ctx.resume();
-      if(ctx.state!=='running')return false;
+      // Create the media graph synchronously while still inside the user gesture.
+      // This is important on iPhone/Safari: creating/resuming it too late can leave
+      // the <audio> element audible while the GainNode never takes control.
       if(!bgmSource){
         bgmSource=ctx.createMediaElementSource(audio);
         bgmGain=ctx.createGain();
         bgmSource.connect(bgmGain).connect(ctx.destination);
       }
+      if(ctx.state!=='running'&&typeof ctx.resume==='function')await ctx.resume();
       applyVolume();
-      return true;
-    }catch(e){return false}
+      return ctx.state==='running';
+    }catch(e){
+      // Keep the HTMLAudioElement fallback alive even if Web Audio is unavailable.
+      applyVolume();
+      return false;
+    }
   }
 
   function applyVolume(){
     const effective=clamp(state.master*state.bgm);
     if(bgmGain&&ctx){
-      try{bgmGain.gain.setTargetAtTime(effective,ctx.currentTime,.015)}catch(e){bgmGain.gain.value=effective}
-      // iOS Safari ignores media-element volume changes, so keep the element itself at full scale
-      // and control actual BGM level through Web Audio GainNode.
-      try{audio.volume=1}catch(e){}
+      try{bgmGain.gain.cancelScheduledValues(ctx.currentTime)}catch(e){}
+      try{bgmGain.gain.setTargetAtTime(effective,ctx.currentTime,.012)}catch(e){bgmGain.gain.value=effective}
+      // Once routed through Web Audio, leave the media element at full scale.
+      try{audio.volume=1;audio.muted=false}catch(e){}
     }else{
-      try{audio.volume=effective}catch(e){}
+      // Desktop/non-WebAudio fallback. iOS ignores element volume, so the settings
+      // controls also call unlockAudioGraph() to establish the GainNode path.
+      try{audio.volume=effective;audio.muted=effective<=0}catch(e){}
     }
   }
   function persist(){
@@ -58,8 +66,8 @@
   }
   window.NexusAudioSettings={
     get master(){return state.master},get bgm(){return state.bgm},get se(){return state.se},
-    setMaster(v){state.master=clamp(v);applyVolume();persist();paintSettings()},
-    setBgm(v){state.bgm=clamp(v);applyVolume();persist();paintSettings()},
+    setMaster(v){state.master=clamp(v);applyVolume();persist();paintSettings();unlockAudioGraph().then(applyVolume)},
+    setBgm(v){state.bgm=clamp(v);applyVolume();persist();paintSettings();unlockAudioGraph().then(applyVolume)},
     setSe(v){state.se=clamp(v);persist();paintSettings()},
     snapshot(){return {...state}},
     effectiveBgm(){return clamp(state.master*state.bgm)},

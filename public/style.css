@@ -3422,3 +3422,175 @@ body.dm-open{overflow:hidden!important}
     max-height:78px!important;
   }
 }
+
+/* v5.78 — HOME profile alignment + matched stat HUD panels */
+.home-profile-v577 .arena-profile-row{
+  grid-template-columns:148px minmax(0,1fr)!important;
+  gap:16px!important;
+  align-items:stretch!important;
+}
+.home-profile-v577 .identity-core{
+  width:144px!important;
+  height:144px!important;
+  align-self:stretch!important;
+}
+.home-profile-v577 .identity-data{
+  height:144px!important;
+  min-height:144px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:space-between!important;
+  gap:0!important;
+  padding:0!important;
+}
+.home-profile-v577 .profile-field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:1px!important;
+  min-width:0!important;
+}
+.home-profile-v577 .profile-name-field{align-self:stretch!important}
+.home-profile-v577 .profile-id-field{align-self:stretch!important;margin-top:auto!important}
+.home-profile-v577 .home-profile-label{
+  width:min(100%,252px)!important;
+  height:38px!important;
+  max-height:38px!important;
+  object-fit:contain!important;
+  object-position:left center!important;
+}
+.home-profile-v577 .identity-data h1{
+  margin:1px 0 0 8px!important;
+  font-size:34px!important;
+  line-height:1!important;
+}
+.home-profile-v577 .arena-identity .id-display{
+  margin:1px 0 0 8px!important;
+  font-size:27px!important;
+  line-height:1!important;
+}
+
+/* TOTAL POINT and RANK use the same visual/card scale. */
+.home-profile-v577 .arena-metric{
+  position:relative!important;
+  min-height:210px!important;
+  height:210px!important;
+  padding:14px 10px 16px!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+}
+.home-profile-v577 .arena-metric::before,
+.home-profile-v577 .arena-metric::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+}
+.home-profile-v577 .arena-metric::before{
+  inset:10px;
+  z-index:0;
+  border:1px solid rgba(84,220,255,.22);
+  clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px);
+}
+.home-profile-v577 .arena-metric::after{
+  width:168px;
+  height:168px;
+  left:50%;
+  top:58%;
+  z-index:0;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:
+    radial-gradient(circle,transparent 0 35%,rgba(80,222,255,.10) 36% 37%,transparent 38% 53%,rgba(80,222,255,.10) 54% 55%,transparent 56%),
+    repeating-conic-gradient(from 0deg,rgba(74,219,255,.13) 0 1deg,transparent 1deg 18deg);
+  opacity:.72;
+}
+.home-profile-v577 .points-block{
+  background:
+    radial-gradient(circle at 50% 62%,rgba(0,205,255,.10),transparent 42%),
+    linear-gradient(180deg,rgba(4,18,31,.92),rgba(1,8,15,.98))!important;
+}
+.home-profile-v577 .rank-block{
+  background:
+    radial-gradient(circle at 50% 62%,rgba(158,63,255,.15),transparent 44%),
+    linear-gradient(180deg,rgba(10,12,36,.94),rgba(3,7,18,.99))!important;
+}
+.home-profile-v577 .points-block::before{border-color:rgba(54,219,255,.30)!important;box-shadow:inset 0 0 24px rgba(25,188,255,.05)!important}
+.home-profile-v577 .rank-block::before{border-color:rgba(170,81,255,.34)!important;box-shadow:inset 0 0 26px rgba(146,50,255,.07)!important}
+.home-profile-v577 .rank-block::after{
+  background:
+    radial-gradient(circle,transparent 0 35%,rgba(173,78,255,.14) 36% 37%,transparent 38% 53%,rgba(173,78,255,.12) 54% 55%,transparent 56%),
+    repeating-conic-gradient(from 0deg,rgba(154,70,255,.15) 0 1deg,transparent 1deg 18deg)!important;
+}
+.home-profile-v577 .home-stat-label{
+  position:relative!important;
+  z-index:3!important;
+  width:86%!important;
+  max-width:248px!important;
+  height:54px!important;
+  max-height:54px!important;
+  margin:0 auto 0!important;
+  object-fit:contain!important;
+}
+.home-profile-v577 .arena-metric .metric-grid,
+.home-profile-v577 .rank-orbit{z-index:1!important}
+.home-profile-v577 .arena-metric .points,
+.home-profile-v577 .rank-display{
+  z-index:4!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:96px!important;
+  margin:2px 0 0!important;
+}
+.home-profile-v577 .arena-metric .points{font-size:58px!important}
+.home-profile-v577 .rank-display{font-size:66px!important}
+.home-profile-v577 .live-chip{position:relative!important;z-index:4!important}
+
+@media(max-width:560px){
+  .home-profile-v577 .arena-profile-row{
+    grid-template-columns:122px minmax(0,1fr)!important;
+    gap:10px!important;
+  }
+  .home-profile-v577 .identity-core{
+    width:120px!important;
+    height:120px!important;
+  }
+  .home-profile-v577 .identity-data{
+    height:120px!important;
+    min-height:120px!important;
+  }
+  .home-profile-v577 .home-profile-label{
+    width:min(100%,210px)!important;
+    height:31px!important;
+    max-height:31px!important;
+  }
+  .home-profile-v577 .identity-data h1{
+    margin-left:5px!important;
+    font-size:29px!important;
+  }
+  .home-profile-v577 .arena-identity .id-display{
+    margin-left:5px!important;
+    font-size:22px!important;
+  }
+  .home-profile-v577 .arena-metric{
+    min-height:184px!important;
+    height:184px!important;
+    padding:10px 5px 12px!important;
+  }
+  .home-profile-v577 .arena-metric::after{
+    width:142px;
+    height:142px;
+    top:60%;
+  }
+  .home-profile-v577 .home-stat-label{
+    width:88%!important;
+    max-width:190px!important;
+    height:46px!important;
+    max-height:46px!important;
+  }
+  .home-profile-v577 .arena-metric .points,
+  .home-profile-v577 .rank-display{
+    min-height:84px!important;
+  }
+  .home-profile-v577 .arena-metric .points{font-size:46px!important}
+  .home-profile-v577 .rank-display{font-size:54px!important}
+}
