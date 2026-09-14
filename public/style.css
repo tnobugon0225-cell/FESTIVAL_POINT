@@ -3594,3 +3594,32 @@ body.dm-open{overflow:hidden!important}
   .home-profile-v577 .arena-metric .points{font-size:46px!important}
   .home-profile-v577 .rank-display{font-size:54px!important}
 }
+
+/* v5.79 — mobile profile vertical alignment + single-layer stat HUD */
+.home-profile-v577 .identity-data{
+  transform:translateY(10px)!important;
+}
+
+/* Remove the older orbit/grid layer so TOTAL POINT / RANK use one clean HUD background only. */
+.home-profile-v577 .arena-metric .metric-grid,
+.home-profile-v577 .rank-orbit{
+  display:none!important;
+}
+.home-profile-v577 .arena-metric::after{
+  opacity:.58!important;
+}
+.home-profile-v577 .rank-block::after{
+  opacity:.58!important;
+}
+
+@media(max-width:560px){
+  .home-profile-v577 .identity-data{
+    transform:translateY(9px)!important;
+  }
+  .home-profile-v577 .arena-metric::after{
+    width:132px!important;
+    height:132px!important;
+    top:61%!important;
+    opacity:.50!important;
+  }
+}
