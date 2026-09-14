@@ -4675,3 +4675,95 @@ body.dm-open{overflow:hidden!important}
     font-size:22px!important;
   }
 }
+
+/* v5.91 — lock cut-in composition to the approved top/bottom art layout */
+.prebattle-intro::before,
+.prebattle-intro::after{
+  z-index:0!important;
+}
+.prebattle-player{
+  z-index:2!important;
+}
+.prebattle-vs{
+  z-index:5!important;
+}
+
+.prebattle-player.prebattle-art-player{
+  width:min(94vw,920px)!important;
+  opacity:1;
+  filter:none!important;
+  background:transparent!important;
+}
+.prebattle-player.prebattle-art-player .prebattle-cutart{
+  opacity:1!important;
+  filter:none!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-a{
+  left:0!important;
+  right:auto!important;
+  top:10.5vh!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-b{
+  right:0!important;
+  left:auto!important;
+  bottom:10.5vh!important;
+}
+.prebattle-player.prebattle-art-player .prebattle-meta{
+  top:34%!important;
+  gap:3px!important;
+  min-width:25%!important;
+  max-width:32%!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{
+  right:10%!important;
+  left:auto!important;
+  align-items:flex-start!important;
+  text-align:left!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{
+  left:10%!important;
+  right:auto!important;
+  align-items:flex-end!important;
+  text-align:right!important;
+}
+.prebattle-player.prebattle-art-player .prebattle-title-img{
+  width:min(220px,100%)!important;
+  max-height:60px!important;
+}
+.prebattle-player.prebattle-art-player strong{
+  font-size:clamp(26px,5.2vw,42px)!important;
+}
+
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player{
+    width:96vw!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-a{
+    left:-1.5vw!important;
+    right:auto!important;
+    top:10.7vh!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b{
+    right:-1.5vw!important;
+    left:auto!important;
+    bottom:10.7vh!important;
+  }
+  .prebattle-player.prebattle-art-player .prebattle-meta{
+    top:34%!important;
+    min-width:27%!important;
+    max-width:33%!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{
+    right:8.5%!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{
+    left:8.5%!important;
+  }
+  .prebattle-player.prebattle-art-player .prebattle-title-img{
+    width:min(148px,100%)!important;
+    max-height:46px!important;
+  }
+  .prebattle-player.prebattle-art-player strong{
+    font-size:23px!important;
+  }
+}
