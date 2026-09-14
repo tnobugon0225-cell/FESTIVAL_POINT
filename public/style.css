@@ -4566,3 +4566,112 @@ body.dm-open{overflow:hidden!important}
   .prebattle-a{left:3vw!important;top:13vh!important}
   .prebattle-b{right:3vw!important;bottom:13vh!important}
 }
+
+/* v5.90 — individual character cut-in art for avatar-01 / avatar-02 */
+.prebattle-player.prebattle-art-player{
+  display:block!important;
+  width:min(92vw,920px)!important;
+  height:auto!important;
+  padding:0!important;
+  background:transparent!important;
+  border:0!important;
+  clip-path:none!important;
+  overflow:visible!important;
+  filter:blur(4px) brightness(1.15);
+}
+.prebattle-player.prebattle-art-player .prebattle-cutart{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  object-fit:contain!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+  transform:none!important;
+}
+.prebattle-player.prebattle-art-player .prebattle-meta{
+  position:absolute;
+  z-index:3;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:2px;
+  min-width:24%;
+  max-width:34%;
+  top:29%;
+}
+.prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{
+  right:11%;
+  align-items:flex-start;
+  text-align:left;
+}
+.prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{
+  left:11%;
+  align-items:flex-end;
+  text-align:right;
+}
+.prebattle-player.prebattle-art-player .prebattle-title-img{
+  display:block!important;
+  position:static!important;
+  width:min(210px,100%)!important;
+  height:auto!important;
+  max-height:56px!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  object-fit:contain!important;
+}
+.prebattle-player.prebattle-art-player strong{
+  position:static!important;
+  display:block!important;
+  margin:2px 0 0!important;
+  font-size:clamp(24px,5vw,40px)!important;
+  line-height:1!important;
+  letter-spacing:.06em!important;
+  white-space:nowrap!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-a{
+  left:0!important;
+  right:auto!important;
+  top:10vh!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-b{
+  right:0!important;
+  left:auto!important;
+  bottom:10vh!important;
+}
+.prebattle-intro.show .prebattle-art-player.prebattle-a{animation:cutinFromLeft .78s cubic-bezier(.16,.84,.18,1) both}
+.prebattle-intro.show .prebattle-art-player.prebattle-b{animation:cutinFromRight .78s cubic-bezier(.16,.84,.18,1) .10s both}
+
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player{
+    width:98vw!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-a{
+    left:-3vw!important;
+    top:11vh!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b{
+    right:-3vw!important;
+    bottom:11vh!important;
+  }
+  .prebattle-player.prebattle-art-player .prebattle-meta{
+    top:31%;
+    max-width:31%;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{right:8%}
+  .prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{left:8%}
+  .prebattle-player.prebattle-art-player .prebattle-title-img{
+    width:min(138px,100%)!important;
+    max-height:42px!important;
+  }
+  .prebattle-player.prebattle-art-player strong{
+    font-size:22px!important;
+  }
+}
