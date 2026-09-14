@@ -4858,3 +4858,119 @@ body.dm-open{overflow:hidden!important}
     font-size:clamp(78px,22vw,116px)!important;
   }
 }
+
+/* v5.93 — remove rainbow backing panels and lock the cut-ins into one tight VS stack */
+.prebattle-intro::before,
+.prebattle-intro::after{
+  display:none!important;
+  content:none!important;
+  background:none!important;
+  border:0!important;
+  opacity:0!important;
+}
+
+/* Keep the actual character art as the visual panels. */
+.prebattle-player.prebattle-art-player{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  clip-path:none!important;
+  filter:none!important;
+  opacity:1;
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%)!important;
+  transform-origin:center center!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-a{
+  top:25.5vh!important;
+  bottom:auto!important;
+  width:104vw!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-b{
+  top:56.5vh!important;
+  bottom:auto!important;
+  width:110vw!important;
+}
+.prebattle-player.prebattle-art-player .prebattle-cutart{
+  width:100%!important;
+  height:auto!important;
+  opacity:1!important;
+  filter:none!important;
+}
+.prebattle-vs{
+  top:50.5%!important;
+  z-index:7!important;
+}
+
+/* Preserve centering during the entrance animation; old keyframes dropped translateX(-50%). */
+.prebattle-intro.show .prebattle-art-player.prebattle-a{
+  animation:cutinCenteredLeft .78s cubic-bezier(.16,.84,.18,1) both!important;
+}
+.prebattle-intro.show .prebattle-art-player.prebattle-b{
+  animation:cutinCenteredRight .78s cubic-bezier(.16,.84,.18,1) .10s both!important;
+}
+@keyframes cutinCenteredLeft{
+  0%{opacity:0;filter:blur(7px) brightness(1.45);transform:translateX(calc(-50% - 42vw)) skewX(-4deg) scale(.94)}
+  62%{opacity:1;filter:blur(0) brightness(1.12);transform:translateX(calc(-50% + 1.5vw)) skewX(-1deg) scale(1.01)}
+  100%{opacity:1;filter:none;transform:translateX(-50%) skewX(0) scale(1)}
+}
+@keyframes cutinCenteredRight{
+  0%{opacity:0;filter:blur(7px) brightness(1.45);transform:translateX(calc(-50% + 42vw)) skewX(4deg) scale(.94)}
+  62%{opacity:1;filter:blur(0) brightness(1.12);transform:translateX(calc(-50% - 1.5vw)) skewX(1deg) scale(1.01)}
+  100%{opacity:1;filter:none;transform:translateX(-50%) skewX(0) scale(1)}
+}
+
+/* Identity sits inside each artwork's intentional empty side. */
+.prebattle-player.prebattle-art-player .prebattle-meta{
+  top:47%!important;
+  transform:translateY(-50%)!important;
+  gap:0!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{
+  right:9.5%!important;
+  left:auto!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{
+  left:10.5%!important;
+  right:auto!important;
+}
+.prebattle-player.prebattle-art-player .prebattle-title-img{
+  width:min(220px,100%)!important;
+  max-height:58px!important;
+  margin:0!important;
+}
+.prebattle-player.prebattle-art-player strong{
+  margin:0!important;
+  font-size:clamp(28px,5.4vw,43px)!important;
+  line-height:.98!important;
+}
+
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player.prebattle-a{
+    top:25.5vh!important;
+    width:104vw!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b{
+    top:56.5vh!important;
+    width:112vw!important;
+  }
+  .prebattle-vs{
+    top:50.5%!important;
+    font-size:clamp(76px,21vw,112px)!important;
+  }
+  .prebattle-player.prebattle-art-player .prebattle-meta{
+    top:47%!important;
+    min-width:28%!important;
+    max-width:34%!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{right:8.5%!important}
+  .prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{left:9.5%!important}
+  .prebattle-player.prebattle-art-player .prebattle-title-img{
+    width:min(154px,100%)!important;
+    max-height:46px!important;
+  }
+  .prebattle-player.prebattle-art-player strong{
+    font-size:25px!important;
+  }
+}
