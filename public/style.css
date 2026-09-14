@@ -3790,3 +3790,63 @@ body.dm-open{overflow:hidden!important}
   .hitblow-page .hb-history-open.hb-art-button{width:min(100%,202px)!important}
   .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,214px)!important}
 }
+
+/* v5.83 — battle status restraint + CHINCHIRO role hierarchy */
+/* HIT & BLOW: top-right state is information, not a hero action. Restore the original compact HUD. */
+.hitblow-page .hb-status,
+.hitblow-page .hb-status.art-status{
+  width:auto!important;height:auto!important;min-width:118px!important;min-height:38px!important;
+  padding:10px 14px!important;border:1px solid rgba(84,217,255,.38)!important;
+  background:rgba(3,14,25,.88)!important;color:#9feaff!important;
+  display:grid!important;place-items:center!important;font:800 9px/1 ui-monospace,monospace!important;
+  letter-spacing:.18em!important;overflow:visible!important;
+}
+.hitblow-page .hb-status .hb-status-art{display:none!important}
+.hitblow-page .battle-home-btn{
+  width:auto!important;min-width:0!important;max-width:none!important;height:auto!important;
+  min-height:38px!important;padding:8px 18px!important;margin:10px auto 0!important;
+  border:1px solid rgba(84,217,255,.38)!important;background:rgba(4,19,31,.92)!important;
+  color:#bdefff!important;font-size:10px!important;font-weight:900!important;letter-spacing:.12em!important;
+}
+
+/* CHINCHIRO: re-roll is the one primary action worth emphasizing. */
+.chinchiro-page .cc-roll-btn{
+  width:min(430px,92%)!important;min-height:58px!important;margin:16px auto 7px!important;
+  border:1px solid rgba(83,226,255,.68)!important;
+  background:linear-gradient(90deg,rgba(3,89,150,.92),rgba(38,61,171,.96),rgba(103,48,194,.92))!important;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),0 0 22px rgba(68,197,255,.14)!important;
+  clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px)!important;
+  font-size:16px!important;letter-spacing:.08em!important;
+}
+.chinchiro-page .cc-roll-btn span{font-size:10px!important;color:#d5f8ff!important}
+
+/* Replace the always-open role tables with one compact, readable trigger. */
+.chinchiro-page .cc-rank-panel,.chinchiro-page .cc-role-guide{display:none!important}
+.chinchiro-page .cc-role-open{
+  position:relative;width:100%;margin:12px 0 0;padding:12px 48px 12px 14px;
+  display:grid;grid-template-columns:auto 1fr;align-items:center;gap:3px 12px;text-align:left;
+  border:1px solid rgba(85,218,255,.3);background:linear-gradient(90deg,rgba(3,18,31,.96),rgba(7,13,29,.96));
+  color:#eafcff;box-shadow:inset 0 0 22px rgba(45,195,255,.035);
+}
+.chinchiro-page .cc-role-open>span{font:900 8px ui-monospace,monospace;letter-spacing:.18em;color:#6fe8ff}
+.chinchiro-page .cc-role-open>strong{grid-row:2;font-size:15px;letter-spacing:.06em}
+.chinchiro-page .cc-role-open>i{grid-column:2;grid-row:1/3;align-self:center;font:800 7px ui-monospace,monospace;font-style:normal;letter-spacing:.06em;color:#7899aa;text-align:right}
+.chinchiro-page .cc-role-open>b{position:absolute;right:15px;top:50%;transform:translateY(-50%);font-size:22px;color:#6fe8ff}
+
+.cc-role-modal{position:fixed;inset:0;z-index:7000;display:grid;place-items:center;padding:14px;background:rgba(0,3,9,.88);backdrop-filter:blur(7px);opacity:0;transition:opacity .18s ease}
+.cc-role-modal.show{opacity:1}
+.cc-role-sheet{width:min(620px,100%);border:1px solid rgba(77,217,255,.38);background:linear-gradient(180deg,#03111e,#020812);box-shadow:0 0 45px rgba(38,190,255,.12);padding:14px}
+.cc-role-sheet header{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 12px;border-bottom:1px solid rgba(74,210,255,.22)}
+.cc-role-sheet header div{display:grid;gap:4px}.cc-role-sheet header span{font:900 8px ui-monospace,monospace;letter-spacing:.18em;color:#6ce8ff}.cc-role-sheet header strong{font-size:20px;letter-spacing:.08em}
+.cc-role-sheet header button{width:42px;height:42px;border:1px solid rgba(83,213,255,.32);background:#061421;color:#e9fbff;font-size:25px;font-weight:800}
+.cc-role-ladder{display:grid;gap:7px;padding:13px 0 8px}
+.cc-role-ladder>div{display:grid;grid-template-columns:34px 1fr auto;grid-template-rows:auto auto;align-items:center;column-gap:10px;padding:10px 12px;border:1px solid rgba(92,180,220,.18);background:rgba(3,12,22,.86)}
+.cc-role-ladder i{grid-row:1/3;font:1000 15px ui-monospace,monospace;font-style:normal;color:#56788a}.cc-role-ladder b{font:1000 14px ui-monospace,monospace;letter-spacing:.08em}.cc-role-ladder span{font-size:10px;color:#8ca8b7}.cc-role-ladder em{grid-column:3;grid-row:1/3;font:900 9px ui-monospace,monospace;font-style:normal;letter-spacing:.06em}
+.cc-role-ladder .pinzoro{border-color:rgba(255,218,86,.55);box-shadow:inset 0 0 24px rgba(255,197,47,.06)}.cc-role-ladder .pinzoro b,.cc-role-ladder .pinzoro em{color:#ffe071}
+.cc-role-ladder .arashi{border-color:rgba(201,118,255,.45)}.cc-role-ladder .arashi b,.cc-role-ladder .arashi em{color:#d897ff}
+.cc-role-ladder .shigoro{border-color:rgba(94,235,255,.42)}.cc-role-ladder .shigoro b,.cc-role-ladder .shigoro em{color:#74ebff}
+.cc-role-ladder .point{border-color:rgba(83,202,255,.28)}.cc-role-ladder .point b,.cc-role-ladder .point em{color:#7edbff}
+.cc-role-ladder .hifumi{border-color:rgba(255,88,117,.38)}.cc-role-ladder .hifumi b,.cc-role-ladder .hifumi em{color:#ff7089}
+.cc-role-sheet>p{margin:5px 2px 1px;color:#718d9d;font-size:9px;line-height:1.6}
+.chinchiro-page .cc-role-now.pinzoro,.chinchiro-page .cc-roll-status .pinzoro{color:#ffe071}.chinchiro-page .cc-role-now.shigoro,.chinchiro-page .cc-roll-status .shigoro{color:#74ebff}
+@media(max-width:620px){.chinchiro-page .cc-role-open>i{display:none}.chinchiro-page .cc-role-open{grid-template-columns:1fr;padding-right:46px}.cc-role-sheet{padding:12px}.cc-role-ladder>div{grid-template-columns:30px 1fr auto;padding:9px 8px}.cc-role-ladder b{font-size:12px}.cc-role-ladder em{font-size:8px}}

@@ -780,11 +780,13 @@ app.post('/api/quick-matches/:id/guess',requireUser,async(req,res,next)=>{const 
 function rollD6(){return 1+Math.floor(Math.random()*6)}
 function evalChinchiro(dice){
   const s=[...dice].sort((a,b)=>a-b);
-  if(s[0]===4&&s[1]===5&&s[2]===6)return {role:'shigoro',value:100,label:'SHIGORO / 4-5-6'};
-  if(s[0]===1&&s[1]===2&&s[2]===3)return {role:'hifumi',value:0,label:'HIFUMI / 1-2-3'};
-  if(s[0]===s[2])return {role:'arashi',value:80+s[0],label:`ARASHI / ${s[0]}-${s[0]}-${s[0]}`};
+  // Strength: PINZORO > ARASHI > SHIGORO > POINT > HIFUMI.
+  if(s[0]===1&&s[2]===1)return {role:'pinzoro',value:120,label:'PINZORO / 1-1-1'};
+  if(s[0]===s[2])return {role:'arashi',value:100+s[0],label:`ARASHI / ${s[0]}-${s[0]}-${s[0]}`};
+  if(s[0]===4&&s[1]===5&&s[2]===6)return {role:'shigoro',value:90,label:'SHIGORO / 4-5-6'};
   if(s[0]===s[1])return {role:'point',value:20+s[2],label:`POINT ${s[2]}`};
   if(s[1]===s[2])return {role:'point',value:20+s[0],label:`POINT ${s[0]}`};
+  if(s[0]===1&&s[1]===2&&s[2]===3)return {role:'hifumi',value:1,label:'HIFUMI / 1-2-3'};
   return {role:'none',value:10,label:'NO ROLE'};
 }
 app.get('/api/quick-matches/:id/chinchiro-state',requireUser,async(req,res,next)=>{
