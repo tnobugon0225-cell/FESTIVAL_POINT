@@ -3623,3 +3623,109 @@ body.dm-open{overflow:hidden!important}
     opacity:.50!important;
   }
 }
+
+/* v5.80 — HIT & BLOW dedicated UI art first pass */
+.hitblow-page .hb-ui-art{
+  display:block;
+  width:100%;
+  height:auto;
+  pointer-events:none;
+  user-select:none;
+}
+.hitblow-page .hb-art-button{
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+  line-height:0!important;
+  transform:none!important;
+}
+.hitblow-page .hb-art-button:hover{transform:none!important;filter:brightness(1.06)}
+.hitblow-page .hb-art-button:disabled{
+  opacity:.42!important;
+  filter:saturate(.45) brightness(.7)!important;
+}
+.hitblow-page .hb-head{align-items:center!important}
+.hitblow-page .hb-status.art-status{
+  width:clamp(118px,25vw,205px)!important;
+  min-width:0!important;
+  padding:0!important;
+  border:0!important;
+  background:transparent!important;
+  color:transparent!important;
+  line-height:0!important;
+  overflow:visible!important;
+}
+.hitblow-page .hb-status.art-status .hb-status-art{
+  width:100%!important;
+  clip-path:polygon(4% 4%,96% 4%,100% 18%,100% 82%,96% 96%,4% 96%,0 82%,0 18%);
+}
+.hitblow-page .hb-lock.hb-art-button{
+  width:min(100%,390px)!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:7px auto 0!important;
+  display:block!important;
+}
+.hitblow-page .hb-lock.hb-art-button img{
+  width:100%!important;
+  clip-path:polygon(3% 7%,96% 7%,100% 24%,100% 76%,96% 93%,3% 93%,0 76%,0 24%);
+}
+.hitblow-page .hb-history-open.hb-art-button{
+  position:relative!important;
+  width:min(100%,340px)!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:10px auto 0!important;
+  display:block!important;
+}
+.hitblow-page .hb-history-open.hb-art-button img{
+  width:100%!important;
+  clip-path:polygon(3% 7%,96% 7%,100% 24%,100% 76%,96% 93%,3% 93%,0 76%,0 24%);
+}
+.hitblow-page .hb-history-open.hb-art-button>span{
+  position:absolute!important;
+  right:7%!important;
+  top:50%!important;
+  transform:translateY(-50%)!important;
+  display:grid!important;
+  place-items:center!important;
+  width:24px!important;
+  height:24px!important;
+  border-radius:50%!important;
+  background:rgba(4,20,35,.9)!important;
+  border:1px solid rgba(86,221,255,.48)!important;
+  color:#dffaff!important;
+  font-size:10px!important;
+  line-height:1!important;
+  box-shadow:0 0 10px rgba(56,207,255,.18)!important;
+}
+.hitblow-page .hb-history-sheet-head .hb-modal-close{
+  width:94px!important;
+  height:auto!important;
+  min-width:94px!important;
+  margin:0!important;
+}
+.hitblow-page .hb-history-sheet-head .hb-modal-close img{
+  width:100%!important;
+  clip-path:polygon(4% 7%,96% 7%,100% 24%,100% 76%,96% 93%,4% 93%,0 76%,0 24%);
+}
+.hitblow-page .battle-home-btn.hb-result-home{
+  width:min(100%,330px)!important;
+  min-height:0!important;
+  height:auto!important;
+  margin:14px auto 0!important;
+  display:block!important;
+}
+.hitblow-page .battle-home-btn.hb-result-home img{
+  width:100%!important;
+  clip-path:polygon(3% 7%,96% 7%,100% 24%,100% 76%,96% 93%,3% 93%,0 76%,0 24%);
+}
+@media(max-width:620px){
+  .hitblow-page .hb-status.art-status{width:118px!important}
+  .hitblow-page .hb-lock.hb-art-button{width:min(100%,315px)!important}
+  .hitblow-page .hb-history-open.hb-art-button{width:min(100%,270px)!important}
+  .hitblow-page .hb-history-sheet-head .hb-modal-close{width:82px!important;min-width:82px!important}
+  .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,280px)!important}
+}
