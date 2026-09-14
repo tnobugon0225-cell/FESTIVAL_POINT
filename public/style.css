@@ -4434,3 +4434,135 @@ body.dm-open{overflow:hidden!important}
     font-size:19px!important;
   }
 }
+
+/* v5.89 — experimental character cut-in for every pre-battle VS intro */
+.prebattle-intro{
+  background:
+    linear-gradient(165deg,rgba(0,7,14,.98),rgba(1,5,12,.94) 42%,rgba(3,8,20,.98)),
+    radial-gradient(circle at 50% 50%,rgba(91,67,255,.16),transparent 42%)!important;
+}
+.prebattle-intro::before,
+.prebattle-intro::after{
+  content:"";
+  position:absolute;
+  left:-12vw;
+  right:-12vw;
+  height:24vh;
+  opacity:0;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent 4%,rgba(39,210,255,.10) 25%,rgba(70,129,255,.26) 49%,rgba(189,69,255,.18) 72%,transparent 96%);
+  border-top:1px solid rgba(82,219,255,.22);
+  border-bottom:1px solid rgba(181,92,255,.20);
+  transform:skewY(-7deg) translateX(-15vw);
+}
+.prebattle-intro::before{top:16vh}
+.prebattle-intro::after{bottom:16vh;transform:skewY(-7deg) translateX(15vw)}
+.prebattle-intro.show::before{animation:vsStreakLeft .62s cubic-bezier(.2,.8,.2,1) both}
+.prebattle-intro.show::after{animation:vsStreakRight .62s cubic-bezier(.2,.8,.2,1) .08s both}
+
+.prebattle-player{
+  width:min(48vw,430px)!important;
+  grid-template-columns:min(28vw,190px) minmax(118px,190px)!important;
+  grid-template-rows:auto auto!important;
+  column-gap:10px!important;
+  row-gap:0!important;
+  padding:8px 10px!important;
+  background:linear-gradient(90deg,rgba(1,18,31,.70),rgba(4,11,21,.18))!important;
+  border-top:1px solid rgba(76,221,255,.25)!important;
+  border-bottom:1px solid rgba(108,104,255,.22)!important;
+  clip-path:polygon(0 0,95% 0,100% 18%,100% 82%,94% 100%,0 100%,5% 50%)!important;
+  opacity:0;
+  filter:blur(4px) brightness(1.15);
+  will-change:transform,opacity,filter;
+}
+.prebattle-player.prebattle-b{
+  grid-template-columns:minmax(118px,190px) min(28vw,190px)!important;
+  background:linear-gradient(270deg,rgba(22,4,31,.70),rgba(4,11,21,.18))!important;
+  border-top-color:rgba(255,90,167,.28)!important;
+  border-bottom-color:rgba(176,73,255,.28)!important;
+  clip-path:polygon(5% 0,100% 0,95% 50%,100% 100%,6% 100%,0 82%,0 18%)!important;
+}
+.prebattle-player>img:not(.prebattle-title-img){
+  width:min(28vw,190px)!important;
+  height:min(28vw,190px)!important;
+  max-width:none!important;
+  max-height:none!important;
+  border:0!important;
+  outline:0!important;
+  box-shadow:0 0 30px rgba(48,204,255,.32)!important;
+  clip-path:polygon(8% 0,100% 0,92% 100%,0 100%)!important;
+  transform:scale(1.04)!important;
+}
+.prebattle-player.prebattle-b>img:not(.prebattle-title-img){
+  clip-path:polygon(0 0,92% 0,100% 100%,8% 100%)!important;
+  box-shadow:0 0 30px rgba(255,76,184,.27)!important;
+}
+.prebattle-player>.prebattle-title-img{
+  width:min(186px,100%)!important;
+  max-height:50px!important;
+  align-self:end!important;
+  margin-bottom:1px!important;
+}
+.prebattle-player>strong{
+  font-size:clamp(22px,5.2vw,34px)!important;
+  line-height:1!important;
+  align-self:start!important;
+  margin-top:1px!important;
+}
+.prebattle-intro.show .prebattle-a{animation:cutinFromLeft .72s cubic-bezier(.16,.84,.18,1) both}
+.prebattle-intro.show .prebattle-b{animation:cutinFromRight .72s cubic-bezier(.16,.84,.18,1) .08s both}
+.prebattle-vs{
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.72) rotate(-4deg)!important;
+  text-shadow:0 0 18px #4fdcff,0 0 46px #713fff,0 0 90px rgba(255,255,255,.25)!important;
+}
+.prebattle-intro.show .prebattle-vs{animation:vsPunch .44s cubic-bezier(.2,1.45,.25,1) .34s both}
+
+@keyframes cutinFromLeft{
+  0%{opacity:0;filter:blur(8px) brightness(1.6);transform:translateX(-42vw) skewX(-5deg) scale(.92)}
+  62%{opacity:1;filter:blur(0) brightness(1.22);transform:translateX(2vw) skewX(-2deg) scale(1.015)}
+  100%{opacity:1;filter:blur(0) brightness(1);transform:translateX(0) skewX(0) scale(1)}
+}
+@keyframes cutinFromRight{
+  0%{opacity:0;filter:blur(8px) brightness(1.6);transform:translateX(42vw) skewX(5deg) scale(.92)}
+  62%{opacity:1;filter:blur(0) brightness(1.22);transform:translateX(-2vw) skewX(2deg) scale(1.015)}
+  100%{opacity:1;filter:blur(0) brightness(1);transform:translateX(0) skewX(0) scale(1)}
+}
+@keyframes vsPunch{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.3) rotate(-8deg)}
+  70%{opacity:1;transform:translate(-50%,-50%) scale(1.16) rotate(2deg)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+}
+@keyframes vsStreakLeft{
+  0%{opacity:0;transform:skewY(-7deg) translateX(-22vw)}
+  100%{opacity:1;transform:skewY(-7deg) translateX(0)}
+}
+@keyframes vsStreakRight{
+  0%{opacity:0;transform:skewY(-7deg) translateX(22vw)}
+  100%{opacity:1;transform:skewY(-7deg) translateX(0)}
+}
+
+@media(max-width:620px){
+  .prebattle-player{
+    width:58vw!important;
+    grid-template-columns:min(30vw,126px) minmax(88px,126px)!important;
+    column-gap:7px!important;
+    padding:5px 7px!important;
+  }
+  .prebattle-player.prebattle-b{
+    grid-template-columns:minmax(88px,126px) min(30vw,126px)!important;
+  }
+  .prebattle-player>img:not(.prebattle-title-img){
+    width:min(30vw,126px)!important;
+    height:min(30vw,126px)!important;
+  }
+  .prebattle-player img.prebattle-title-img{
+    width:min(122px,100%)!important;
+    max-height:38px!important;
+  }
+  .prebattle-player>strong{
+    font-size:20px!important;
+  }
+  .prebattle-a{left:3vw!important;top:13vh!important}
+  .prebattle-b{right:3vw!important;bottom:13vh!important}
+}
