@@ -3760,54 +3760,33 @@ body.dm-open{overflow:hidden!important}
   .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,236px)!important}
 }
 
-.janken-page .hb-status.jk-art-status{
-  width:132px!important;
-  min-width:132px!important;
-  height:auto!important;
-  min-height:0!important;
-  padding:0!important;
-  margin:0!important;
-  border:0!important;
-  background:transparent!important;
-  box-shadow:none!important;
+
+/* v5.82 — HIT & BLOW asset edge fix + keep art fully inside controls */
+.hitblow-page .hb-status.art-status,
+.hitblow-page .hb-lock.hb-art-button,
+.hitblow-page .hb-history-open.hb-art-button,
+.hitblow-page .hb-history-sheet-head .hb-modal-close,
+.hitblow-page .battle-home-btn.hb-result-home{
   overflow:visible!important;
 }
-.janken-page .hb-status.jk-art-status img{
+.hitblow-page .hb-status.art-status .hb-status-art,
+.hitblow-page .hb-lock.hb-art-button img,
+.hitblow-page .hb-history-open.hb-art-button img,
+.hitblow-page .hb-history-sheet-head .hb-modal-close img,
+.hitblow-page .battle-home-btn.hb-result-home img{
+  clip-path:none!important;
   display:block!important;
   width:100%!important;
+  max-width:100%!important;
   height:auto!important;
   object-fit:contain!important;
+  object-position:center!important;
+  overflow:visible!important;
 }
-.janken-page .jk-result-mark.jk-art-result-mark{
-  left:50%!important;
-  bottom:-5px!important;
-  width:64px!important;
-  height:auto!important;
-  padding:0!important;
-  border:0!important;
-  background:transparent!important;
-  color:transparent!important;
-  box-shadow:none!important;
-  transform:translateX(-50%)!important;
-}
-.janken-page .jk-result-mark.jk-art-result-mark img{
-  display:block!important;
-  width:100%!important;
-  height:auto!important;
-}
-.janken-page .result-winner .battle-avatar-wrap{
-  box-shadow:0 0 18px rgba(68,255,205,.16)!important;
-}
-.janken-page .result-loser .battle-avatar-wrap{
-  box-shadow:0 0 18px rgba(255,82,111,.12)!important;
-}
+/* Slightly smaller result/history controls; padded source art now includes its own safe transparent edge. */
+.hitblow-page .hb-history-open.hb-art-button{width:min(100%,214px)!important}
+.hitblow-page .battle-home-btn.hb-result-home{width:min(100%,224px)!important}
 @media(max-width:620px){
-  .janken-page .hb-status.jk-art-status{
-    width:118px!important;
-    min-width:118px!important;
-  }
-  .janken-page .jk-result-mark.jk-art-result-mark{
-    width:58px!important;
-    bottom:-4px!important;
-  }
+  .hitblow-page .hb-history-open.hb-art-button{width:min(100%,202px)!important}
+  .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,214px)!important}
 }
