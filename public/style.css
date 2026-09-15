@@ -5061,3 +5061,38 @@ body.dm-open{overflow:hidden!important}
     left:15%!important;
   }
 }
+
+/* v6.01 — staged VS entrance: upper from left -> lower from right -> VS punch */
+.prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a{
+  animation:cutinStageFromLeft .46s cubic-bezier(.14,.88,.22,1) 0s both!important;
+}
+.prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-b{
+  animation:cutinStageFromRight .46s cubic-bezier(.14,.88,.22,1) .28s both!important;
+}
+.prebattle-intro.show .prebattle-vs{
+  animation:vsStagePunch .38s cubic-bezier(.18,1.48,.24,1) .72s both!important;
+}
+@keyframes cutinStageFromLeft{
+  0%{opacity:0;filter:blur(5px) brightness(1.32);transform:translateX(calc(-50% - 112vw)) scale(.985)}
+  72%{opacity:1;filter:blur(0) brightness(1.12);transform:translateX(calc(-50% + 1.8vw)) scale(1.006)}
+  100%{opacity:1;filter:none;transform:translateX(-50%) scale(1)}
+}
+@keyframes cutinStageFromRight{
+  0%{opacity:0;filter:blur(5px) brightness(1.32);transform:translateX(calc(-50% + 112vw)) scale(.985)}
+  72%{opacity:1;filter:blur(0) brightness(1.12);transform:translateX(calc(-50% - 1.8vw)) scale(1.006)}
+  100%{opacity:1;filter:none;transform:translateX(-50%) scale(1)}
+}
+@keyframes vsStagePunch{
+  0%{opacity:0;filter:brightness(1.8) blur(2px);transform:translate(-50%,-50%) scale(.18)!important}
+  62%{opacity:1;filter:brightness(1.45) blur(0);transform:translate(-50%,-50%) scale(1.18)!important}
+  82%{opacity:1;filter:brightness(1.12);transform:translate(-50%,-50%) scale(.96)!important}
+  100%{opacity:1;filter:none;transform:translate(-50%,-50%) scale(1)!important}
+}
+@media (prefers-reduced-motion:reduce){
+  .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a,
+  .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-b,
+  .prebattle-intro.show .prebattle-vs{
+    animation-duration:.01ms!important;
+    animation-delay:0s!important;
+  }
+}
