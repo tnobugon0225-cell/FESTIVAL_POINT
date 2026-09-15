@@ -5009,3 +5009,20 @@ body.dm-open{overflow:hidden!important}
     transform:rotate(-3deg) scale(1.015)!important;
   }
 }
+
+/* v5.97 — flat cut-in angle + raise lower/blue cut-in */
+.prebattle-player.prebattle-art-player .prebattle-cutart{
+  transform:rotate(0deg) scale(1.015)!important;
+  transform-origin:50% 50%!important;
+}
+.prebattle-player.prebattle-art-player.prebattle-b{
+  top:52.8vh!important;
+}
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player .prebattle-cutart{
+    transform:rotate(0deg) scale(1.015)!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b{
+    top:52.5vh!important;
+  }
+}
