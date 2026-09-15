@@ -5037,3 +5037,27 @@ body.dm-open{overflow:hidden!important}
     transform:rotate(0deg) scale(1.015)!important;
   }
 }
+
+/* v6.00 — approved cut-in swap + identity placement tuning */
+/* Upper slot: title/name slightly toward upper-left. */
+.prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{
+  top:41.5%!important;
+  right:13.5%!important;
+  left:auto!important;
+}
+/* Lower slot: title/name farther toward lower-right. */
+.prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{
+  top:57%!important;
+  left:15.5%!important;
+  right:auto!important;
+}
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{
+    top:40.5%!important;
+    right:12.5%!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{
+    top:58%!important;
+    left:15%!important;
+  }
+}
