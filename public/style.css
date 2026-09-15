@@ -5026,3 +5026,14 @@ body.dm-open{overflow:hidden!important}
     top:52.5vh!important;
   }
 }
+
+/* v5.98 — blue lower cut-in asset swap; render the artwork at its native angle */
+.prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
+  transform:rotate(0deg) scale(1.015)!important;
+  transform-origin:50% 50%!important;
+}
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
+    transform:rotate(0deg) scale(1.015)!important;
+  }
+}
