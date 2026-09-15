@@ -4974,3 +4974,17 @@ body.dm-open{overflow:hidden!important}
     font-size:25px!important;
   }
 }
+
+/* v5.94 — test: make top/bottom VS cut-ins flow in the same / direction */
+.prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
+  transform:rotate(-6.5deg) scale(1.025)!important;
+  transform-origin:50% 50%!important;
+}
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player.prebattle-b{
+    top:57.2vh!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
+    transform:rotate(-6.5deg) scale(1.025)!important;
+  }
+}
