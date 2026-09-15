@@ -5096,3 +5096,18 @@ body.dm-open{overflow:hidden!important}
     animation-delay:0s!important;
   }
 }
+
+/* v6.02 — VS intro: show the complete composition at once. No staged movement. */
+.prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a,
+.prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-b{
+  animation:none!important;
+  opacity:1!important;
+  filter:none!important;
+  transform:translateX(-50%) scale(1)!important;
+}
+.prebattle-intro.show .prebattle-vs{
+  animation:none!important;
+  opacity:1!important;
+  filter:none!important;
+  transform:translate(-50%,-50%) scale(1)!important;
+}
