@@ -4998,3 +4998,14 @@ body.dm-open{overflow:hidden!important}
     top:54.2vh!important;
   }
 }
+
+/* v5.96 — reduce lower cut-in rotation; keep v5.95 vertical position */
+.prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
+  transform:rotate(-3deg) scale(1.015)!important;
+  transform-origin:50% 50%!important;
+}
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
+    transform:rotate(-3deg) scale(1.015)!important;
+  }
+}
