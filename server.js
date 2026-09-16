@@ -1079,10 +1079,16 @@ app.get('/admin',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.htm
 app.get('/ranking',(req,res)=>res.sendFile(path.join(__dirname,'public','ranking.html')));
 app.get('/history',(req,res)=>res.sendFile(path.join(__dirname,'public','history.html')));
 app.get('/rule',(req,res)=>res.sendFile(path.join(__dirname,'public','rule.html')));
-app.get('/match',(req,res)=>res.sendFile(path.join(__dirname,'public','match.html')));
-app.get('/hit-blow',(req,res)=>res.sendFile(path.join(__dirname,'public','hit-blow.html')));
-app.get('/janken',(req,res)=>res.sendFile(path.join(__dirname,'public','janken.html')));
-app.get('/chinchiro',(req,res)=>res.sendFile(path.join(__dirname,'public','chinchiro.html')));
+// v6.11: extensionless battle URLs must use the same canonical root files too.
+// The app navigates to /hit-blow, /janken, /chinchiro and /match (without .html).
+// Previously these four routes still served stale public/*.html, which forced the old square-avatar intro.
+for (const route of ['/match','/hit-blow','/janken','/chinchiro']) {
+  app.get(route,(req,res,next)=>{
+    const file = `${route.slice(1)}.html`;
+    res.set('Cache-Control','no-store, no-cache, must-revalidate');
+    res.sendFile(path.join(__dirname,file), err=>{ if(err) next(err); });
+  });
+}
 app.get('/network',(req,res)=>res.sendFile(path.join(__dirname,'public','network.html')));
 app.get('/watch',(req,res)=>res.sendFile(path.join(__dirname,'public','watch.html')));
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
