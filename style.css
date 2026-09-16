@@ -21,6 +21,8 @@
 .gameover-overlay{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at center,rgba(52,4,14,.92),rgba(2,2,8,.98));backdrop-filter:blur(10px)}.gameover-box{width:min(560px,100%);padding:46px 24px;text-align:center;border:1px solid rgba(255,82,111,.45);background:linear-gradient(145deg,rgba(32,4,11,.97),rgba(9,2,9,.98));box-shadow:0 0 90px rgba(255,30,77,.15),inset 0 0 55px rgba(255,53,96,.05);clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 16px,100% calc(100% - 16px),calc(100% - 16px) 100%,16px 100%,0 calc(100% - 16px),0 16px)}.gameover-kicker{font-size:10px;letter-spacing:.26em;font-weight:900;color:#ff738e}.gameover-box h2{font-size:clamp(52px,14vw,96px);margin:8px 0;color:#fff;text-shadow:0 0 24px rgba(255,68,103,.5)}.gameover-box p{font-size:17px;color:#d6bdc5}.gameover-count{margin-top:22px;display:flex;align-items:baseline;justify-content:center;gap:8px;color:#b89ca6}.gameover-count strong{font-size:64px;line-height:1;font-variant-numeric:tabular-nums;color:#ff5d79;text-shadow:0 0 26px rgba(255,68,103,.5)}.gameover-count span{font-size:12px}
 @media(max-width:760px){.player-grid{grid-template-columns:1fr 1fr}.identity-block{grid-column:1/-1;min-height:auto}.identity-block,.metric-block{border-right:0;border-bottom:1px solid var(--line)}.points-block{border-right:1px solid var(--line)}.admin-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.app-shell{padding:14px 10px 48px}.system-panel{padding:16px;margin-bottom:12px}.topbar{padding:11px 12px}.console-title{font-size:9px}.nav-links{gap:10px}.logo-stage{padding-bottom:12px}.main-logo{width:100%}.battle-copy,.logo-header p{font-size:15px;letter-spacing:.12em}.auth-grid,.split,.row,.transfer-grid{grid-template-columns:1fr}.transfer-grid .wide{grid-column:auto}.player-grid{grid-template-columns:1fr 1fr}.identity-block{grid-column:1/-1}.identity-block,.metric-block{padding:17px}.points{font-size:48px}.rank-display{font-size:34px}.tabs{position:sticky;bottom:8px;z-index:30;padding:6px;background:rgba(2,8,16,.88);backdrop-filter:blur(16px);border:1px solid rgba(57,189,255,.14)}.history-item{flex-direction:column;gap:5px}.logout-card{grid-template-columns:1fr}.admin-actions{flex-direction:column;align-items:stretch}.admin-actions button{width:100%}.panel-head{align-items:center}.public-ranking{margin-top:10px}}
+
+/* ===== NEXUS:ZERO v5.2 PARTICIPANT ARENA UI ===== */
 .v52-player{background:#01040a;color:#eef9ff}.v52-player .arena-shell{width:min(980px,100%);padding-top:14px;padding-bottom:116px}
 .v52-player .topbar{background:rgba(1,6,14,.94);border-bottom-color:rgba(45,210,255,.32);box-shadow:0 0 24px rgba(0,157,255,.12)}
 .v52-player .cyber-bg{background-size:26px 26px;background-image:linear-gradient(rgba(25,153,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(25,153,255,.045) 1px,transparent 1px)}
@@ -36,9 +38,14 @@
 .arena-controls{margin-bottom:18px}.bottom-arena-nav{position:sticky;bottom:calc(8px + env(safe-area-inset-bottom));z-index:35;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:4px;background:rgba(1,7,15,.94);border:1px solid rgba(48,193,255,.28);box-shadow:0 0 32px rgba(0,128,255,.16);backdrop-filter:blur(18px);clip-path:polygon(12px 0,calc(100% - 12px) 0,100% 12px,100% calc(100% - 12px),calc(100% - 12px) 100%,12px 100%,0 calc(100% - 12px),0 12px)}.bottom-arena-nav button{margin:0;min-height:62px;border:0;border-right:1px solid rgba(48,193,255,.18);border-radius:0;background:transparent;box-shadow:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}.bottom-arena-nav button:last-child{border-right:0}.bottom-arena-nav button.active{background:linear-gradient(180deg,rgba(0,146,255,.18),rgba(20,63,175,.15));box-shadow:inset 0 0 24px rgba(25,187,255,.1)}.bottom-arena-nav b{font-size:21px;color:#b9f5ff;text-shadow:0 0 12px #27d8ff}.bottom-arena-nav span{font-size:10px;letter-spacing:.17em}.bottom-arena-nav small{font-size:8px;color:#638da8}.public-ranking{margin-top:12px}
 @media(max-width:760px){.arena-player-grid{grid-template-columns:1fr 1fr}.arena-identity{grid-column:1/-1;border-right:0;border-bottom:1px solid rgba(50,176,245,.24);grid-template-columns:92px 1fr;padding:18px}.identity-core{width:88px;height:118px}.arena-metric{min-height:185px}.arena-metric.points-block{border-right:1px solid rgba(50,176,245,.24)!important}.arena-lower-grid{grid-template-columns:1fr}.dashboard-list-card{min-height:auto}.transfer-grid-v52{grid-template-columns:1fr 1fr}.transfer-grid-v52>div:last-child{grid-column:1/-1}}
 @media(max-width:560px){.v52-player .arena-shell{padding:10px 8px 110px}.hero-lockup{padding-bottom:16px}.hero-logo{width:100%;max-height:300px}.hero-copy{margin-top:8px;font-size:17px;letter-spacing:.14em}.account-hero{margin-bottom:2px}.arena-identity{grid-template-columns:78px 1fr;gap:14px;padding:16px}.identity-core{width:76px;height:102px}.identity-core span{font-size:38px}.arena-identity .id-display{font-size:25px;margin-bottom:12px}.identity-data h1{font-size:30px}.arena-metric{min-height:160px;padding:16px 8px}.arena-metric .points{font-size:46px}.rank-display{font-size:52px}.rank-orbit{width:120px;height:120px}.quick-nav{gap:5px}.quick-nav button{padding:10px 5px;font-size:10px}.arena-transfer{padding:17px 14px}.transfer-grid-v52{grid-template-columns:1fr}.transfer-grid-v52>div:last-child{grid-column:auto}.arena-section-head h2{font-size:20px}.arena-lower-grid{gap:0}.dashboard-list-card{padding:16px}.bottom-arena-nav{bottom:6px}.bottom-arena-nav button{min-height:58px}.bottom-arena-nav b{font-size:18px}}
+
+/* ===== NEXUS:ZERO v5.3 ===== */
+/* logo: keep the full artwork visible and separate it cleanly from the subtitle */
 .v52-player .hero-lockup{padding:8px 0 30px;overflow:visible}
 .v52-player .hero-logo{width:min(720px,94%);max-height:none;height:auto;object-fit:contain;object-position:center;display:block;margin:0 auto}
 .v52-player .hero-copy{margin-top:18px;padding-top:0;line-height:1.5}
+
+/* selectable login avatars */
 .avatar-login-block{margin:18px 0 20px}
 .avatar-selector{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
 .avatar-choice{padding:2px;margin:0;aspect-ratio:1;border:1px solid rgba(57,189,255,.22);background:#020913;overflow:hidden;border-radius:0;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);box-shadow:none}
@@ -46,6 +53,8 @@
 .avatar-choice.selected{border-color:#37e6ff;box-shadow:0 0 0 1px rgba(139,92,255,.65),0 0 20px rgba(45,218,255,.35)}
 .avatar-choice.selected:after{content:"SELECTED";position:absolute;left:5px;right:5px;bottom:5px;padding:3px 2px;background:rgba(0,7,18,.8);font-size:7px;letter-spacing:.11em;color:#9ef7ff;text-align:center}
 .avatar-choice{position:relative}
+
+/* profile avatar */
 .avatar-core{width:124px;height:124px;aspect-ratio:1;padding:0;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);overflow:hidden;background:#020812}
 .avatar-core:before,.avatar-core:after{display:none}
 .avatar-core img{width:100%;height:100%;object-fit:cover;display:block}
@@ -55,10 +64,14 @@
 .rank-name small{display:block;margin-top:2px;color:#587b92;font-size:9px;letter-spacing:.08em}
 .top100-link{text-decoration:none;cursor:pointer}
 .link-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+
+/* keep transfer inputs on one line even on mobile */
 .transfer-grid-v52{display:grid;grid-template-columns:.9fr .65fr 1.25fr;gap:10px;align-items:end}
 .transfer-grid-v52>div:last-child{grid-column:auto}
 .transfer-grid-v52 label{white-space:nowrap}
 .transfer-grid-v52 input{min-width:0;width:100%}
+
+/* top 100 page */
 .ranking-shell{padding-top:22px;padding-bottom:110px}
 .ranking-hero{text-align:center}
 .ranking-hero h1{margin:8px 0 4px;font-size:clamp(28px,7vw,48px);letter-spacing:.08em}
@@ -68,6 +81,7 @@
 .full-rank-item.rank-first{background:linear-gradient(90deg,rgba(255,197,57,.12),transparent 60%)}
 .full-rank-item.rank-second{background:linear-gradient(90deg,rgba(195,220,245,.09),transparent 60%)}
 .full-rank-item.rank-third{background:linear-gradient(90deg,rgba(225,139,78,.10),transparent 60%)}
+
 @media(max-width:760px){
   .avatar-selector{grid-template-columns:repeat(3,1fr)}
   .avatar-core{width:96px;height:96px}
@@ -86,6 +100,9 @@
   .rank-avatar{width:32px;height:32px}
   .dashboard-list-card #ranking .rank-item:nth-child(n+6){display:none}
 }
+
+/* ===== NEXUS:ZERO v5.4 header/layout polish ===== */
+/* Dedicated wide header artwork: smaller, centered, and never vertically clipped. */
 .v52-player .hero-lockup{
   padding:10px 0 22px;
   overflow:visible;
@@ -108,6 +125,8 @@
   font-size:clamp(16px,3.4vw,23px);
 }
 .account-hero{margin-bottom:4px}
+
+/* Keep transfer fields as one compact row on phones too. */
 .transfer-grid-v52{
   display:grid!important;
   grid-template-columns:minmax(0,.85fr) minmax(0,.62fr) minmax(0,1.35fr)!important;
@@ -121,8 +140,11 @@
   padding:11px 8px;
 }
 .transfer-grid-v52 label{font-size:10px;letter-spacing:.03em;white-space:nowrap}
+
+/* Avoid the sticky bottom navigation obscuring cards/content. */
 .v52-player .arena-shell{padding-bottom:132px!important}
 .bottom-arena-nav{margin-top:14px}
+
 @media(max-width:560px){
   .v52-player .hero-lockup{padding:8px 0 20px;gap:6px}
   .v52-player .hero-logo{width:min(620px,92vw)}
@@ -136,6 +158,9 @@
   .arena-transfer{padding:15px 12px}
   .v52-player .arena-shell{padding-bottom:138px!important}
 }
+
+/* ===== NEXUS:ZERO v5.5 ===== */
+/* integrated hero artwork with subtitle embedded in image */
 .v52-player .integrated-lockup{padding:8px 0 18px;overflow:visible}
 .v52-player .integrated-header-logo{display:block;width:min(760px,94vw);height:auto;margin:0 auto;object-fit:contain;filter:drop-shadow(0 0 14px rgba(42,205,255,.20))}
 .home-ranking-only{grid-template-columns:1fr!important}
@@ -153,6 +178,9 @@
   .v52-player .integrated-lockup{padding:6px 0 14px}
   .v52-player .integrated-header-logo{width:96vw;max-width:none}
 }
+
+
+/* v5.6 — NEXUS access transition */
 .access-transition{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(circle at 50% 45%,rgba(22,74,122,.24),transparent 32%),radial-gradient(circle at 50% 48%,rgba(116,50,255,.13),transparent 46%),#01040a;overflow:hidden;color:#eafcff}
 .access-transition.hidden{display:none}
 .access-transition::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(40,195,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(40,195,255,.045) 1px,transparent 1px);background-size:30px 30px;mask-image:linear-gradient(to bottom,transparent 2%,#000 28%,#000 78%,transparent 100%);animation:accessGrid 6s linear infinite}
@@ -181,10 +209,16 @@
 .access-transition.access-failed .access-status{color:#ff718d}
 @keyframes accessSpin{to{transform:rotate(360deg)}}@keyframes accessSpinReverse{to{transform:rotate(-360deg)}}@keyframes accessPulse{50%{opacity:.35;transform:scale(.92)}}@keyframes nodePulse{to{transform:translate(-50%,-50%) rotate(45deg) scale(1.28)}}@keyframes accessGrid{to{background-position:0 60px,60px 0}}@keyframes accessScan{0%{top:8%;opacity:0}15%{opacity:1}85%{opacity:1}100%{top:92%;opacity:0}}
 @media (prefers-reduced-motion:reduce){.access-transition::before,.access-transition::after,.access-ring,.ring-three,.access-node{animation:none!important}.access-progress span{transition:none}}
+
 .user-head-main{display:flex;align-items:center;gap:12px}.user-avatar{width:52px;height:52px;object-fit:cover;border:1px solid rgba(62,211,255,.42);clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);box-shadow:0 0 14px rgba(22,174,255,.16)}
 @media(max-width:560px){.user-head-main{gap:10px}.user-avatar{width:44px;height:44px}}
+
+/* v5.8 battle matching */
 .match-entry-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.match-status-card{position:relative;overflow:hidden}.match-versus{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin:16px 0}.match-person{padding:14px;border:1px solid rgba(54,207,255,.24);background:rgba(3,15,30,.72);text-align:center}.match-person span{display:block;font-size:9px;letter-spacing:.16em;color:#59dcff}.match-person strong{display:block;margin-top:5px;font-size:18px}.match-person small{display:block;margin-top:3px;color:#6f9bb8}.versus-mark{font-size:28px;font-weight:1000;color:#b88cff;text-shadow:0 0 20px rgba(157,82,255,.8)}.versus-mark.active{animation:versusPulse 1.2s infinite}.match-referee{text-align:center;padding:10px;border-top:1px solid rgba(57,189,255,.16);border-bottom:1px solid rgba(57,189,255,.16);font-size:11px;letter-spacing:.11em;color:#83bdd8}.wager-display{display:flex;justify-content:space-between;align-items:center;margin:14px 0;padding:12px 14px;background:linear-gradient(90deg,rgba(0,190,255,.08),rgba(143,77,255,.08));border:1px solid rgba(86,198,255,.2)}.wager-display span{font-size:10px;letter-spacing:.18em;color:#77ddff}.wager-display strong{font-size:22px;color:#fff}.approval-row,.match-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.approval-chip{padding:7px 10px;border:1px solid rgba(255,197,70,.3);color:#ffd166;font-size:10px;letter-spacing:.12em}.approval-chip.approved{border-color:rgba(74,255,188,.38);color:#58f5bd}.judge-panel{margin-top:14px;padding:14px;border:1px solid rgba(183,111,255,.24);background:rgba(50,12,70,.18)}.judge-panel h3{margin:4px 0 12px}.battle-wait{text-align:center;color:#8db6cc;letter-spacing:.08em}.match-transition,.battle-result-overlay{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle at center,rgba(14,55,110,.45),rgba(0,4,12,.97) 58%);backdrop-filter:blur(8px);text-align:center;padding:24px}.match-transition.hidden,.battle-result-overlay.hidden{display:none}.match-transition:before{content:'';position:absolute;width:min(78vw,440px);aspect-ratio:1;border:1px solid rgba(44,220,255,.45);border-radius:50%;box-shadow:0 0 45px rgba(42,154,255,.25);animation:spin 5s linear infinite}.match-transition-kicker,.battle-result-kicker{position:relative;font-size:11px;letter-spacing:.28em;color:#57eaff}.match-transition h2,.battle-result-box h2{position:relative;margin:12px 0;font-size:clamp(34px,9vw,72px);letter-spacing:.08em;color:#fff;text-shadow:0 0 24px #43d9ff,0 0 38px #8f4dff}.match-transition-info{position:relative;color:#b9dff1;letter-spacing:.1em}.battle-result-box{width:min(92vw,520px);padding:34px 24px;border:1px solid rgba(70,211,255,.45);background:rgba(2,10,22,.92);box-shadow:0 0 50px rgba(31,159,255,.22);clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}.battle-result-box p{font-size:24px;font-weight:900;color:#fff}.battle-result-box button{margin-top:16px}.match-create-card .primary-action{margin-top:14px}@keyframes versusPulse{50%{transform:scale(1.15);filter:brightness(1.5)}}
 @media(max-width:560px){.match-entry-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.match-entry-grid label{font-size:9px}.match-entry-grid input{padding:12px 8px;font-size:14px}.match-versus{grid-template-columns:1fr auto 1fr;gap:6px}.match-person{padding:10px 6px}.match-person strong{font-size:14px}.versus-mark{font-size:20px}}
+
+
+/* ===== NEXUS:ZERO v5.9 AVATAR GRID ALIGNMENT FIX ===== */
 .avatar-login-block{
   width:100%;
   overflow:visible;
@@ -277,19 +311,31 @@
   }
   .avatar-choice{clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}
 }
+
 .match-action-msg{min-height:22px;margin:12px 0 0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.03em}.match-action-msg.ok{color:#58f5bd}.match-action-msg.error{color:#ff728d}
+
+
+/* v5.12 battle notification + dedicated battle screen */
 .modal-lock{overflow:hidden}.battle-request-overlay{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at center,rgba(22,40,93,.52),rgba(0,3,10,.985) 64%);backdrop-filter:blur(10px);overflow:hidden}.battle-request-overlay.hidden{display:none}.battle-request-overlay:before,.battle-request-overlay:after{content:'';position:absolute;inset:8%;border:1px solid rgba(38,217,255,.18);clip-path:polygon(34px 0,calc(100% - 34px) 0,100% 34px,100% calc(100% - 34px),calc(100% - 34px) 100%,34px 100%,0 calc(100% - 34px),0 34px);animation:reqPulse 1.8s ease-in-out infinite}.battle-request-overlay:after{inset:13%;border-color:rgba(174,86,255,.15);animation-delay:.4s}.battle-request-scan{position:absolute;inset:0;background:linear-gradient(180deg,transparent 0,rgba(45,221,255,.08) 49%,rgba(45,221,255,.22) 50%,transparent 51%);background-size:100% 160px;animation:reqScan 2.6s linear infinite;pointer-events:none}.battle-request-box{position:relative;z-index:2;width:min(94vw,620px);padding:30px 22px;border:1px solid rgba(62,218,255,.55);background:linear-gradient(180deg,rgba(2,13,28,.96),rgba(3,7,18,.97));box-shadow:0 0 70px rgba(0,174,255,.2),inset 0 0 35px rgba(78,59,255,.08);text-align:center;clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px)}.battle-request-kicker{font-size:10px;letter-spacing:.28em;color:#58eaff}.battle-request-alert{margin:8px auto 0;font-size:36px;color:#ffcf66;text-shadow:0 0 20px rgba(255,174,30,.8);animation:reqPulse 1.1s infinite}.battle-request-box h2{margin:4px 0 6px;font-size:clamp(25px,7vw,42px);letter-spacing:.08em}.battle-request-role{color:#9fc9de;margin:0 0 18px}.battle-request-info{margin:12px 0 18px}.request-versus{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}.request-versus>div{padding:13px 8px;border:1px solid rgba(60,205,255,.2);background:rgba(5,20,38,.6)}.request-versus span,.request-meta span{display:block;font-size:9px;letter-spacing:.15em;color:#67dcff}.request-versus strong{display:block;margin:4px 0;font-size:18px}.request-versus small,.request-meta small{color:#789bb1}.request-versus b{font-size:27px;color:#bb83ff;text-shadow:0 0 18px #7f3fff}.request-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.request-meta>span{padding:10px;border:1px solid rgba(84,170,229,.14);background:rgba(2,10,22,.55)}.request-meta strong{display:block;margin-top:4px;color:#fff;font-size:16px}.battle-request-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}.battle-request-actions button{margin:0}.battle-request-box>.ghost{margin-top:10px}
 .match-live-nav{font-size:9px;font-weight:900;letter-spacing:.18em;color:#66eaff}.match-screen-shell{width:min(100%,880px);margin:0 auto;padding:18px 14px calc(30px + env(safe-area-inset-bottom))}.match-screen{position:relative;min-height:calc(100dvh - 95px);display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:18px;padding:28px 20px;overflow:hidden;border:1px solid rgba(59,206,255,.34);background:radial-gradient(circle at 50% 36%,rgba(12,62,113,.22),rgba(1,7,16,.94) 50%,rgba(1,5,12,.98));clip-path:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);box-shadow:0 0 50px rgba(0,153,255,.11)}.match-screen-grid{position:absolute;inset:0;opacity:.22;background-image:linear-gradient(rgba(51,192,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(51,192,255,.08) 1px,transparent 1px);background-size:35px 35px;mask-image:linear-gradient(to bottom,black,transparent)}.match-screen-top,.match-stage-core,.battle-player-row,.battle-meta,.battle-controls,.match-action-msg,.match-home-btn{position:relative;z-index:2}.match-screen-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(64,202,255,.16);padding-bottom:10px}.match-screen-top span{font-size:10px;letter-spacing:.28em;color:#63e9ff}.match-screen-top strong{font-size:10px;letter-spacing:.16em;color:#60f2bc}.match-stage-core{text-align:center;padding:36px 0 14px}.match-stage-orbit{position:absolute;left:50%;top:50%;width:min(60vw,320px);aspect-ratio:1;transform:translate(-50%,-50%);border:1px solid rgba(58,215,255,.2);border-radius:50%;box-shadow:0 0 35px rgba(70,91,255,.12);animation:spin 12s linear infinite}.match-stage-orbit:before,.match-stage-orbit:after{content:'';position:absolute;border-radius:50%;inset:13%;border:1px dashed rgba(173,91,255,.25)}.match-stage-orbit:after{inset:28%;border-style:solid;border-color:rgba(56,226,255,.18)}.match-stage-core h1{position:relative;margin:0;font-size:clamp(31px,8vw,64px);letter-spacing:.08em;text-shadow:0 0 24px rgba(68,216,255,.52),0 0 38px rgba(143,70,255,.32)}.match-stage-core p{position:relative;margin:8px 0 0;color:#91b9cd;letter-spacing:.06em}.battle-player-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:10px}.battle-person{padding:17px 9px;text-align:center;border:1px solid rgba(60,207,255,.25);background:rgba(3,17,31,.76)}.battle-person span{display:block;color:#64ddff;font-size:9px;letter-spacing:.16em}.battle-person strong{display:block;margin:6px 0 3px;font-size:20px}.battle-person small{color:#7799ad}.battle-vs{display:flex;align-items:center;font-size:30px;font-weight:1000;color:#b47cff;text-shadow:0 0 22px #7c39ff}.battle-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px}.battle-meta>div{padding:13px;text-align:center;border:1px solid rgba(59,192,255,.16);background:rgba(3,12,24,.62)}.battle-meta span{display:block;font-size:9px;letter-spacing:.16em;color:#67dcff}.battle-meta strong{display:block;margin-top:4px;font-size:18px}.battle-meta small{display:block;color:#7398ad}.battle-controls{min-height:95px}.link-pulse-text,.battle-wait-large{text-align:center;padding:24px;border:1px solid rgba(103,91,255,.18);color:#a9efff;letter-spacing:.16em;animation:reqPulse 1.2s infinite}.battle-wait-large span{display:block;margin-top:8px;font-size:11px;color:#779aae;letter-spacing:.05em}.match-judge-full{text-align:center}.winner-line{text-align:center;padding:22px;border:1px solid rgba(86,210,255,.2);font-size:10px;letter-spacing:.2em;color:#6ee5ff}.winner-line strong{display:block;margin-top:7px;font-size:28px;color:#fff}.match-home-btn{margin:0 auto;width:min(100%,360px)}.match-home-btn.hidden{display:none}.state-pending .match-stage-core h1{color:#fff}.state-matched .match-stage-core h1{color:#7bf7ff}.state-battle{border-color:rgba(177,81,255,.42)}.state-battle .match-stage-core h1{color:#d5bdff;text-shadow:0 0 25px #8a4cff}.state-victory{border-color:rgba(83,255,180,.5);background:radial-gradient(circle at 50% 36%,rgba(23,116,82,.3),rgba(1,7,16,.96) 54%)}.state-victory .match-stage-core h1{color:#6fffc3;text-shadow:0 0 28px rgba(42,255,174,.7)}.state-defeat{border-color:rgba(255,76,111,.45);background:radial-gradient(circle at 50% 36%,rgba(120,19,46,.28),rgba(1,7,16,.96) 54%)}.state-defeat .match-stage-core h1{color:#ff7893;text-shadow:0 0 28px rgba(255,55,99,.6)}
 @keyframes reqPulse{50%{opacity:.55;filter:brightness(1.35)}}@keyframes reqScan{to{background-position:0 160px}}
 @media(max-width:560px){.battle-request-box{padding:24px 15px}.request-versus{gap:6px}.request-versus strong{font-size:15px}.battle-request-actions{grid-template-columns:1fr 1fr}.match-screen-shell{padding:10px 8px calc(18px + env(safe-area-inset-bottom))}.match-screen{min-height:calc(100dvh - 78px);padding:20px 12px;gap:13px}.match-stage-core{padding:26px 0 6px}.battle-player-row{gap:6px}.battle-person{padding:12px 5px}.battle-person strong{font-size:15px}.battle-vs{font-size:21px}.battle-meta{gap:6px}.battle-meta>div{padding:10px 6px}.battle-meta strong{font-size:15px}}
+
+/* v5.13 battle avatars + automatic result return */
 .request-player img{display:block;width:72px;height:72px;margin:0 auto 8px;object-fit:cover;border:1px solid rgba(86,224,255,.6);clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);box-shadow:0 0 18px rgba(38,207,255,.2)}
 .request-referee{display:grid!important;grid-template-columns:42px 1fr;grid-template-rows:auto auto;align-items:center;column-gap:9px;text-align:left}.request-referee img{grid-row:1/3;width:42px;height:42px;object-fit:cover;border:1px solid rgba(83,213,255,.45);clip-path:polygon(5px 0,100% 0,100% calc(100% - 5px),calc(100% - 5px) 100%,0 100%,0 5px)}.request-referee i{font-style:normal;font-size:9px;letter-spacing:.15em;color:#67dcff}.request-referee strong{margin:0!important;font-size:14px!important;color:#fff!important}
 .battle-person{display:flex;flex-direction:column;align-items:center;justify-content:center}.battle-person-avatar{width:min(34vw,150px);height:min(34vw,150px);max-width:150px;max-height:150px;aspect-ratio:1;object-fit:cover;margin:0 auto 10px;border:1px solid rgba(65,218,255,.55);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px);box-shadow:0 0 24px rgba(20,181,255,.18)}
 .battle-referee-meta{display:grid!important;grid-template-columns:52px 1fr;align-items:center;gap:10px;text-align:left!important}.battle-referee-meta img{width:52px;height:52px;object-fit:cover;border:1px solid rgba(69,212,255,.48);clip-path:polygon(6px 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%,0 6px)}.battle-referee-meta span,.battle-referee-meta strong,.battle-referee-meta small{display:block;text-align:left}.battle-referee-meta strong{font-size:16px!important;margin-top:2px!important}
 .result-return{margin-top:14px;font-size:11px;letter-spacing:.08em;color:#83b7cb}.result-return b{display:inline-block;min-width:1.2em;font-size:22px;color:#fff;text-shadow:0 0 14px currentColor}
 @media(max-width:560px){.request-player img{width:58px;height:58px}.battle-person-avatar{width:min(31vw,112px);height:min(31vw,112px)}.battle-referee-meta{grid-template-columns:42px 1fr}.battle-referee-meta img{width:42px;height:42px}}
+
+
+/* v5.14 - stable avatar rendering */
 .avatar-core img,.rank-avatar,.request-player img,.request-referee img,.battle-person-avatar,.battle-referee-meta img,.avatar-choice img,.user-avatar{animation:none!important;transition:none!important;filter:none!important;will-change:auto!important;backface-visibility:hidden;transform:translate3d(0,3px,0) scale(1.018)!important;transform-origin:center center!important}
 .avatar-core,.rank-item,.request-player,.battle-person,.battle-referee-meta{animation:none!important}
+
+
+/* v5.15 battle result emphasis */
 .battle-avatar-wrap{position:relative;width:92px;height:92px;margin:0 auto 10px;isolation:isolate}
 .battle-person-avatar{display:block;width:100%;height:100%;object-fit:cover;border:1px solid rgba(62,211,255,.42);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
 .result-winner{position:relative;border-color:rgba(90,255,192,.7);background:radial-gradient(circle at 50% 34%,rgba(37,199,148,.22),rgba(3,17,31,.82) 62%);box-shadow:inset 0 0 30px rgba(52,255,190,.08),0 0 24px rgba(52,255,190,.16)}
@@ -307,19 +353,32 @@
 .result-vs{opacity:.55}
 @keyframes winnerAura{0%,100%{transform:scale(1);filter:drop-shadow(0 0 7px rgba(89,255,210,.7)) drop-shadow(0 0 14px rgba(57,207,255,.35))}50%{transform:scale(1.025);filter:drop-shadow(0 0 12px rgba(89,255,210,.95)) drop-shadow(0 0 25px rgba(57,207,255,.55))}}
 @media(max-width:560px){.battle-avatar-wrap{width:78px;height:78px}.result-avatar-badge{min-width:68px;font-size:7px;padding:3px 5px}}
+
+/* v5.17 BGM control */
 .bgm-control{position:fixed;right:10px;top:58px;z-index:220;display:grid;grid-template-columns:20px auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;min-width:108px;margin:0;padding:7px 9px;border:1px solid rgba(69,222,255,.38);background:rgba(1,8,18,.86);box-shadow:0 0 18px rgba(28,183,255,.14);backdrop-filter:blur(10px);clip-path:polygon(7px 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%,0 7px);color:#aef6ff;text-align:left}
 .bgm-control>span{grid-row:1/3;font-size:18px;line-height:1;text-shadow:0 0 10px currentColor}.bgm-control>b{font-size:8px;letter-spacing:.12em;line-height:1.1}.bgm-control>small{max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:7px;color:#7394a8;line-height:1.2}.bgm-control.off{opacity:.55;border-color:rgba(150,170,180,.22);color:#8a9da8}.bgm-control.blocked{animation:bgmAttention 1.2s ease-in-out infinite}@keyframes bgmAttention{50%{box-shadow:0 0 24px rgba(67,230,255,.38)}}
 @media(max-width:560px){.bgm-control{right:8px;top:52px;min-width:92px;padding:6px 8px}.bgm-control>small{max-width:88px}}
+
+/* v5.18 login guide */
 .intro-brief{margin:4px 0 14px;padding:14px 15px;border:1px solid rgba(52,205,255,.22);background:linear-gradient(180deg,rgba(8,27,46,.44),rgba(3,10,20,.35));box-shadow:inset 0 0 28px rgba(34,149,255,.035);clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}
 .intro-brief h2{margin:5px 0 7px;font-size:17px}.intro-brief p{margin:0;color:#b7cfde;font-size:12px;line-height:1.75}.intro-brief strong{color:#ff7991}.intro-tagline{margin-top:9px;color:#dffaff;font-size:12px;font-weight:900;letter-spacing:.13em;text-shadow:0 0 12px rgba(43,214,255,.3)}
 .avatar-help{margin:5px 0 8px;color:#88aabd;font-size:11px;line-height:1.5}
 @media(max-width:560px){.intro-brief{padding:12px 13px;margin-bottom:12px}.intro-brief h2{font-size:16px}.intro-brief p{font-size:11px;line-height:1.7}.avatar-help{font-size:10px}}
+
+
+/* v5.19 RULE PAGE */
 .rule-shell{max-width:980px}.rule-hero{text-align:center;padding:28px 22px}.rule-hero h1{margin:5px 0 10px;font-size:clamp(28px,6vw,52px);letter-spacing:.08em}.rule-lead{max-width:680px;margin:0 auto;color:#b9d9e9;font-size:15px;line-height:1.9}.rule-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.rule-grid .system-panel{margin-bottom:0}.rule-card{position:relative;min-height:210px;padding:22px;overflow:hidden}.rule-card .rule-no{position:absolute;right:14px;top:6px;font:900 58px/1 ui-monospace,monospace;color:rgba(74,210,255,.08);letter-spacing:-.08em}.rule-card h2{margin:5px 0 12px;font-size:21px;letter-spacing:.05em}.rule-card p{margin:7px 0;color:#b9d4e3;line-height:1.8;font-size:14px}.rule-card p strong{color:#f0fbff}.rule-example{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin-top:15px;padding:11px 12px;border:1px solid rgba(56,207,255,.22);background:rgba(2,14,30,.62)}.rule-example span{font-size:9px;letter-spacing:.15em;color:#65dfff}.rule-example b{font-size:12px;color:#c8e9f8}.rule-example strong{font-size:15px;color:#8ff3ff}.danger-rule{border-color:rgba(255,74,96,.3)}.danger-rule .eyebrow,.danger-rule h2{color:#ff8b9d}.reward-rule{border-color:rgba(255,213,91,.28)}.reward-rule .eyebrow,.reward-rule h2{color:#ffe07a}.reward-podium{display:flex;gap:8px;margin-top:16px}.reward-podium span{flex:1;text-align:center;padding:10px 6px;border:1px solid rgba(255,217,105,.22);background:rgba(64,45,6,.24);font:900 12px ui-monospace,monospace;color:#ffe594}.rule-notice{margin-top:14px}.rule-notice p{margin:8px 0 0;line-height:1.8;color:#c1d7e2}.rule-finale{text-align:center;margin-top:14px}.rule-finale>strong{display:block;margin:4px 0 16px;font-size:clamp(18px,5vw,30px);letter-spacing:.18em;color:#dffcff;text-shadow:0 0 18px rgba(48,224,255,.35)}.rule-home-link{display:inline-flex;align-items:center;justify-content:center;width:min(360px,100%);text-decoration:none}.nav-links a.active{color:#e9fbff;text-shadow:0 0 12px rgba(64,219,255,.55)}
 @media(max-width:680px){.rule-grid{grid-template-columns:1fr}.rule-card{min-height:0;padding:19px}.rule-card h2{font-size:19px}.rule-example{grid-template-columns:1fr auto}.rule-example span{grid-column:1/-1}.rule-hero{padding:22px 16px}.rule-lead{font-size:13px}.rule-shell{padding-bottom:80px}}
+
+
+/* v5.20 module cut-in + sound UI */
 .bgm-control.hidden{display:none!important}
 .module-transition{position:fixed;inset:0;z-index:260;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at center,rgba(7,40,76,.92),rgba(0,3,10,.995) 62%);opacity:0;pointer-events:none;transition:opacity .14s ease;overflow:hidden}.module-transition.hidden{display:none}.module-transition.active{opacity:1}.module-transition-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(52,207,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(52,207,255,.08) 1px,transparent 1px);background-size:34px 34px;animation:moduleGrid 1.2s linear infinite}.module-transition:before{content:'';position:absolute;left:-20%;right:-20%;top:49%;height:2px;background:linear-gradient(90deg,transparent,#43e5ff 30%,#c184ff 50%,#43e5ff 70%,transparent);box-shadow:0 0 25px #35dfff;animation:moduleScan 1.2s ease-in-out infinite}.module-transition-core{position:relative;z-index:2;width:min(82vw,420px);text-align:center}.module-transition-ring{position:relative;width:130px;height:130px;margin:0 auto 24px;border:1px solid rgba(67,226,255,.55);border-radius:50%;box-shadow:0 0 34px rgba(36,204,255,.2);animation:spin 1.2s linear infinite}.module-transition-ring:before,.module-transition-ring:after,.module-transition-ring i{content:'';position:absolute;border-radius:50%;border:1px dashed rgba(157,83,255,.48)}.module-transition-ring:before{inset:13px}.module-transition-ring:after{inset:31px;border-style:solid;border-color:rgba(72,231,255,.3)}.module-transition-ring i:nth-child(1){left:50%;top:-9px;width:2px;height:148px;border:0;border-radius:0;background:linear-gradient(transparent,#5ae8ff,transparent);transform:translateX(-50%)}.module-transition-brand{font-size:11px;letter-spacing:.28em;color:#91f3ff}.module-transition-status{margin-top:8px;font-size:9px;letter-spacing:.22em;color:#7099b0}.module-transition-core>strong{display:block;margin-top:8px;font-size:clamp(25px,8vw,42px);letter-spacing:.14em;color:#fff;text-shadow:0 0 20px rgba(67,221,255,.65),0 0 30px rgba(135,75,255,.35)}.module-transition-bar{width:100%;height:3px;margin-top:20px;background:rgba(73,137,172,.18);overflow:hidden}.module-transition-bar span{display:block;width:100%;height:100%;background:linear-gradient(90deg,#39dcff,#7558ff,#d766ff);transform:translateX(-100%);animation:moduleLoad 2.85s linear forwards;box-shadow:0 0 14px rgba(75,218,255,.7)}@keyframes moduleLoad{to{transform:translateX(0)}}@keyframes moduleScan{from{transform:translateY(-42vh);opacity:0}30%{opacity:1}to{transform:translateY(42vh);opacity:0}}@keyframes moduleGrid{to{background-position:0 34px,34px 0}}
+
 .module-transition-percent{display:block;margin-top:10px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;letter-spacing:.18em;color:#6ceaff;text-shadow:0 0 10px rgba(60,221,255,.65)}
 .module-frame-overlay{position:fixed;inset:0;z-index:180;background:#02050b;overflow:hidden}.module-frame-overlay.hidden{display:none}.module-frame-overlay iframe{display:block;width:100%;height:100%;border:0;background:#02050b}
+
+/* ===== NEXUS:ZERO v5.23 login logo alignment ===== */
 #auth .integrated-lockup{
   width:100%;
   box-sizing:border-box;
@@ -341,14 +400,21 @@
 @media(max-width:560px){
   #auth .integrated-header-logo{width:100%!important;max-width:100%!important;}
 }
+
+/* v5.25 battle points readability */
 .battle-meta>div:first-child{min-height:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px 10px}
 .battle-meta>div:first-child span{font-size:11px;letter-spacing:.18em}
 .battle-meta>div:first-child strong{margin-top:8px;font-size:clamp(28px,7vw,40px);line-height:1;white-space:nowrap;text-shadow:0 0 18px rgba(77,222,255,.34)}
 @media(max-width:560px){.battle-meta>div:first-child{min-height:92px;padding:12px 6px}.battle-meta>div:first-child strong{font-size:clamp(25px,8vw,34px)}}
+
+
+/* v5.26 QUICK BATTLE / HIT & BLOW */
 .battle-mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 18px}.battle-mode-btn{background:#050d17;border:1px solid rgba(82,203,255,.25);padding:14px 12px;text-align:left}.battle-mode-btn strong,.battle-mode-btn span{display:block}.battle-mode-btn strong{font-size:13px;letter-spacing:.12em}.battle-mode-btn span{font-size:10px;color:#7893ab;margin-top:5px}.battle-mode-btn.active{border-color:#39d5ff;box-shadow:inset 0 0 20px rgba(34,180,255,.12),0 0 16px rgba(34,180,255,.1)}
 .quick-game-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.quick-game-card{min-height:92px;background:linear-gradient(145deg,#06131f,#030811);border:1px solid rgba(73,213,255,.3);padding:11px 8px}.quick-game-card b,.quick-game-card strong,.quick-game-card span{display:block}.quick-game-card b{font-size:9px;color:#4edcff;letter-spacing:.12em}.quick-game-card strong{font-size:13px;margin:7px 0}.quick-game-card span{font-size:9px;color:#7f96aa}.quick-game-card.active{box-shadow:inset 0 0 22px rgba(31,190,255,.15)}.quick-game-card.disabled{opacity:.38}.quick-entry-grid{grid-template-columns:1fr 1fr}.request-game-tag{text-align:center;color:#59dcff;letter-spacing:.15em;font-size:11px;margin-bottom:14px}
 .hb-shell{width:min(900px,100%);margin:0 auto;padding:22px 14px 70px}.hb-screen{position:relative;overflow:hidden}.hb-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:18px}.hb-head h1{font-size:clamp(30px,7vw,58px);letter-spacing:.1em;margin:2px 0}.hb-head p{letter-spacing:.3em;color:#8498ac}.hb-status{border:1px solid rgba(64,221,255,.4);padding:9px 11px;color:#55e6ff;font-size:11px;letter-spacing:.15em}.hb-points{margin:16px auto 20px;border:1px solid rgba(74,204,255,.28);width:min(360px,100%);min-height:105px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(20,139,210,.15),transparent 66%)}.hb-points span{font-size:11px;letter-spacing:.16em;color:#65dbff}.hb-points strong{font-size:clamp(36px,9vw,64px);line-height:1;margin-top:5px}.passkey-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}.passkey-choice{padding:0;aspect-ratio:1;background:#02070d;border:1px solid rgba(62,205,255,.25);overflow:hidden;position:relative}.passkey-choice img{width:100%;height:100%;object-fit:cover;display:block}.passkey-choice b{position:absolute;right:4px;bottom:3px;background:rgba(0,5,12,.8);padding:2px 5px;color:white}.passkey-choice.selected{border-color:#66f6ff;box-shadow:0 0 16px rgba(49,222,255,.65);transform:translateY(-2px)}.key-sequence{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;width:min(480px,100%);margin:14px auto}.sequence-key{aspect-ratio:1;border:1px solid rgba(80,220,255,.45);background:#030a12;position:relative;display:grid;place-items:center;overflow:hidden}.sequence-key img{width:100%;height:100%;object-fit:cover}.sequence-key b{position:absolute;bottom:5px;right:6px;font-size:18px;text-shadow:0 0 8px #000}.sequence-key.empty{font-size:34px;color:#45687b}.hb-lock{width:100%;margin-top:10px}.hb-setup-copy{text-align:center;margin:20px 0 8px}.hb-setup-copy h2{font-size:24px}.hb-setup-copy p{color:#8195a8}.hb-lock-wait{text-align:center;padding:22px 0}.hb-lock-wait h2{color:#53e4ff;letter-spacing:.15em}.hb-turn-banner{display:flex;align-items:center;justify-content:center;gap:14px;border-top:1px solid rgba(56,202,255,.3);border-bottom:1px solid rgba(56,202,255,.3);padding:14px;margin:16px 0}.hb-turn-banner span,.hb-turn-banner small{font-size:10px;letter-spacing:.12em;color:#7d99ac}.hb-turn-banner strong{font-size:18px;letter-spacing:.13em}.hb-turn-banner.your-turn{box-shadow:inset 0 0 20px rgba(0,213,255,.11)}.initial-trace{border:1px solid rgba(167,91,255,.5);padding:14px;margin:14px 0;background:linear-gradient(90deg,rgba(102,24,170,.15),rgba(6,14,24,.7))}.initial-trace span{font-size:9px;letter-spacing:.14em;color:#ba8cff}.initial-trace strong{display:flex;align-items:center;gap:8px;font-size:17px;margin:7px 0}.initial-trace strong img{width:42px;height:42px;object-fit:cover}.initial-trace p{font-size:11px;color:#a3aebe}.hb-history-title{margin-top:24px;font-size:11px;letter-spacing:.17em;color:#63dfff}.hb-log{border-top:1px solid rgba(72,188,239,.25);margin-top:9px}.hb-log-row{display:grid;grid-template-columns:60px 1fr 136px 60px;align-items:center;gap:7px;padding:9px 4px;border-bottom:1px solid rgba(72,188,239,.15);font-size:11px}.mini-key-seq{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}.mini-key-seq img{width:28px;height:28px;object-fit:cover}.hb-empty-log{text-align:center;color:#577083;padding:18px}.hb-result{text-align:center;padding:24px 8px}.hb-result h2{font-size:clamp(48px,13vw,90px);margin:8px}.hb-result.win h2{color:#5ef3d0;text-shadow:0 0 22px rgba(64,255,205,.6)}.hb-result.lose h2{color:#ff5f76;text-shadow:0 0 22px rgba(255,53,91,.45)}.hb-result>strong{font-size:32px}.result-winner .battle-avatar-wrap{box-shadow:0 0 28px rgba(69,255,210,.75)}.result-loser .battle-person-avatar{filter:grayscale(.7) brightness(.55)}
 @media(max-width:620px){.quick-game-grid{grid-template-columns:1fr}.quick-entry-grid{grid-template-columns:1fr 1fr}.passkey-grid{grid-template-columns:repeat(5,1fr);gap:5px}.hb-log-row{grid-template-columns:48px 1fr 100px 48px}.mini-key-seq img{width:21px;height:21px}.battle-mode-switch{grid-template-columns:1fr}.hb-head{align-items:center}.hb-status{font-size:9px}.hb-points{min-height:90px}}
+
+/* v5.27 HIT & BLOW stability / realtime UI */
 .passkey-choice img,.sequence-key img,.mini-key-seq img{animation:none!important;transition:none!important;transform:none!important;filter:none!important;backface-visibility:hidden;will-change:auto!important}
 .passkey-choice{transition:border-color .12s ease,box-shadow .12s ease,transform .12s ease}
 .my-code-panel,.live-input-panel{margin:14px 0;padding:14px;border:1px solid rgba(76,213,255,.28);background:rgba(2,12,24,.78)}
@@ -357,6 +423,8 @@
 .result-loser .battle-avatar-wrap{position:relative;overflow:hidden}.result-loser .battle-avatar-wrap:after{content:'';position:absolute;left:-18%;top:46%;width:136%;height:7px;background:linear-gradient(90deg,transparent,#ff315d 12%,#ff6a86 50%,#ff315d 88%,transparent);transform:rotate(-38deg);box-shadow:0 0 15px #ff315d,0 0 28px rgba(255,49,93,.7);z-index:8;pointer-events:none}.result-loser .battle-avatar-wrap:before{content:'DEFEATED';position:absolute;left:50%;bottom:8%;transform:translateX(-50%);z-index:9;color:#ff6c86;font-weight:1000;font-size:10px;letter-spacing:.14em;text-shadow:0 0 12px #ff315d}
 .prebattle-intro{position:fixed;inset:0;z-index:300;background:radial-gradient(circle at 50% 48%,rgba(25,61,120,.28),rgba(0,3,10,.985) 65%);opacity:0;transition:opacity .28s ease;overflow:hidden;pointer-events:none}.prebattle-intro.show{opacity:1}.prebattle-player{position:absolute;display:flex;align-items:center;gap:14px}.prebattle-player img{width:min(34vw,190px);aspect-ratio:1;object-fit:cover;border:1px solid rgba(91,224,255,.62);box-shadow:0 0 36px rgba(44,188,255,.25)}.prebattle-player strong{font-size:clamp(20px,5vw,42px);letter-spacing:.08em;text-shadow:0 0 18px currentColor}.prebattle-a{left:5vw;top:8vh;color:#72e8ff}.prebattle-b{right:5vw;bottom:9vh;flex-direction:row-reverse;color:#ff7197}.prebattle-vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:clamp(72px,22vw,180px);font-weight:1000;font-style:italic;color:#fff;text-shadow:0 0 22px #4fdcff,0 0 48px #713fff}
 @media(max-width:620px){.hb-log-card{grid-template-columns:1fr;gap:8px}.hb-log-card .mini-key-seq{grid-template-columns:repeat(4,48px)}.hb-log-card .mini-key-seq img{width:48px;height:48px}.hb-score{justify-content:flex-start}.prebattle-player img{width:32vw}.prebattle-player{gap:8px}.prebattle-a{left:4vw;top:13vh;flex-direction:column;align-items:flex-start}.prebattle-b{right:4vw;bottom:13vh;flex-direction:column-reverse;align-items:flex-end}}
+
+/* v5.28 HIT&BLOW compact history + visible timer */
 .hb-turn-banner{position:relative;flex-wrap:wrap;padding-right:118px;min-height:76px}
 .hb-countdown{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:92px;height:58px;border:1px solid rgba(103,211,255,.32);background:rgba(1,8,18,.86);display:grid;grid-template-columns:1fr auto;grid-template-rows:auto 1fr;align-items:center;padding:5px 8px;box-shadow:inset 0 0 20px rgba(0,174,255,.08)}
 .hb-countdown span{grid-column:1/3;font-size:7px!important;letter-spacing:.14em;color:#79dfff!important}
@@ -370,6 +438,8 @@
 .hb-log-paged{gap:5px}.hb-log-paged .hb-log-card{min-height:52px;padding:6px 8px;grid-template-columns:minmax(86px,.8fr) minmax(130px,1.3fr) minmax(96px,.65fr);gap:7px}.hb-log-paged .hb-log-meta{gap:1px}.hb-log-paged .hb-log-meta span{font-size:8px}.hb-log-paged .hb-log-meta strong{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hb-log-paged .mini-key-seq{grid-template-columns:repeat(4,32px);gap:3px}.hb-log-paged .mini-key-seq img{width:32px;height:32px}.hb-log-paged .hb-score{gap:4px}.hb-log-paged .hb-score b{padding:4px 6px;font-size:10px}
 .request-game-tag+.request-versus{margin-top:8px}.battle-request-info .request-meta.quick-request-meta{grid-template-columns:1fr}
 @media(max-width:620px){.hb-turn-banner{padding:11px 98px 11px 8px;gap:7px;justify-content:flex-start}.hb-turn-banner strong{font-size:14px}.hb-countdown{right:6px;width:82px;height:54px}.hb-countdown b{font-size:28px}.hb-history-viewport{height:260px;padding:6px}.hb-log-paged .hb-log-card{grid-template-columns:72px 1fr 72px;gap:4px}.hb-log-paged .mini-key-seq{grid-template-columns:repeat(4,27px)}.hb-log-paged .mini-key-seq img{width:27px;height:27px}.hb-log-paged .hb-score{flex-direction:column;align-items:stretch}.hb-log-paged .hb-score b{font-size:9px;text-align:center;padding:3px}.hb-history-toolbar button{font-size:8px}}
+
+/* v5.29 HIT&BLOW compact controls + monotonic timer + readable history */
 .compact-passkey-grid{max-width:560px;margin:10px auto 8px;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .compact-passkey-grid .passkey-choice{aspect-ratio:1;max-width:96px;justify-self:center;width:100%;border-radius:4px}
 #interactiveKeys>.key-sequence{max-width:320px;gap:6px;margin:8px auto 10px}
@@ -377,21 +447,27 @@
 #interactiveKeys>.key-sequence .sequence-key b{font-size:13px;right:4px;bottom:3px}
 .hb-setup-copy{margin:12px 0 4px}.hb-setup-copy h2{font-size:20px;margin:3px 0}.hb-setup-copy p{font-size:11px;line-height:1.55;margin:4px auto 8px;max-width:580px}
 .hb-lock{margin-top:7px;min-height:48px}
+
 .hb-countdown.warning{border-color:#ffd15d;box-shadow:0 0 18px rgba(255,198,61,.24),inset 0 0 18px rgba(255,198,61,.08)}
 .hb-countdown.warning b{color:#ffe481;text-shadow:0 0 12px rgba(255,208,73,.7)}
 .hb-countdown.danger{border-color:#ff526d;box-shadow:0 0 20px rgba(255,45,80,.28),inset 0 0 18px rgba(255,45,80,.1)}
 .hb-countdown.danger b{color:#ff7187;text-shadow:0 0 12px rgba(255,45,80,.82)}
+
 .hb-history-viewport{height:auto;min-height:0;overflow:visible;padding:0;border:0;background:transparent;margin-top:7px}
 .hb-history-compact{border:1px solid rgba(65,184,233,.16);background:rgba(1,7,15,.46);overflow:hidden}
 .hb-history-row{display:grid;grid-template-columns:34px minmax(68px,.8fr) minmax(130px,1.5fr) 42px 42px;align-items:center;gap:6px;min-height:44px;padding:5px 7px;border-bottom:1px solid rgba(65,184,233,.12)}
 .hb-history-row:last-child{border-bottom:0}.hb-history-turn{font-size:10px;color:#6edfff;font-variant-numeric:tabular-nums}.hb-history-name{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#d8e9f2}.hb-history-guess{display:grid;grid-template-columns:repeat(4,1fr);gap:3px}.hb-history-guess i{height:28px;display:grid;place-items:center;font-style:normal;font-weight:900;font-size:14px;border:1px solid rgba(104,220,255,.28);background:linear-gradient(180deg,rgba(20,58,82,.5),rgba(3,14,25,.9));color:#effcff;box-shadow:inset 0 0 10px rgba(52,204,255,.05)}.hb-history-row>.hit,.hb-history-row>.blow{font-size:11px;text-align:center;padding:5px 2px;border:1px solid currentColor}.hb-history-row>.hit{color:#ff6279}.hb-history-row>.blow{color:#5ed2ff}
 .hb-history-open{width:100%;margin-top:6px;min-height:34px;border:1px solid rgba(76,204,255,.24);background:rgba(5,18,32,.74);color:#87e6ff;font-size:10px;letter-spacing:.09em}.hb-history-open span{display:inline-grid;place-items:center;min-width:20px;height:20px;margin-left:5px;border-radius:50%;background:rgba(82,216,255,.12);font-variant-numeric:tabular-nums}
 .hb-history-modal{position:fixed;inset:0;z-index:360;background:rgba(0,3,9,.8);backdrop-filter:blur(5px);display:flex;align-items:flex-end;opacity:0;transition:opacity .2s ease}.hb-history-modal.show{opacity:1}.hb-history-sheet{width:min(760px,100%);max-height:78vh;margin:0 auto;background:linear-gradient(180deg,#071523,#020811);border:1px solid rgba(93,221,255,.36);border-bottom:0;box-shadow:0 -18px 60px rgba(0,0,0,.55);transform:translateY(18px);transition:transform .2s ease}.hb-history-modal.show .hb-history-sheet{transform:translateY(0)}.hb-history-sheet-head{height:64px;display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(80,207,255,.2)}.hb-history-sheet-head div{display:flex;flex-direction:column}.hb-history-sheet-head span{font-size:9px;letter-spacing:.15em;color:#65ddff}.hb-history-sheet-head strong{font-size:18px}.hb-history-sheet-head button{width:40px;height:40px;border:1px solid rgba(104,219,255,.25);background:rgba(4,15,27,.8);color:#dff9ff;font-size:25px}.hb-history-sheet-list{max-height:calc(78vh - 64px);overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}.hb-history-sheet-list .hb-history-row{min-height:48px}
+
 @media(max-width:620px){
   .compact-passkey-grid{max-width:360px;gap:4px}.compact-passkey-grid .passkey-choice{max-width:66px}
   #interactiveKeys>.key-sequence{max-width:240px;gap:4px}
   .hb-history-row{grid-template-columns:28px 56px minmax(112px,1fr) 34px 34px;gap:3px;padding:4px;min-height:40px}.hb-history-turn{font-size:9px}.hb-history-name{font-size:10px}.hb-history-guess{gap:2px}.hb-history-guess i{height:25px;font-size:12px}.hb-history-row>.hit,.hb-history-row>.blow{font-size:9px;padding:4px 1px}.hb-history-title{margin-top:16px}.hb-history-open{min-height:32px}
 }
+
+
+/* v5.30 CODE BREAK dedicated battle layout */
 .hitblow-page .hb-shell{width:min(1040px,100%);padding:10px 10px calc(26px + env(safe-area-inset-bottom))}
 .hitblow-page .hb-screen{padding:14px 14px 18px;min-height:calc(100dvh - 66px)}
 .hitblow-page .hb-head{margin-bottom:10px;align-items:center}
@@ -434,6 +510,7 @@
 .hb-history-dock .hb-history-guess i{height:22px;font-size:10px}.hb-history-dock .hb-history-row>.hit,.hb-history-dock .hb-history-row>.blow{font-size:8px;padding:3px 1px}.hb-history-dock .hb-history-name{font-size:9px}.hb-history-dock .hb-history-turn{font-size:8px}
 .hb-history-dock .hb-history-open{min-height:30px;font-size:8px}
 .hb-wait-compact{padding:18px 8px;min-height:150px;display:flex;flex-direction:column;justify-content:center}
+
 @media(max-width:720px){
   .hitblow-page .topbar{min-height:42px;padding:8px 10px}.hitblow-page .hb-shell{padding:6px 6px 14px}.hitblow-page .hb-screen{padding:9px;min-height:calc(100dvh - 48px)}
   .hitblow-page .hb-head{margin-bottom:6px}.hitblow-page .hb-head h1{font-size:20px}.hitblow-page .hb-head .eyebrow{font-size:6px}.hitblow-page .hb-status{padding:6px 7px;font-size:7px}
@@ -450,6 +527,9 @@
   .hitblow-page .compact-passkey-grid{gap:3px;margin:4px 0}.hitblow-page #interactiveKeys>.key-sequence{max-width:240px;margin:3px auto;gap:3px}.hitblow-page #interactiveKeys>.key-sequence .sequence-key b{display:none}.hitblow-page .hb-lock{min-height:38px;margin-top:3px;font-size:10px}
   .hb-history-dock .hb-history-title{font-size:8px}.hb-history-dock .hb-history-row{grid-template-columns:20px 48px 1fr 27px 27px;min-height:31px}.hb-history-dock .hb-history-guess i{height:19px;font-size:9px}.hb-history-dock .hb-history-name{font-size:8px}.hb-history-dock .hb-history-open{min-height:27px;margin-top:4px}
 }
+
+
+/* v5.31 CODE BREAK dedicated interaction layout */
 .hitblow-page .hb-action-zone{margin-top:8px}
 .hb-input-board{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(190px,.82fr);gap:10px;align-items:stretch;padding:8px;border:1px solid rgba(68,198,245,.18);background:linear-gradient(135deg,rgba(3,16,29,.88),rgba(5,9,20,.74))}
 .hb-palette-side,.hb-selected-side{min-width:0}.hb-side-label{height:24px;display:flex;align-items:center;font-size:8px;font-weight:900;letter-spacing:.14em;color:#67dcff}.rival-live-label{color:#bf8cff}
@@ -467,6 +547,8 @@
 .hb-rival-wait{margin-top:7px;min-height:43px;display:grid;place-items:center;border:1px solid rgba(172,91,255,.22);color:#8fa0b1;font-size:9px;letter-spacing:.08em;background:rgba(34,12,60,.11)}
 .rival-board .live-slots .sequence-key{border-color:rgba(186,103,255,.5);box-shadow:inset 0 0 15px rgba(130,57,255,.05)}
 .rival-board .live-slots .sequence-key:not(.empty){box-shadow:0 0 12px rgba(150,80,255,.18),inset 0 0 10px rgba(120,55,255,.08)}
+
+/* calmer two-lane history: images are retained, player histories are separated */
 .hb-history-split{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .hb-history-split>section{min-width:0;border:1px solid rgba(69,187,234,.15);background:rgba(1,8,16,.48);padding:5px}
 .hb-history-split header,.hb-full-lane>header{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 2px 5px;color:#7be7ff;font-size:8px;font-weight:900;letter-spacing:.1em;border-bottom:1px solid rgba(67,180,224,.12)}
@@ -479,6 +561,8 @@
 .hb-full-split{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
 .hb-full-lane{border:1px solid rgba(73,190,237,.16);background:rgba(1,8,16,.42);padding:7px;min-width:0}
 .hb-full-row{display:grid;grid-template-columns:52px minmax(100px,1fr) 44px 50px;gap:5px;align-items:center;padding:7px 2px;border-bottom:1px solid rgba(70,177,220,.11);font-size:9px}.hb-full-row:last-child{border-bottom:0}.hb-full-row>span:first-child{color:#718b9c;font-size:8px}.hb-full-row strong{font-size:8px;text-align:center}.hb-full-row .hit{color:#ff7186}.hb-full-row .blow{color:#69d8ff}
+
+/* scan result cut-in between turns */
 .hb-scan-overlay{position:fixed;inset:0;z-index:520;display:grid;place-items:center;padding:20px;background:rgba(0,4,10,.94);backdrop-filter:blur(7px);opacity:0;transition:opacity .28s ease}.hb-scan-overlay.show{opacity:1}
 .hb-scan-core{width:min(620px,100%);text-align:center;padding:28px 18px;border-top:1px solid rgba(76,215,255,.38);border-bottom:1px solid rgba(76,215,255,.38);background:radial-gradient(circle at center,rgba(13,82,121,.16),transparent 62%)}
 .hb-scan-kicker{font-size:10px;letter-spacing:.22em;color:#70e6ff;margin-bottom:16px}
@@ -486,6 +570,7 @@
 .hb-scan-line{display:flex;justify-content:center;gap:12px;margin:4px 0 13px}.hb-scan-line span{min-width:112px;padding:10px 12px;border:1px solid currentColor;font-size:19px;font-weight:1000}.hb-scan-line .hit{color:#ff6c84}.hb-scan-line .blow{color:#64ddff}
 .hb-scan-status{font-size:11px;letter-spacing:.19em;color:#8ca4b5}.hb-scan-overlay.success .hb-scan-code>div{border-color:#64ffc8;box-shadow:0 0 22px rgba(64,255,200,.45),inset 0 0 18px rgba(64,255,200,.12);animation:hbBreachGlow .75s ease-in-out infinite alternate}.hb-scan-overlay.success .hb-scan-status{color:#6effc8;text-shadow:0 0 12px rgba(70,255,202,.48)}
 @keyframes hbBreachGlow{from{filter:brightness(1)}to{filter:brightness(1.28)}}
+
 @media(max-width:620px){
   .hb-input-board{grid-template-columns:minmax(0,1.25fr) minmax(132px,.75fr);gap:6px;padding:5px}
   .hb-side-label{height:18px;font-size:6px}.hitblow-page .hb-input-board .compact-passkey-grid{gap:2px}
@@ -495,6 +580,9 @@
   .hb-full-split{grid-template-columns:1fr;gap:8px}.hb-full-row{grid-template-columns:48px minmax(100px,1fr) 40px 44px}
   .hb-scan-core{padding:22px 10px}.hb-scan-code{gap:4px;margin-bottom:14px}.hb-scan-line{gap:7px}.hb-scan-line span{min-width:95px;font-size:15px;padding:8px}.hb-scan-kicker{font-size:8px}
 }
+
+
+/* v5.32 — CODE BREAK input sizing / horizontal access code */
 .hitblow-page .hb-input-board{
   grid-template-columns:minmax(0,1.35fr) minmax(240px,.9fr);
   gap:14px;
@@ -577,14 +665,20 @@
     font-size:11px;
   }
 }
+
+/* v5.33 compact defeat markers for QUICK BATTLE player strip */
 .hitblow-page #hbPlayers .result-loser .battle-avatar-wrap:before,.hitblow-page #hbPlayers .result-loser .battle-avatar-wrap:after{display:none!important}
 .hitblow-page #hbPlayers .hb-result-mark{position:absolute;z-index:12;left:50%;bottom:2px;transform:translateX(-50%);font-size:5px;line-height:1;padding:2px 4px;letter-spacing:.08em;font-weight:1000;background:rgba(1,5,10,.88);white-space:nowrap}
 .hitblow-page #hbPlayers .hb-victor-mark{color:#71ffd6;border:1px solid rgba(113,255,214,.75);text-shadow:0 0 6px #42ffc1}
 .hitblow-page #hbPlayers .hb-defeat-mark{color:#ff7890;border:1px solid rgba(255,80,112,.75);text-shadow:0 0 6px #ff315d}
 .hitblow-page #hbPlayers .hb-defeat-slash{position:absolute;z-index:11;left:-10%;top:48%;width:120%;height:2px;background:#ff456b;box-shadow:0 0 6px #ff315d;transform:rotate(-38deg);pointer-events:none}
 @media(max-width:620px){.hitblow-page #hbPlayers .hb-result-mark{font-size:4px;padding:1px 3px}.hitblow-page #hbPlayers .hb-defeat-slash{height:1.5px}}
+
+/* JANKEN BO5 */
 .jk-shell{width:min(760px,100%);margin:0 auto;padding:18px 12px 70px}.jk-screen{overflow:hidden}.jk-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.jk-head h1{font-size:clamp(30px,8vw,54px);letter-spacing:.12em;margin:2px 0}.jk-head p{margin:0;color:#7f9aab;letter-spacing:.2em;font-size:10px}.quick-versus-row{margin:14px 0 8px}.janken-page .battle-person{display:grid;grid-template-columns:52px minmax(0,1fr);grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left;padding:6px 8px}.janken-page .battle-person:last-child{grid-template-columns:minmax(0,1fr) 52px;text-align:right}.janken-page .battle-person:last-child .battle-avatar-wrap{grid-column:2;grid-row:1/3}.janken-page .battle-person:last-child span,.janken-page .battle-person:last-child strong{grid-column:1}.janken-page .battle-avatar-wrap{grid-column:1;grid-row:1/3;width:52px;height:52px;margin:0}.janken-page .battle-person-avatar{width:52px!important;height:52px!important;margin:0!important}.janken-page .battle-person strong{font-size:14px;margin:0}.janken-page .battle-person span{font-size:7px}.jk-points{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:8px 0 12px;padding:7px;border-top:1px solid rgba(66,207,255,.16);border-bottom:1px solid rgba(66,207,255,.16)}.jk-points span{font-size:8px;color:#5ddfff;letter-spacing:.14em}.jk-points strong{font-size:20px}.jk-score{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;border:1px solid rgba(74,198,255,.23);padding:10px;background:rgba(2,12,22,.72)}.jk-score>div{display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center}.jk-score>div:last-child{text-align:right}.jk-score span{font-size:10px;color:#8cb4c8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.jk-score b{font-size:25px;color:#fff}.jk-score em{grid-column:1/3;display:flex;gap:5px}.jk-score>div:last-child em{justify-content:flex-end}.jk-score i{display:block;width:20px;height:4px;border:1px solid rgba(85,219,255,.4);background:rgba(20,55,74,.45)}.jk-score i.on{background:#60f4d1;box-shadow:0 0 9px rgba(75,255,210,.72)}.jk-score>strong{font-size:9px;color:#ad7cff;letter-spacing:.1em}.jk-command{text-align:center;padding:18px 0 4px}.jk-command h2{margin:5px 0 15px;font-size:22px}.jk-choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.jk-choice{min-height:150px;margin:0;padding:12px 6px;border:1px solid rgba(72,211,255,.32);background:radial-gradient(circle at 50% 35%,rgba(34,113,169,.2),rgba(2,10,18,.96) 65%);box-shadow:inset 0 0 25px rgba(37,181,255,.07)}.jk-choice span{display:block;font-size:60px;line-height:1.15;filter:drop-shadow(0 0 12px rgba(87,214,255,.25))}.jk-choice b{display:block;margin-top:10px;font-size:12px;letter-spacing:.13em;color:#72e5ff}.jk-choice small{display:block;color:#819aac}.jk-choice:hover{border-color:#71efff;box-shadow:0 0 18px rgba(52,214,255,.16)}.jk-choice.locked{opacity:.35}.jk-wait-state{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.jk-wait-state span{padding:7px;border:1px solid rgba(87,193,237,.18);font-size:8px;letter-spacing:.08em;color:#8db3c6}.jk-command>p{font-size:10px;color:#708d9f;margin-top:12px}.jk-reveal-overlay{position:fixed;inset:0;z-index:450;background:rgba(0,3,9,.96);display:grid;place-items:center;opacity:0;transition:opacity .18s ease;pointer-events:none}.jk-reveal-overlay.show{opacity:1}.jk-reveal-core{width:min(92vw,620px);text-align:center;padding:24px;border:1px solid rgba(74,219,255,.38);background:radial-gradient(circle,rgba(19,74,120,.28),rgba(2,7,14,.98) 65%)}.jk-reveal-hands{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;margin:22px 0}.jk-reveal-hands>div span{font-size:84px;display:block}.jk-reveal-hands>div b{display:block;color:#6de5ff;letter-spacing:.12em}.jk-reveal-hands>div small{display:block;margin-top:6px;color:#8fa9b8}.jk-reveal-hands>strong{font-size:28px;color:#b17dff}.jk-reveal-core h2{font-size:34px;margin:5px 0;color:#fff}.jk-reveal-core p{color:#7897aa}.janken-page .result-loser .battle-avatar-wrap:before,.janken-page .result-loser .battle-avatar-wrap:after{display:none!important}.jk-result-mark{position:absolute;z-index:12;left:50%;bottom:2px;transform:translateX(-50%);font-size:5px;line-height:1;padding:2px 4px;letter-spacing:.08em;font-weight:1000;background:rgba(1,5,10,.9);white-space:nowrap}.jk-victor{color:#72ffd7;border:1px solid #72ffd7}.jk-defeated{color:#ff748c;border:1px solid #ff5574}.jk-defeat-slash{position:absolute;z-index:11;left:-10%;top:48%;width:120%;height:2px;background:#ff456b;box-shadow:0 0 6px #ff315d;transform:rotate(-38deg)}
 @media(max-width:620px){.jk-shell{padding:10px 8px 56px}.jk-head h1{font-size:28px}.janken-page .battle-player-row{grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);gap:4px}.janken-page .battle-person{grid-template-columns:40px minmax(0,1fr);column-gap:5px;padding:4px}.janken-page .battle-person:last-child{grid-template-columns:minmax(0,1fr) 40px}.janken-page .battle-avatar-wrap,.janken-page .battle-person-avatar{width:40px!important;height:40px!important}.janken-page .battle-person strong{font-size:11px}.janken-page .battle-vs{font-size:15px}.jk-choice{min-height:126px;padding:9px 4px}.jk-choice span{font-size:48px}.jk-choice b{font-size:9px}.jk-reveal-hands>div span{font-size:62px}.jk-score{padding:8px}.jk-score b{font-size:20px}}
+
+/* v5.34 JANKEN timed-selection UI */
 .jk-command.stable{padding-top:14px}
 .jk-command-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px;text-align:left}
 .jk-command-head h2{margin:4px 0 0;font-size:18px}
@@ -620,6 +714,7 @@
   .jk-reveal-hands.image-mode{gap:7px}
   .jk-reveal-hands.image-mode>div img{width:min(32vw,140px)}
 }
+/* v5.35 JANKEN round reveal: calm lock animation + clearer result */
 .jk-lock-title{margin:18px 0 14px;font-size:clamp(28px,8vw,50px);font-weight:1000;letter-spacing:.12em;color:#dffaff;text-shadow:0 0 18px rgba(80,222,255,.5)}
 .jk-lock-line{position:relative;height:3px;max-width:360px;margin:18px auto 10px;background:rgba(78,215,255,.12);overflow:hidden}
 .jk-lock-line i{position:absolute;inset:0 auto 0 0;width:36%;background:linear-gradient(90deg,transparent,#6cf3ff 55%,#c58cff);box-shadow:0 0 14px rgba(90,225,255,.65);animation:jkLockSweep 1.1s ease-in-out infinite!important}
@@ -633,13 +728,20 @@
 .jk-round-result.lose .jk-result-banner{color:#ff708b;text-shadow:0 0 18px rgba(255,69,108,.5)}
 .jk-round-result.draw .jk-result-banner{color:#bd91ff;text-shadow:0 0 18px rgba(172,119,255,.5)}
 .jk-locking .jk-reveal-core{min-height:250px;display:flex;flex-direction:column;justify-content:center}
+/* Keep only the lock sweep animation; hand images and player icons stay static. */
 .jk-reveal-overlay.jk-locking *{animation:none!important}
 .jk-reveal-overlay.jk-locking .jk-lock-line i{animation:jkLockSweep 1.1s ease-in-out infinite!important}
+
+/* v5.38 SOUND SETTING */
 .setting-nav-button{appearance:none;border:0;background:transparent;color:#8ec9e8;font:800 10px/1 inherit;letter-spacing:.14em;padding:0;cursor:pointer}.setting-nav-button:hover,.setting-nav-button.active{color:#fff;text-shadow:0 0 12px rgba(64,219,255,.6)}.setting-nav-button.floating{position:fixed;right:12px;top:12px;z-index:245;padding:9px 11px;border:1px solid rgba(69,222,255,.35);background:rgba(1,8,18,.9)}
 .nexus-settings-panel{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-start;justify-content:flex-end;padding:58px 12px 12px;background:rgba(0,4,10,0);pointer-events:none;transition:background .18s ease}.nexus-settings-panel.show{background:rgba(0,4,10,.54);pointer-events:auto}.nexus-settings-card{width:min(360px,calc(100vw - 24px));padding:16px;border:1px solid rgba(72,220,255,.38);background:rgba(2,10,22,.97);box-shadow:0 16px 60px rgba(0,0,0,.55),0 0 28px rgba(45,203,255,.12);backdrop-filter:blur(18px);transform:translateY(-10px);opacity:0;transition:.18s ease;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}.nexus-settings-panel.show .nexus-settings-card{transform:none;opacity:1}.nexus-settings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.nexus-settings-head span{display:block;font:800 8px ui-monospace,monospace;letter-spacing:.2em;color:#58ddff}.nexus-settings-head strong{display:block;margin-top:2px;font:900 18px ui-monospace,monospace;letter-spacing:.14em;color:#e9fbff}.nexus-settings-close{width:34px;height:34px;margin:0;padding:0;border:1px solid rgba(93,214,255,.26);background:rgba(6,22,39,.7);color:#c9f7ff;font-size:22px;line-height:1}.nexus-volume-row{display:block;padding:11px 0;border-top:1px solid rgba(75,184,225,.13)}.nexus-volume-row>span{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.nexus-volume-row b{font:900 11px ui-monospace,monospace;letter-spacing:.14em;color:#d9f8ff}.nexus-volume-row em{font:800 11px ui-monospace,monospace;font-style:normal;color:#72eaff}.nexus-volume-row input{width:100%;accent-color:#47ddff}.nexus-settings-card>p{margin:9px 0 0;color:#7896a8;font-size:10px;line-height:1.6}.nexus-settings-panel~.bgm-control{}
 @media(max-width:560px){.setting-nav-button{font-size:9px;letter-spacing:.08em}.nexus-settings-panel{padding-top:52px}.nexus-settings-card{width:min(340px,calc(100vw - 16px))}}
+
+/* v5.38 CODE BREAK answer check */
 .hb-answer-check{margin:14px 0;padding:14px;border:1px solid rgba(80,221,255,.25);background:rgba(3,15,28,.72)}.hb-answer-check-head{text-align:center;margin-bottom:12px}.hb-answer-check-head span{display:block;font:900 9px ui-monospace,monospace;letter-spacing:.18em;color:#6be7ff}.hb-answer-check-head strong{display:block;margin-top:3px;font-size:18px;letter-spacing:.08em;color:#ecfbff}.hb-answer-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}.hb-answer-player{text-align:center;min-width:0}.hb-answer-player>span{display:block;margin-bottom:7px;font:800 10px ui-monospace,monospace;color:#9cc7d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hb-answer-player .key-sequence{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;max-width:280px;margin:auto}.hb-answer-player .sequence-key{width:auto;min-width:0;aspect-ratio:1}.hb-answer-vs{font:900 13px ui-monospace,monospace;color:#6deaff}.hb-answer-note{text-align:center;margin:10px 0 0;color:#8ca9b9;font-size:10px;letter-spacing:.06em}
 @media(max-width:560px){.hb-answer-check{padding:11px 8px}.hb-answer-grid{gap:5px}.hb-answer-player .key-sequence{gap:3px}.hb-answer-vs{font-size:10px}.hb-answer-player>span{font-size:8px}}
+
+/* v5.39 mobile topbar + HIT&BLOW history close alignment */
 .hb-history-sheet-head button{
   margin:0;
   padding:0;
@@ -649,6 +751,7 @@
   transform:none;
 }
 .hb-history-sheet-head button:hover{transform:none}
+
 @media(max-width:560px){
   .topbar{
     gap:8px;
@@ -682,6 +785,8 @@
     white-space:nowrap;
   }
 }
+
+/* v5.40 HIT & BLOW answer review + sound setting cleanup */
 .hb-answer-player .answer-code .sequence-key b{display:none!important}
 .hb-answer-legend{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:8px 0 10px;font:900 8px ui-monospace,monospace;letter-spacing:.1em;color:#7f9bac}
 .hb-answer-legend span{padding:4px 7px;border:1px solid rgba(116,170,199,.18);background:rgba(2,9,16,.7)}
@@ -698,7 +803,10 @@
 .hb-mini-code.answer-mode .hb-mini-key.hit i{color:#ff708b}
 .hb-mini-code.answer-mode .hb-mini-key.blow i{color:#64e5ff}
 @media(max-width:560px){.hb-answer-legend{gap:5px}.hb-answer-legend span{padding:3px 5px}.hb-mini-code.answer-mode{gap:2px}.hb-mini-code.answer-mode .hb-mini-key i{min-width:11px;height:11px;font-size:7px}}
+/* Legacy floating BGM ON/OFF control is retired in favor of SETTING. */
 .bgm-control{display:none!important}
+
+/* v5.42 top navigation + stable ranking */
 .ranking-shell,.history-shell{padding-bottom:28px}
 @media(max-width:560px){
   .topbar{gap:6px;padding:11px 8px}
@@ -713,13 +821,19 @@
   .nav-links{gap:4px;font-size:6.5px;letter-spacing:.035em}
   .setting-nav-button{font-size:6.5px;letter-spacing:.03em}
 }
+
+/* v5.43 ADMIN CORE */
 .admin-v543{background:#02060d}.admin-v543 .admin-shell{max-width:1180px}.admin-topbar{border-bottom-color:rgba(66,216,255,.34)}
 .admin-login-shell{min-height:calc(100svh - 72px);display:grid;place-items:center;padding:32px 0}.admin-login-mark{width:min(620px,100%);text-align:center;margin-bottom:18px}.admin-login-mark img{width:min(520px,92%);display:block;margin:auto;filter:drop-shadow(0 0 24px rgba(48,205,255,.22))}.admin-login-mark span{display:block;margin-top:4px;font:800 9px ui-monospace,monospace;letter-spacing:.28em;color:#68dfff}.admin-login-panel{position:relative;width:min(520px,100%);padding:28px;border:1px solid rgba(62,213,255,.34);background:linear-gradient(180deg,rgba(4,18,35,.96),rgba(1,8,18,.98));box-shadow:0 28px 80px rgba(0,0,0,.56),inset 0 0 40px rgba(37,189,255,.035);clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px)}.admin-login-panel:before,.admin-module:before{content:"";position:absolute;left:0;top:0;width:86px;height:2px;background:#48dcff;box-shadow:0 0 14px #48dcff}.admin-login-panel h1{margin:7px 0 3px;font-size:clamp(26px,7vw,42px);letter-spacing:.08em}.admin-login-panel>p{margin:0 0 24px;color:#7da8bc}.admin-kicker{font:900 9px ui-monospace,monospace;letter-spacing:.22em;color:#5fe2ff}.admin-enter{width:100%;margin-top:12px}
 .admin-core{padding-top:8px}.admin-command-header{position:relative;margin-bottom:14px;padding:21px 22px;border:1px solid rgba(75,217,255,.28);background:linear-gradient(90deg,rgba(2,18,34,.94),rgba(6,9,26,.94));display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}.admin-command-header h1{margin:5px 0 3px;font-size:clamp(23px,4vw,34px);letter-spacing:.08em}.admin-command-header p{margin:0;color:#8db3c5}.admin-action-msg{grid-column:1/-1;margin:0;min-height:1.2em}.admin-dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.admin-module{position:relative;overflow:hidden;margin:0;padding:22px;border:1px solid rgba(60,187,237,.22);background:linear-gradient(145deg,rgba(4,18,31,.96),rgba(2,8,18,.96));box-shadow:inset 0 0 30px rgba(49,199,255,.025);clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}.admin-module h2{margin:4px 0 17px;font-size:19px;letter-spacing:.05em}.module-no{position:absolute;right:15px;top:4px;font:900 44px ui-monospace,monospace;color:rgba(61,219,255,.06)}.admin-module-log,.admin-module-accounts{grid-column:1/-1}.admin-wide{width:100%}.module-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}.module-title-row h2{margin-bottom:4px}.admin-search-results{margin-top:12px}.admin-player-card{border-color:rgba(65,208,255,.22);background:rgba(2,11,22,.75)}.admin-history-item{border-left:2px solid rgba(64,214,255,.28)}.operator-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:14px}.operator-chip{margin:0;min-height:70px;border-color:rgba(74,209,255,.18);background:rgba(4,15,27,.72)}.admin-v543 input,.admin-v543 select{background:rgba(1,8,17,.82);border-color:rgba(75,203,250,.26)}
 @media(max-width:720px){.admin-dashboard-grid{grid-template-columns:1fr}.admin-module-log,.admin-module-accounts{grid-column:auto}.admin-command-header{grid-template-columns:1fr}.admin-command-header .admin-actions{display:grid;grid-template-columns:1fr 1fr}.operator-list{grid-template-columns:1fr}.admin-login-shell{padding:18px 0}.admin-login-panel{padding:20px 16px}.admin-module{padding:18px 15px}.admin-topbar .console-title{font-size:8px;letter-spacing:.1em}}
-\n\n\n.jk-score.jk-score-nodes{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;padding:11px 12px}\n.jk-score-nodes .jk-score-side{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}\n.jk-score-nodes .jk-score-side-rival{align-items:flex-end;text-align:right}\n.jk-score-nodes .jk-score-side>span{width:100%;font-size:9px;font-weight:850;letter-spacing:.08em;color:#8cb4c8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.jk-score-nodes .jk-score-side>em{display:flex;align-items:center;gap:9px;width:100%;grid-column:auto}\n.jk-score-nodes .jk-score-side-rival>em{justify-content:flex-end}\n.jk-score-nodes .jk-win-node{position:relative;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid rgba(88,215,255,.32);background:radial-gradient(circle,rgba(31,93,124,.14) 0 38%,rgba(2,10,18,.92) 41% 100%);box-shadow:inset 0 0 0 4px rgba(72,189,236,.035);transition:none}\n.jk-score-nodes .jk-win-node:before{content:'';width:8px;height:8px;border-radius:50%;background:rgba(93,183,213,.18);box-shadow:0 0 0 1px rgba(93,212,255,.1)}\n.jk-score-nodes .jk-win-node:after{content:'';position:absolute;width:15px;height:1px;background:rgba(83,198,231,.16);transform:rotate(-45deg)}\n.jk-score-nodes .jk-win-node.on{border-color:rgba(89,255,209,.82);background:radial-gradient(circle,rgba(88,255,211,.42) 0 25%,rgba(18,111,91,.28) 27% 53%,rgba(2,15,18,.96) 56% 100%);box-shadow:0 0 10px rgba(71,255,205,.48),0 0 24px rgba(49,215,181,.16),inset 0 0 10px rgba(78,255,211,.16)}\n.jk-score-nodes .jk-win-node.on:before{background:#7affd9;box-shadow:0 0 7px #5affd0,0 0 16px rgba(83,255,207,.75)}\n.jk-score-nodes .jk-win-node.on:after{background:rgba(144,255,230,.72);box-shadow:0 0 6px rgba(103,255,219,.6)}\n.jk-score-nodes>strong{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;font-size:14px;line-height:1;color:#c8a6ff;letter-spacing:.06em;text-shadow:0 0 12px rgba(176,111,255,.35)}\n.jk-score-nodes>strong small{display:block;margin-bottom:5px;font-size:6px;letter-spacing:.18em;color:#7b9bad;font-weight:900}\n@media(max-width:620px){.jk-score.jk-score-nodes{gap:7px;padding:9px 8px}.jk-score-nodes .jk-score-side{gap:5px}.jk-score-nodes .jk-score-side>em{gap:6px}.jk-score-nodes .jk-win-node{width:24px;height:24px}.jk-score-nodes>strong{min-width:46px;font-size:12px}}\n
+\n\n/* v5.45 JANKEN score HUD: numeric wins removed, three activation nodes show rounds won */\n.jk-score.jk-score-nodes{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;padding:11px 12px}\n.jk-score-nodes .jk-score-side{display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-width:0}\n.jk-score-nodes .jk-score-side-rival{align-items:flex-end;text-align:right}\n.jk-score-nodes .jk-score-side>span{width:100%;font-size:9px;font-weight:850;letter-spacing:.08em;color:#8cb4c8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n.jk-score-nodes .jk-score-side>em{display:flex;align-items:center;gap:9px;width:100%;grid-column:auto}\n.jk-score-nodes .jk-score-side-rival>em{justify-content:flex-end}\n.jk-score-nodes .jk-win-node{position:relative;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid rgba(88,215,255,.32);background:radial-gradient(circle,rgba(31,93,124,.14) 0 38%,rgba(2,10,18,.92) 41% 100%);box-shadow:inset 0 0 0 4px rgba(72,189,236,.035);transition:none}\n.jk-score-nodes .jk-win-node:before{content:'';width:8px;height:8px;border-radius:50%;background:rgba(93,183,213,.18);box-shadow:0 0 0 1px rgba(93,212,255,.1)}\n.jk-score-nodes .jk-win-node:after{content:'';position:absolute;width:15px;height:1px;background:rgba(83,198,231,.16);transform:rotate(-45deg)}\n.jk-score-nodes .jk-win-node.on{border-color:rgba(89,255,209,.82);background:radial-gradient(circle,rgba(88,255,211,.42) 0 25%,rgba(18,111,91,.28) 27% 53%,rgba(2,15,18,.96) 56% 100%);box-shadow:0 0 10px rgba(71,255,205,.48),0 0 24px rgba(49,215,181,.16),inset 0 0 10px rgba(78,255,211,.16)}\n.jk-score-nodes .jk-win-node.on:before{background:#7affd9;box-shadow:0 0 7px #5affd0,0 0 16px rgba(83,255,207,.75)}\n.jk-score-nodes .jk-win-node.on:after{background:rgba(144,255,230,.72);box-shadow:0 0 6px rgba(103,255,219,.6)}\n.jk-score-nodes>strong{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:54px;font-size:14px;line-height:1;color:#c8a6ff;letter-spacing:.06em;text-shadow:0 0 12px rgba(176,111,255,.35)}\n.jk-score-nodes>strong small{display:block;margin-bottom:5px;font-size:6px;letter-spacing:.18em;color:#7b9bad;font-weight:900}\n@media(max-width:620px){.jk-score.jk-score-nodes{gap:7px;padding:9px 8px}.jk-score-nodes .jk-score-side{gap:5px}.jk-score-nodes .jk-score-side>em{gap:6px}.jk-score-nodes .jk-win-node{width:24px;height:24px}.jk-score-nodes>strong{min-width:46px;font-size:12px}}\n
+/* v5.46 CHINCHIRO prototype */
 .chinchiro-page{min-height:100svh}.cc-shell{width:min(760px,calc(100% - 20px));margin:18px auto 40px}.cc-screen{padding:16px;overflow:visible}.cc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.cc-head h1{margin:3px 0 0;font-size:clamp(26px,7vw,44px);letter-spacing:.08em}.cc-head p{margin:2px 0 0;color:#6f91a2;font:800 9px ui-monospace,monospace;letter-spacing:.16em}.cc-round-head{margin:12px 0 10px;padding:10px 12px;border:1px solid rgba(83,210,255,.24);background:linear-gradient(90deg,rgba(4,22,39,.9),rgba(5,10,24,.92));display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px}.cc-round-head span,.cc-round-head small{font:900 8px ui-monospace,monospace;letter-spacing:.14em;color:#7fa4b6}.cc-round-head strong{text-align:center;font-size:14px;letter-spacing:.12em;color:#67e6ff}.cc-hand-grid{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;align-items:stretch;margin:10px 0}.cc-hand{min-height:84px;padding:10px;border:1px solid rgba(76,188,229,.2);background:rgba(2,10,20,.78);display:flex;flex-direction:column;justify-content:center;gap:5px;min-width:0}.cc-hand>span{font-size:9px;color:#86a7b7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cc-hand>strong{font:900 12px ui-monospace,monospace;letter-spacing:.05em;color:#a7c7d7}.cc-hand.pending{opacity:.55}.cc-hand.best{border-color:rgba(255,222,101,.62);box-shadow:inset 0 0 20px rgba(255,199,68,.08)}.cc-hand.best>strong{color:#ffd968}.cc-hand.strong{border-color:rgba(199,116,255,.5)}.cc-hand.strong>strong{color:#d18bff}.cc-hand.point{border-color:rgba(85,230,255,.42)}.cc-hand.point>strong{color:#6deaff}.cc-hand.bad{border-color:rgba(255,80,110,.42)}.cc-hand.bad>strong{color:#ff6e88}.cc-hand-vs{display:grid;place-items:center;font:1000 11px ui-monospace,monospace;color:#7661ff}.cc-mini-dice{display:flex;gap:4px}.cc-mini-dice i{width:22px;height:22px;display:grid;place-items:center;border:1px solid rgba(111,219,255,.3);background:#04101b;font:900 11px ui-monospace,monospace;font-style:normal;color:#d6f8ff}.cc-table{margin-top:10px;padding:16px 12px;border:1px solid rgba(77,207,255,.28);background:radial-gradient(circle at 50% 25%,rgba(21,94,130,.12),rgba(2,8,17,.96) 58%);text-align:center;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}.cc-dice-row{display:flex;justify-content:center;gap:12px;margin:17px auto 12px}.cc-die{position:relative;width:min(22vw,112px);aspect-ratio:1;border:1px solid rgba(91,225,255,.55);background:linear-gradient(145deg,rgba(6,26,42,.98),rgba(1,7,15,.98));box-shadow:inset 0 0 24px rgba(53,213,255,.09),0 0 14px rgba(53,207,255,.08);display:grid;place-items:center;overflow:hidden;clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px)}.cc-die:before,.cc-die:after{content:"";position:absolute;inset:7px;border:1px solid rgba(91,225,255,.08)}.cc-die:after{inset:auto 8px 8px auto;width:18px;height:1px;background:#5ce7ff;box-shadow:0 0 7px #5ce7ff;border:0}.cc-die span{font:1000 clamp(30px,10vw,60px)/1 ui-monospace,monospace;color:#e9fbff;text-shadow:0 0 18px rgba(90,226,255,.45)}.cc-die b{position:absolute;left:7px;bottom:5px;font:900 8px ui-monospace,monospace;color:#5ce7ff;opacity:.55}.cc-die i{position:absolute;right:7px;top:7px;width:5px;height:5px;border-radius:50%;background:#63eaff;box-shadow:0 0 8px #63eaff}.cc-dice-row.rolling .cc-die{animation:ccDicePulse .18s steps(2,end) infinite}.cc-dice-row.rolling .d2{animation-delay:.04s}.cc-dice-row.rolling .d3{animation-delay:.08s}@keyframes ccDicePulse{50%{transform:translateY(-3px) rotate(1deg);filter:brightness(1.32)}}.cc-role-now{min-height:28px;font:1000 14px ui-monospace,monospace;letter-spacing:.08em}.cc-role-now.best,.cc-roll-status .best{color:#ffd968}.cc-role-now.strong,.cc-roll-status .strong{color:#d28cff}.cc-role-now.point,.cc-roll-status .point{color:#64e7ff}.cc-role-now.bad,.cc-roll-status .bad{color:#ff6f89}.cc-role-now.none,.cc-roll-status .none{color:#7896a6}.cc-roll-btn{width:min(360px,100%);margin:14px auto 6px;display:flex;align-items:center;justify-content:center;gap:12px}.cc-roll-btn span{font:900 9px ui-monospace,monospace;color:#9feeff}.cc-rival-wait{margin:15px auto 7px;padding:13px;border:1px dashed rgba(81,212,255,.2);font:900 9px ui-monospace,monospace;letter-spacing:.13em;color:#719aaa}.cc-table>p{margin:9px 0 0;color:#6d8795;font-size:9px}.cc-rule-strip{display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0;padding:8px;border:1px solid rgba(90,168,197,.12);font:900 8px ui-monospace,monospace;color:#8ca6b3}.cc-rule-strip b{color:#555dff}.cc-roll-history{display:grid;gap:5px;margin-top:10px}.cc-roll-history>div{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(96px,auto);align-items:center;gap:8px;padding:7px 9px;border:1px solid rgba(68,157,194,.13);background:rgba(1,7,14,.64)}.cc-roll-history span{font-size:8px;color:#7291a1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cc-roll-history b{display:flex;gap:3px}.cc-roll-history b i{width:21px;height:21px;display:grid;place-items:center;border:1px solid rgba(88,214,255,.22);font:900 10px ui-monospace,monospace;font-style:normal;color:#d5f7ff}.cc-roll-history strong{font:900 8px ui-monospace,monospace;text-align:right;color:#8eacba}.cc-roll-history strong.best{color:#ffd968}.cc-roll-history strong.strong{color:#d28cff}.cc-roll-history strong.point{color:#64e7ff}.cc-roll-history strong.bad{color:#ff6f89}.cc-history-empty{text-align:center;padding:13px;color:#587181;font:900 8px ui-monospace,monospace}.cc-roll-overlay{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;background:rgba(0,3,9,.88);backdrop-filter:blur(6px);opacity:0;transition:opacity .2s ease}.cc-roll-overlay.show{opacity:1}.cc-roll-core{width:min(620px,92vw);padding:24px 15px;text-align:center;border-top:1px solid rgba(76,221,255,.42);border-bottom:1px solid rgba(76,221,255,.22);background:linear-gradient(90deg,transparent,rgba(3,18,34,.84),transparent)}.cc-roll-status{min-height:62px;display:flex;flex-direction:column;justify-content:center;gap:7px;font:900 12px ui-monospace,monospace;color:#7ca8bc;letter-spacing:.1em}.cc-roll-status strong{font-size:clamp(18px,5vw,28px)}.cc-roll-status small{font-size:8px;color:#7993a0}.cc-roll-status em{font:1000 13px ui-monospace,monospace;font-style:normal;color:#b48cff}.cc-hand-grid.result{margin-top:16px}
 @media(max-width:560px){.cc-shell{width:min(100% - 12px,760px);margin-top:8px}.cc-screen{padding:12px 9px}.cc-head h1{font-size:26px}.cc-round-head{grid-template-columns:auto 1fr;gap:6px}.cc-round-head small{grid-column:1/-1;text-align:center}.cc-hand-grid{gap:4px}.cc-hand{padding:8px 6px;min-height:78px}.cc-hand>strong{font-size:9px}.cc-hand-vs{font-size:8px}.cc-dice-row{gap:7px}.cc-die{width:min(27vw,96px)}.cc-roll-history>div{grid-template-columns:minmax(0,1fr) auto}.cc-roll-history strong{grid-column:1/-1;text-align:left}.cc-rule-strip{gap:4px;font-size:7px}}
+
+
+/* v5.47 CHINCHIRO combat HUD */
 .chinchiro-page .cc-screen{background:linear-gradient(180deg,rgba(3,10,20,.96),rgba(1,5,12,.98));border-color:rgba(76,220,255,.24);box-shadow:0 20px 60px rgba(0,0,0,.35),inset 0 0 45px rgba(22,119,163,.035)}
 .cc-table{position:relative;overflow:hidden;padding:18px 14px 16px;border:1px solid rgba(76,220,255,.34);background:radial-gradient(circle at 50% 38%,rgba(16,110,145,.14),transparent 42%),linear-gradient(180deg,rgba(2,15,27,.97),rgba(1,6,13,.99));clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px)}
 .cc-table:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(rgba(84,220,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(84,220,255,.025) 1px,transparent 1px);background-size:24px 24px;mask-image:linear-gradient(to bottom,black,transparent 82%)}
@@ -747,6 +861,9 @@
 .cc-roll-title{margin:5px 0 0;font:1000 clamp(18px,5vw,30px) ui-monospace,monospace;letter-spacing:.13em;color:#d8fbff;text-shadow:0 0 18px rgba(79,224,255,.35)}
 .cc-roll-status{min-height:94px;margin-top:4px}.cc-roll-status>span{font:900 9px ui-monospace,monospace;letter-spacing:.18em;color:#6e99ab}.cc-roll-status.reveal{position:relative;margin:8px auto 0;padding:14px 12px;max-width:520px;border-top:1px solid currentColor;border-bottom:1px solid currentColor;background:linear-gradient(90deg,transparent,rgba(255,255,255,.025),transparent);text-shadow:0 0 16px currentColor}.cc-roll-status.reveal small{font-size:7px;letter-spacing:.22em;color:#7594a2}.cc-roll-status.reveal strong{font-size:clamp(23px,7vw,42px);line-height:1.05;letter-spacing:.09em}.cc-roll-status.reveal span{font-size:8px;letter-spacing:.13em}.cc-roll-status.reveal.best{color:#ffd968;box-shadow:0 0 36px rgba(255,207,76,.12)}.cc-roll-status.reveal.strong{color:#d38cff;box-shadow:0 0 36px rgba(191,94,255,.12)}.cc-roll-status.reveal.point{color:#65e9ff;box-shadow:0 0 36px rgba(73,218,255,.12)}.cc-roll-status.reveal.bad{color:#ff6f8c;box-shadow:0 0 36px rgba(255,77,111,.12)}.cc-roll-status.reveal.none{color:#7b98a7}.cc-roll-status.reveal em{margin-top:4px;color:#c098ff;font-size:14px}
 @media(max-width:560px){.cc-dice-row{gap:8px}.cc-die{width:min(28vw,102px)}.cc-target-hand{grid-template-columns:minmax(0,1fr) auto}.cc-target-hand .cc-mini-dice{grid-column:1/-1}.cc-rank-list{grid-template-columns:repeat(5,minmax(48px,1fr));overflow-x:auto;padding-bottom:2px}.cc-rank-list b{min-width:48px}.cc-roll-core{padding-left:8px;padding-right:8px}.cc-roll-title{font-size:20px}}
+
+
+/* v5.48 CHINCHIRO BO3 + dedicated dice assets */
 .cc-die{padding:0;background:#01060d;border-color:rgba(94,226,255,.34);box-shadow:0 0 22px rgba(62,207,255,.1),inset 0 0 24px rgba(42,157,255,.06)}
 .cc-die-image{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;user-select:none;-webkit-user-drag:none;pointer-events:none;transform:scale(1.02)}
 .cc-die:before{inset:5px;z-index:2;border-color:rgba(105,230,255,.16);pointer-events:none}
@@ -769,21 +886,33 @@
 .cc-bo3-nodes i.on:after{background:#7ffcff;opacity:1;box-shadow:0 0 8px #7ffcff,0 0 15px rgba(102,229,255,.8)}
 .cc-roll-status em{font-size:clamp(15px,4.6vw,23px);letter-spacing:.14em;text-shadow:0 0 18px currentColor}
 @media(max-width:560px){.cc-bo3-score{gap:7px;padding-left:6px;padding-right:6px}.cc-bo3-nodes{gap:6px}.cc-bo3-nodes i{width:16px;height:16px}.cc-mini-dice img{width:25px;height:25px}.cc-die b{font-size:7px}}
+
+/* v5.49 TITLE / PROFILE / ELIMINATION */
 .avatar-change-btn{position:relative;border:0;padding:0;background:transparent;cursor:pointer}.avatar-change-btn>span{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);padding:2px 7px;border:1px solid rgba(75,214,255,.35);background:#03101a;color:#7eeaff;font-size:7px;letter-spacing:.14em;opacity:.8}
 .player-title-badge{margin-top:8px;min-width:190px;max-width:100%;display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:8px;text-align:left;padding:7px 10px;border:1px solid rgba(99,217,255,.25);background:linear-gradient(90deg,rgba(3,17,29,.98),rgba(8,28,42,.74));color:#dffaff;box-shadow:inset 0 0 18px rgba(74,209,255,.07);cursor:pointer}.player-title-badge>span{grid-row:1/3;align-self:center;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;border:1px solid currentColor;font-size:8px;font-weight:900}.player-title-badge strong{font-size:11px;letter-spacing:.1em}.player-title-badge small{font-size:8px;color:#8ca8b8}.player-title-badge.tier-S{color:#ffd96b;border-color:rgba(255,205,83,.48);box-shadow:0 0 22px rgba(255,190,55,.12),inset 0 0 18px rgba(255,190,55,.08)}.player-title-badge.tier-A{color:#d58cff;border-color:rgba(197,107,255,.42)}.player-title-badge.tier-B{color:#62e4ff}.player-title-badge.tier-C{color:#afc4cf}
 .nexus-picker{position:fixed;inset:0;z-index:700;background:rgba(0,4,10,.84);backdrop-filter:blur(7px);display:grid;place-items:center;padding:16px}.nexus-picker.hidden{display:none}.nexus-picker-card{width:min(620px,100%);max-height:82vh;overflow:auto;border:1px solid rgba(80,219,255,.42);background:linear-gradient(180deg,#071523,#02070d);box-shadow:0 28px 80px rgba(0,0,0,.62),inset 0 0 38px rgba(35,190,255,.04)}.nexus-picker-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:rgba(3,13,23,.96);border-bottom:1px solid rgba(84,210,255,.2)}.nexus-picker-head div{display:flex;flex-direction:column}.nexus-picker-head span{font-size:8px;letter-spacing:.18em;color:#58dcff}.nexus-picker-head strong{font-size:17px}.picker-close{width:40px;height:40px;margin:0!important;display:grid;place-items:center;border:1px solid rgba(91,218,255,.28);background:#06131f;color:#eaffff;font-size:24px;line-height:1}.title-picker-list{display:grid;gap:7px;padding:10px}.title-option{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:9px;min-height:58px;padding:8px 10px;text-align:left;border:1px solid rgba(88,205,247,.2);background:linear-gradient(90deg,rgba(4,16,27,.95),rgba(7,27,42,.7));color:#dffaff}.title-option>span{display:grid;place-items:center;width:29px;height:29px;border:1px solid currentColor;border-radius:50%;font-weight:900}.title-option div{display:flex;flex-direction:column}.title-option strong{font-size:12px;letter-spacing:.08em}.title-option small{font-size:9px;color:#829cac}.title-option em{font-size:8px;font-style:normal;color:#65efbb}.title-option.selected{box-shadow:inset 0 0 22px rgba(54,209,255,.11)}.title-option.tier-S{color:#ffd667;border-color:rgba(255,205,88,.4)}.title-option.tier-A{color:#d38cff}.title-option.tier-B{color:#62ddff}.title-option.tier-C{color:#adbec8}.avatar-picker-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px}.avatar-picker-grid button{padding:2px;border:1px solid rgba(81,208,255,.22);background:#04101a}.avatar-picker-grid img{display:block;width:100%;aspect-ratio:1;object-fit:cover}
 .battle-player-title{display:block!important;max-width:170px;margin-top:2px;color:#74e4ff!important;font-size:7px!important;letter-spacing:.08em!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.prebattle-title{display:block;margin-top:6px;padding:3px 8px;border:1px solid rgba(91,218,255,.25);background:rgba(2,11,20,.65);color:#80e9ff;font-size:8px;letter-spacing:.1em}
 .battle-home-btn{margin-top:10px;min-height:38px;padding:8px 18px;border:1px solid rgba(84,217,255,.38);background:rgba(4,19,31,.92);color:#bdefff;font-size:10px;font-weight:900;letter-spacing:.12em}
+/* keep the three quick games on one row even on phones */
 @media(max-width:620px){.quick-game-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.quick-game-card{min-height:78px;padding:8px 3px}.quick-game-card b{font-size:6px}.quick-game-card strong{font-size:9px;line-height:1.15;margin:5px 0}.quick-game-card span{font-size:6px;line-height:1.25}}
+/* cinematic 0pt account purge */
 .elimination-active #account{pointer-events:none}.gameover-overlay{overflow:hidden}.gameover-overlay:before,.gameover-overlay:after{content:"";position:absolute;inset:0;pointer-events:none}.gameover-overlay:before{background:repeating-linear-gradient(0deg,rgba(86,219,255,.045) 0 1px,transparent 1px 5px);animation:elimScan .55s linear infinite}.gameover-overlay:after{background:linear-gradient(90deg,transparent,rgba(255,55,92,.12),transparent);transform:translateX(-100%);animation:elimSweep 1.35s ease-in-out infinite}.gameover-box{position:relative;z-index:2;transition:.7s ease;box-shadow:0 0 70px rgba(255,39,77,.08)}body[data-elim-phase="2"] .points-block{filter:saturate(0);opacity:.25;transform:scale(.98)}body[data-elim-phase="3"] #name,body[data-elim-phase="3"] #customerCode{filter:blur(7px);opacity:.12}body[data-elim-phase="4"] #playerAvatar{filter:grayscale(1) blur(6px);opacity:.08}body[data-elim-phase="5"] #account{filter:grayscale(1) contrast(1.4);opacity:.12;transform:scale(.985)}.gameover-overlay.final .gameover-box{border-color:#ff496b;box-shadow:0 0 80px rgba(255,42,76,.22);transform:scale(1.02)}@keyframes elimSweep{50%{transform:translateX(100%)}100%{transform:translateX(100%)}}@keyframes elimScan{to{transform:translateY(5px)}}
+/* JANKEN countdown must not be visible under the VS intro */
 .jk-command.jk-prestart{visibility:hidden}
+/* CHINCHIRO role recipe reference */
 .cc-role-guide{margin-top:8px;border:1px solid rgba(80,203,246,.18);background:rgba(2,10,18,.58);padding:8px}.cc-role-guide>header{display:flex;justify-content:space-between;align-items:end;border-bottom:1px solid rgba(78,196,238,.12);padding-bottom:6px;margin-bottom:5px}.cc-role-guide>header span{font-size:8px;color:#67ddff;letter-spacing:.13em}.cc-role-guide>header strong{font-size:11px}.cc-role-recipes{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}.cc-role-recipe{min-width:0;padding:6px 4px;text-align:center;border:1px solid rgba(94,204,244,.14);background:rgba(4,15,25,.58)}.cc-role-recipe b{display:block;font-size:8px;color:#dff8ff}.cc-role-recipe span{display:block;margin-top:4px;font-size:7px;color:#7e9cac}.cc-role-recipe em{display:block;margin-top:3px;font-size:7px;font-style:normal;color:#58dfff}@media(max-width:620px){.cc-role-recipes{grid-template-columns:repeat(5,minmax(0,1fr));gap:2px}.cc-role-recipe{padding:5px 2px}.cc-role-recipe b{font-size:6px}.cc-role-recipe span,.cc-role-recipe em{font-size:5px}.avatar-picker-grid{grid-template-columns:repeat(3,1fr)}}
+/* v5.49 battle identity consistency */
 .chinchiro-page #ccPlayers{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:7px;margin:8px 0 4px;padding:7px 9px;border:1px solid rgba(60,189,239,.15);background:linear-gradient(90deg,rgba(4,17,29,.72),rgba(2,8,16,.5),rgba(4,17,29,.72))}.chinchiro-page #ccPlayers .battle-person{display:grid;grid-template-columns:52px minmax(0,1fr);grid-template-rows:auto auto;align-items:center;column-gap:8px;min-width:0;text-align:left}.chinchiro-page #ccPlayers .battle-person:last-child{grid-template-columns:minmax(0,1fr) 52px;text-align:right}.chinchiro-page #ccPlayers .battle-person:last-child .battle-avatar-wrap{grid-column:2;grid-row:1/3}.chinchiro-page #ccPlayers .battle-person:last-child strong,.chinchiro-page #ccPlayers .battle-person:last-child .battle-player-title{grid-column:1}.chinchiro-page #ccPlayers .battle-avatar-wrap{grid-column:1;grid-row:1/3;width:52px;height:52px}.chinchiro-page #ccPlayers .battle-person-avatar{width:52px!important;height:52px!important;margin:0!important;max-width:none;max-height:none}.chinchiro-page #ccPlayers .battle-person strong{font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.chinchiro-page #ccPlayers .battle-player-title{font-size:6px!important;max-width:100%}.chinchiro-page #ccPlayers .battle-vs{font-size:16px}
 .admin-log-tabs{display:flex;gap:5px}.admin-log-tabs button.active{border-color:#62e3ff;box-shadow:inset 0 0 15px rgba(68,213,255,.12);color:#bdf5ff}
 @media(max-width:620px){.chinchiro-page #ccPlayers .battle-avatar-wrap,.chinchiro-page #ccPlayers .battle-person-avatar{width:40px!important;height:40px!important}.chinchiro-page #ccPlayers .battle-person{grid-template-columns:40px minmax(0,1fr)}.chinchiro-page #ccPlayers .battle-person:last-child{grid-template-columns:minmax(0,1fr) 40px}.chinchiro-page #ccPlayers .battle-person strong{font-size:10px}.chinchiro-page #ccPlayers .battle-vs{font-size:14px}}
 .elimination-active .gameover-overlay{background:radial-gradient(circle at center,rgba(46,3,13,.58),rgba(1,2,8,.86));backdrop-filter:blur(3px)}.elimination-active .gameover-box{width:min(500px,88%);padding:32px 20px;background:linear-gradient(145deg,rgba(28,3,10,.9),rgba(6,2,8,.92))}
+
+/* v5.50 title art + network */
 .player-title-badge{padding:0!important;overflow:hidden;min-height:44px;background:transparent!important;border:0!important;box-shadow:none!important}.player-title-badge>img{display:block;width:min(100%,360px);height:54px;object-fit:contain;object-position:left center}.player-title-badge .title-text-fallback{display:none}.avatar-change-btn span{display:none!important}.title-picker-list{display:grid;gap:10px}.title-option.image-title{position:relative;display:block;width:100%;padding:4px;border:1px solid rgba(89,220,255,.24);background:#030914;min-height:72px;overflow:hidden}.title-option.image-title img{display:block;width:100%;height:72px;object-fit:contain}.title-option.image-title.locked img{filter:grayscale(1) brightness(.28);opacity:.75}.title-option.image-title .title-lock{position:absolute;inset:0;display:grid;place-items:center;font-size:26px;text-shadow:0 0 16px #000}.title-option.image-title.selected{border-color:#74f8ff;box-shadow:0 0 18px rgba(60,220,255,.3)}.title-option.image-title em{position:absolute;right:8px;bottom:7px;font-size:9px;background:#021a22;color:#77f9ff;padding:3px 6px}.network-link-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.network-link-card{display:grid;gap:5px;text-decoration:none;padding:14px 8px;border:1px solid rgba(61,214,255,.35);background:linear-gradient(180deg,rgba(3,24,37,.9),rgba(2,7,14,.95));text-align:center}.network-link-card b{font-size:12px;letter-spacing:.12em;color:#75efff}.network-link-card span{font-size:10px;color:#9aaec0}@media(max-width:560px){.network-link-grid{grid-template-columns:repeat(3,1fr);gap:6px}.network-link-card{padding:11px 3px}.network-link-card b{font-size:9px}.network-link-card span{font-size:8px}}
+
 .network-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:14px 0}.network-tabs button{padding:10px 4px;font-size:10px}.chat-list,.dm-messages{height:56vh;overflow:auto;border:1px solid rgba(61,214,255,.25);background:rgba(0,5,12,.72);padding:8px}.chat-row{display:grid;grid-template-columns:44px 92px 1fr;gap:7px;align-items:start;margin:8px 0}.chat-avatar{border:0;background:none;padding:0}.chat-avatar img{width:42px;height:42px;object-fit:cover;border:1px solid #42dbff}.chat-id{display:grid;gap:2px;min-width:0}.chat-id strong{font-size:11px}.chat-id small{font-size:8px;color:#71899a}.mini-title-img{width:86px;height:22px;object-fit:contain;object-position:left center}.chat-bubble{padding:9px;border:1px solid rgba(77,214,255,.22);background:#07131f;font-size:13px;word-break:break-word}.chat-bubble small{display:block;text-align:right;font-size:8px;color:#71899a}.chat-compose{display:grid;grid-template-columns:1fr auto;gap:7px;margin-top:8px}.friend-search{display:grid;grid-template-columns:1fr auto;gap:7px;margin-bottom:10px}.friend-card{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;border-bottom:1px solid rgba(80,215,255,.15);padding:9px 0}.friend-actions{display:grid;gap:4px;text-align:right}.dm-box{position:fixed;z-index:120;inset:8vh 4vw;background:#030914;border:1px solid #45dff8;padding:10px;box-shadow:0 0 40px #000}.dm-head{display:flex;justify-content:space-between}.dm-messages{height:60vh}.dm-msg{display:flex;margin:6px}.dm-msg span{max-width:78%;padding:8px 10px;background:#10202c;border:1px solid rgba(80,220,255,.25)}.dm-msg.mine{justify-content:flex-end}.dm-msg.mine span{background:#073044}.live-match-card{display:flex;justify-content:space-between;align-items:center;text-decoration:none;border:1px solid rgba(66,218,255,.28);padding:12px;margin:8px 0;background:#06111b}.live-match-card div{display:grid;gap:4px}.live-match-card b{font-size:9px;color:#60eaff}.live-match-card strong{font-size:14px;color:#fff}.live-match-card i{color:#af79ff}.live-match-card span{text-align:right;color:#89f5ff;font-size:10px}.compact-profile-card{max-width:360px}.watch-vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;text-align:center}.watch-vs>div{display:grid;justify-items:center;gap:5px}.watch-vs>div>img:first-child{width:82px;height:82px;object-fit:cover;border:1px solid #4ae2ff}.watch-vs .watch-title{width:130px;height:34px;object-fit:contain}.watch-vs>b{font-size:34px;color:#bb7aff}.watch-meta{display:flex;justify-content:center;gap:14px;margin:16px 0;font-size:10px}.spectate-log{display:grid;gap:7px}.spectate-log>div{display:grid;grid-template-columns:1fr 1.4fr auto;align-items:center;padding:8px;border:1px solid rgba(71,218,255,.2);background:#06101a}.spectate-log em{color:#72eeff}.spectate-dice{display:flex;gap:4px}.spectate-dice img{width:38px;height:38px;object-fit:cover}
+
+/* v5.51 NEXUS NETWORK tab-state + messaging polish */
 .network-tabs button{margin-top:0;position:relative;background:rgba(5,18,30,.88);border-color:rgba(67,201,255,.22);color:#789eb4;box-shadow:none;transition:.18s ease}
 .network-tabs button.active{color:#e9fcff;border-color:rgba(82,229,255,.72);background:linear-gradient(180deg,rgba(12,72,102,.88),rgba(4,24,40,.94));box-shadow:inset 0 0 20px rgba(55,218,255,.10),0 0 18px rgba(42,191,255,.10)}
 .network-tabs button.active:after{content:"";position:absolute;left:18%;right:18%;bottom:-1px;height:2px;background:#63efff;box-shadow:0 0 10px #63efff}
@@ -793,7 +922,12 @@
 .chat-compose input,.friend-search input{min-width:0}
 #chatCooldown{min-height:20px;margin-top:6px}
 @media(max-width:560px){.network-tabs{position:sticky;top:66px;z-index:8;background:rgba(2,7,13,.94);backdrop-filter:blur(8px);padding:5px 0}.network-tabs button{font-size:9px;letter-spacing:.03em}.chat-list{height:52vh}.chat-row{grid-template-columns:40px 78px 1fr}.chat-avatar img{width:38px;height:38px}.mini-title-img{width:72px;height:20px}.chat-bubble{font-size:12px}}
+
+/* v5.52 network anti-flicker */
 .network-tab{animation:none!important}.chat-avatar img,.mini-title-img,.live-match-card img,.friend-card img{animation:none!important;transition:none!important;backface-visibility:hidden;transform:translateZ(0)}
+
+
+/* v5.53 profile / title presentation polish */
 .arena-identity .player-title-badge{
   display:block!important;
   width:min(100%,360px);
@@ -814,6 +948,7 @@
   object-fit:contain;
   object-position:left center;
 }
+
 .title-option.image-title{grid-template-columns:1fr!important}
 .title-option.image-title .title-lock{
   position:absolute!important;
@@ -832,6 +967,7 @@
 }
 .title-option.image-title:not(.locked) .title-lock{display:none!important}
 .title-option.image-title.locked img{filter:grayscale(1) brightness(.24)!important;opacity:.72!important}
+
 #profileAction{padding:18px}
 #profileAction .compact-profile-card{
   position:relative;
@@ -891,6 +1027,9 @@
   .profile-name{font-size:20px}
   .profile-title-large{width:min(100%,210px)}
 }
+
+
+/* v5.54 title layout / transparency fit */
 .arena-identity .identity-data{
   min-width:0;
   display:flex;
@@ -959,6 +1098,8 @@
     height:60px!important;
   }
 }
+
+/* v5.55 title lock art + picker close alignment */
 #titlePicker .nexus-picker-head .picker-close,
 #avatarPicker .nexus-picker-head .picker-close{
   flex:0 0 40px!important;
@@ -1019,6 +1160,8 @@
     height:54px!important;
   }
 }
+
+/* v5.56 stable network/live + title artwork in battle UI */
 .battle-player-title-img{
   display:block;
   width:min(170px,100%);
@@ -1063,6 +1206,8 @@
   .prebattle-title-img{height:40px;width:min(170px,38vw)}
   .chinchiro-page #ccPlayers .battle-player-title-img{height:25px;width:min(120px,100%)}
 }
+
+/* v5.57 — FRIEND DM modal layout rebuild */
 .dm-box{
   position:fixed;
   z-index:760;
@@ -1219,6 +1364,8 @@
   .dm-box .chat-compose{grid-template-columns:minmax(0,1fr) 74px;padding:8px}
   .dm-box .chat-compose button{width:74px!important;min-width:74px!important}
 }
+
+/* v5.58 — art-driven battle/network navigation + title ordering + DM composer fix */
 .art-menu-root,.art-choice,.art-action-button,.network-art-menu button,.network-screen-nav button,.art-small-button,.profile-art-action,.friend-art-btn{
   appearance:none;border:0;background:transparent!important;box-shadow:none!important;padding:0!important;margin:0;display:block;overflow:visible;transform:none!important;
 }
@@ -1243,6 +1390,7 @@
 .art-action-button{width:min(560px,100%);margin:16px auto 0!important;cursor:pointer}
 .art-action-button img{display:block;width:100%;height:82px;object-fit:contain}
 .network-hub-card{padding:10px!important}.network-main-link img{width:min(420px,88%);height:170px;object-fit:contain}
+
 .network-stage-panel{padding:12px!important;min-height:420px}
 .network-home-head{text-align:center;margin:5px 0 12px}.network-home-head span{display:block;color:#48dfff;font-size:9px;letter-spacing:.24em;font-weight:900}.network-home-head strong{display:block;margin-top:3px;color:#dffaff;font-size:17px;letter-spacing:.1em}
 .network-art-menu{display:grid;grid-template-columns:1fr;gap:10px}
@@ -1266,6 +1414,8 @@
 .friend-state{font-size:10px;color:#78a9b8;letter-spacing:.08em}
 .live-match-card>span{display:flex!important;flex-direction:column;align-items:flex-end;gap:2px}
 .live-watch-art{display:block!important;width:105px!important;height:36px!important;object-fit:contain!important}
+
+/* every player identity reads: TITLE -> NAME */
 .battle-person{display:flex;flex-direction:column;align-items:center}
 .battle-person .battle-avatar-wrap{order:0}
 .battle-person .battle-player-title-img{order:1;margin:5px auto 1px!important}
@@ -1277,10 +1427,13 @@
 .prebattle-player>strong{order:2}
 .watch-vs>div{display:flex!important;flex-direction:column!important;align-items:center!important}
 .watch-vs>div>img:not(.watch-title){order:0}.watch-vs .watch-title{order:1;margin:4px 0 2px!important}.watch-vs>div>strong{order:2}
+
+/* DM: keep composer unmistakably visible above iPhone browser chrome */
 .dm-box{height:min(70dvh,650px)!important;grid-template-rows:auto minmax(0,1fr) auto auto!important;padding-bottom:max(0px,env(safe-area-inset-bottom))!important}
 .dm-box .dm-compose{display:grid!important;visibility:visible!important;opacity:1!important;position:relative!important;z-index:4!important;grid-template-columns:minmax(0,1fr) 78px!important;min-height:60px!important;background:#020b13!important;border-top:1px solid rgba(73,214,255,.28)!important}
 #dmInput{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;width:100%!important;height:44px!important;min-height:44px!important;color:#effcff!important;background:#071724!important;border:1px solid rgba(80,220,255,.35)!important;-webkit-appearance:none!important}
 #dmSend{display:grid!important;visibility:visible!important;opacity:1!important;width:78px!important;height:44px!important;min-width:78px!important;background:linear-gradient(135deg,#065875,#263aff)!important;color:white!important;border:1px solid rgba(95,230,255,.5)!important}
+
 @media(max-width:620px){
   .battle-hub{padding:8px!important}.art-menu-root>img{max-height:160px}.art-choice-grid.two{grid-template-columns:1fr}.art-game-grid{grid-template-columns:1fr!important}.art-choice img,.art-game-grid .quick-game-card img{aspect-ratio:3.15/1}.field-art-label{height:50px}.art-action-button img{height:66px}.network-main-link img{height:130px}
   .network-stage-panel{padding:7px!important}.network-screen-nav{grid-template-columns:68px repeat(3,minmax(0,1fr));gap:3px}.network-screen-nav img{height:28px}.network-page-title img{max-height:100px}.network-art-menu img{aspect-ratio:3.15/1}.global-compose{grid-template-columns:minmax(0,1fr) 76px!important}.art-small-button{width:76px!important;min-width:76px!important}.chat-id .mini-title-img{width:min(110px,34vw)!important;height:22px!important}.profile-art-action img,.friend-art-btn img{height:46px}
@@ -1288,6 +1441,8 @@
 }
 .request-title-img{display:block!important;width:min(150px,100%)!important;height:30px!important;object-fit:contain!important;margin:3px auto 1px!important;background:transparent!important;animation:none!important;transition:none!important}
 .request-player{display:flex!important;flex-direction:column!important;align-items:center!important}.request-player>img:not(.request-title-img){order:0}.request-player>span{order:1}.request-player>.request-title-img{order:2}.request-player>strong{order:3}.request-player>small{order:4}
+
+/* v5.59 — transparent art, tactile selection feedback, DM composer hard fix */
 .art-menu-root,.art-choice,.art-action-button,.network-art-menu button,.network-screen-nav button,.profile-art-action,.friend-art-btn,.art-small-button{
   background:transparent!important;
   border:0!important;
@@ -1324,6 +1479,8 @@ body.nexus-ui-shift:after{
   45%{opacity:1;transform:scaleY(1)}
   100%{opacity:0;transform:scaleY(1.35)}
 }
+
+/* remove the extra rectangular card feel now that artwork itself is transparent */
 .art-choice-grid,.art-game-grid,.network-art-menu{background:transparent!important}
 .art-choice,.network-art-menu button{padding:3px!important}
 .art-choice img,.network-art-menu img{
@@ -1341,6 +1498,8 @@ body.nexus-ui-shift:after{
 .art-game-grid .quick-game-card img{height:auto!important;aspect-ratio:auto!important;max-height:150px}
 .network-page-title img{height:auto!important;max-height:160px!important}
 .network-screen-nav img{object-fit:contain!important;background:transparent!important}
+
+/* DM: use a flex shell so the input row can never be squeezed out by message history */
 body.dm-open{overflow:hidden!important}
 .dm-box{
   display:flex!important;
@@ -1425,6 +1584,9 @@ body.dm-open{overflow:hidden!important}
   .dm-box .dm-compose{grid-template-columns:minmax(0,1fr) 72px!important;padding:8px 8px max(9px,env(safe-area-inset-bottom))!important}
   #dmSend{width:72px!important;min-width:72px!important}
 }
+
+
+/* v5.60 — iPhone-safe DM composer + persistent module audio */
 .dm-box{
   display:block!important;
   position:fixed!important;
@@ -1524,10 +1686,14 @@ body.dm-open{overflow:hidden!important}
   .dm-box .dm-compose{height:68px!important;min-height:68px!important;grid-template-columns:minmax(0,1fr) 72px!important;padding:9px 8px max(10px,env(safe-area-inset-bottom))!important}
   #dmSend{width:72px!important;min-width:72px!important}
 }
+
+/* v5.61 — unified artwork sizing / visual rhythm */
 :root{
   --nexus-art-ratio-wide:3.15/1;
   --nexus-art-ratio-card:3/1;
 }
+
+/* Same-row cards always occupy the same visual box, regardless of source image canvas. */
 .art-choice-grid.two{
   align-items:stretch;
 }
@@ -1546,6 +1712,8 @@ body.dm-open{overflow:hidden!important}
   object-fit:contain!important;
   object-position:center!important;
 }
+
+/* QUICK game trio: identical cards and identical artwork footprint. */
 .art-game-grid{
   align-items:stretch!important;
 }
@@ -1564,6 +1732,8 @@ body.dm-open{overflow:hidden!important}
   object-fit:contain!important;
   object-position:center!important;
 }
+
+/* NETWORK hub trio: keep all three banners on exactly the same stage. */
 .network-art-menu{
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:8px!important;
@@ -1585,6 +1755,8 @@ body.dm-open{overflow:hidden!important}
   object-fit:contain!important;
   object-position:center!important;
 }
+
+/* Network page switcher: equal button widths and equal artwork heights. */
 .network-screen-nav{
   grid-template-columns:74px repeat(3,minmax(0,1fr))!important;
   align-items:stretch!important;
@@ -1602,6 +1774,8 @@ body.dm-open{overflow:hidden!important}
   object-fit:contain!important;
   object-position:center!important;
 }
+
+/* Input label artwork: same baseline and same perceived height. */
 .art-input-grid>div{
   min-width:0;
 }
@@ -1612,6 +1786,8 @@ body.dm-open{overflow:hidden!important}
   object-fit:contain!important;
   object-position:left center!important;
 }
+
+/* Primary action artwork uses a single shared stage. */
 .art-action-button{
   display:flex!important;
   align-items:center!important;
@@ -1625,6 +1801,8 @@ body.dm-open{overflow:hidden!important}
   object-fit:contain!important;
   object-position:center!important;
 }
+
+/* Small artwork buttons also line up, even when text lengths differ. */
 .profile-art-action,.friend-art-btn,.art-small-button{
   display:flex!important;
   align-items:center!important;
@@ -1636,6 +1814,8 @@ body.dm-open{overflow:hidden!important}
   max-height:50px!important;
   object-fit:contain!important;
 }
+
+/* Title artwork shown above names: consistent footprint across chat / battle / watch. */
 .battle-player-title-img,.prebattle-title-img,.request-title-img,.watch-title,.mini-title-img{
   object-fit:contain!important;
   object-position:center!important;
@@ -1645,13 +1825,20 @@ body.dm-open{overflow:hidden!important}
   height:32px!important;
   max-height:32px!important;
 }
+
 @media(max-width:620px){
+  /* Keep paired mode cards visually identical even when stacked. */
   .art-choice-grid.two{grid-template-columns:1fr!important;gap:7px!important}
   .art-choice-grid.two .art-choice{aspect-ratio:3.35/1!important}
+
+  /* Three QUICK games remain one row on phone, compact but perfectly matched. */
   .art-game-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
   .art-game-grid .quick-game-card{aspect-ratio:1.55/1!important;padding:1px!important}
+
+  /* NETWORK options also remain one row, matching the requested menu hierarchy. */
   .network-art-menu{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:5px!important}
   .network-art-menu button{aspect-ratio:1.65/1!important;padding:1px!important}
+
   .network-screen-nav{grid-template-columns:64px repeat(3,minmax(0,1fr))!important;gap:3px!important}
   .network-screen-nav img{height:26px!important;max-height:26px!important}
   .field-art-label{height:46px!important;max-height:46px!important}
@@ -1660,6 +1847,8 @@ body.dm-open{overflow:hidden!important}
   .profile-art-action img,.friend-art-btn img{height:44px!important;max-height:44px!important}
   .battle-player-title-img,.prebattle-title-img,.request-title-img,.watch-title{height:28px!important;max-height:28px!important;width:min(124px,100%)!important}
 }
+
+/* v5.63 — emblem-based hierarchical HOME menu */
 .home-primary-menu{
   display:grid;
   grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
@@ -1701,6 +1890,7 @@ body.dm-open{overflow:hidden!important}
   transform:translateY(-2px) scale(1.012);
   filter:drop-shadow(0 0 25px rgba(50,211,255,.24)) brightness(1.04);
 }
+
 .battle-stage-panel{
   margin:0 0 16px!important;
   padding:12px!important;
@@ -1753,6 +1943,7 @@ body.dm-open{overflow:hidden!important}
   transform:scale(1.018);
   filter:drop-shadow(0 0 22px rgba(52,214,255,.24)) brightness(1.04);
 }
+
 @media(max-width:760px){
   .home-primary-menu{
     grid-template-columns:repeat(2,minmax(0,1fr));
@@ -1788,6 +1979,10 @@ body.dm-open{overflow:hidden!important}
     font-size:9px!important;
   }
 }
+
+
+/* v5.64 — equal battle-entry fields + direct NETWORK tabs + universal title/name order */
+/* Quick/custom entry fields: every input frame gets exactly the same footprint. */
 .battle-stage-panel .quick-entry-grid{
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
   gap:12px!important;
@@ -1818,6 +2013,8 @@ body.dm-open{overflow:hidden!important}
   height:76px!important;
   padding:0 14px!important;
 }
+
+/* NETWORK now opens straight into chat; the redundant full-page title art is gone. */
 .network-page-title{display:none!important}
 .network-screen-nav{
   position:sticky!important;
@@ -1846,6 +2043,8 @@ body.dm-open{overflow:hidden!important}
   opacity:1!important;
   filter:brightness(1.18) drop-shadow(0 0 9px rgba(62,220,255,.22))!important;
 }
+
+/* Title artwork must always be immediately above the player's name. */
 .chat-id,
 .battle-person,
 .prebattle-player,
@@ -1871,6 +2070,8 @@ body.dm-open{overflow:hidden!important}
 .request-player>.request-title-img{order:2!important}
 .request-player>strong{order:3!important}
 .request-player>small{order:4!important}
+
+/* Referee identity follows the same TITLE -> NAME rule. */
 .request-referee{
   display:flex!important;
   flex-direction:column!important;
@@ -1892,6 +2093,7 @@ body.dm-open{overflow:hidden!important}
   margin:1px auto!important;
 }
 .request-referee>strong{order:3!important}
+
 @media(max-width:620px){
   .battle-stage-panel .quick-entry-grid{
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
@@ -1922,6 +2124,9 @@ body.dm-open{overflow:hidden!important}
     max-height:42px!important;
   }
 }
+
+
+/* Custom battle referee: title directly above referee name as well. */
 .battle-referee-copy{
   display:flex!important;
   flex-direction:column!important;
@@ -1945,6 +2150,9 @@ body.dm-open{overflow:hidden!important}
 @media(max-width:620px){
   .battle-referee-copy .battle-referee-title{width:min(120px,100%)!important;height:26px!important}
 }
+
+
+/* v5.65 NETWORK mobile usability polish */
 .network-page .app-shell{
   padding-bottom:8px!important;
 }
@@ -1991,6 +2199,7 @@ body.dm-open{overflow:hidden!important}
   max-height:56px!important;
   object-fit:contain!important;
 }
+
 @media(max-width:620px){
   .network-page .app-shell{
     padding:8px 8px 4px!important;
@@ -2034,6 +2243,8 @@ body.dm-open{overflow:hidden!important}
     max-height:54px!important;
   }
 }
+
+/* v5.67 — NETWORK chat spacing / alignment refinement */
 .network-page .network-stage-panel{
   height:calc(100dvh - 84px)!important;
   min-height:0!important;
@@ -2093,6 +2304,7 @@ body.dm-open{overflow:hidden!important}
   border-left:0!important;
   line-height:1.1!important;
 }
+/* Generic button rules add margin-top; neutralize it so avatar top aligns with title top. */
 .network-page .chat-avatar{
   margin:0!important;
   align-self:start!important;
@@ -2104,6 +2316,7 @@ body.dm-open{overflow:hidden!important}
   padding-top:0!important;
   margin-top:0!important;
 }
+
 @media(max-width:620px){
   .network-page .network-stage-panel{
     height:calc(100dvh - 76px)!important;
@@ -2130,6 +2343,8 @@ body.dm-open{overflow:hidden!important}
     margin-top:8px!important;
   }
 }
+
+/* v5.68 — network asset swap (SEARCH / MESSAGE / SEND) + shared chat bubble art */
 .network-page .friend-search{
   grid-template-columns:minmax(0,1fr) clamp(138px,28vw,210px)!important;
   align-items:center!important;
@@ -2238,6 +2453,8 @@ body.dm-open{overflow:hidden!important}
     max-width:84%!important;
   }
 }
+
+/* v5.69 — smaller bubbles + safe DM modal fit */
 .network-page .chat-bubble,
 .network-page .dm-msg span{
   line-height:1.35!important;
@@ -2262,6 +2479,8 @@ body.dm-open{overflow:hidden!important}
 .network-page .chat-bubble small{
   margin-top:4px!important;
 }
+
+/* Make DM modal fully fit on small screens */
 .network-page .dm-box{
   box-sizing:border-box!important;
 }
@@ -2320,6 +2539,8 @@ body.dm-open{overflow:hidden!important}
     max-height:38px!important;
   }
 }
+
+/* v5.70 — compact chat time row + refreshed rule page copy */
 .network-page .chat-bubble{
   max-width:min(100%, 440px)!important;
   padding:8px 12px 9px 12px!important;
@@ -2356,6 +2577,8 @@ body.dm-open{overflow:hidden!important}
     font-size:9px!important;
   }
 }
+
+/* v5.71 — friend identity alignment + DM frame restore */
 .network-page #friendSearchResult .friend-card,
 .network-page #friendList .friend-card{
   grid-template-columns:52px minmax(0,1fr) auto!important;
@@ -2406,6 +2629,7 @@ body.dm-open{overflow:hidden!important}
   align-self:start!important;
   margin-top:1px!important;
 }
+
 .network-page .dm-box{
   border:1px solid rgba(69,223,248,.64)!important;
   box-shadow:0 20px 60px rgba(0,0,0,.72),0 0 24px rgba(29,205,255,.12),inset 0 0 0 1px rgba(71,211,255,.12)!important;
@@ -2445,6 +2669,8 @@ body.dm-open{overflow:hidden!important}
     height:22px!important;
   }
 }
+
+/* v5.72 — remove rule footer CTA + global chat bubble alignment tune */
 .network-page .chat-row{
   grid-template-columns:46px 108px minmax(0,1fr)!important;
   column-gap:10px!important;
@@ -2514,6 +2740,10 @@ body.dm-open{overflow:hidden!important}
     font-size:9px!important;
   }
 }
+
+/* v5.73 — root-cause fix for DM modal flow break + calmer global chat bubble layout */
+/* Cause: v5.71 changed DM children from absolute to relative, which broke the fixed modal layout.
+   Restore the intended positioned layout on the network page only. */
 .network-page .dm-box{
   display:block!important;
   position:fixed!important;
@@ -2591,6 +2821,8 @@ body.dm-open{overflow:hidden!important}
 .network-page #dmSend.art-small-button img{
   max-height:38px!important;
 }
+
+/* Global chat: keep time close to the text and reduce the stretched feeling on multi-line bubbles. */
 .network-page .chat-row{
   grid-template-columns:42px 102px minmax(0,1fr)!important;
   column-gap:8px!important;
@@ -2705,6 +2937,8 @@ body.dm-open{overflow:hidden!important}
     margin-left:7px!important;
   }
 }
+
+/* v5.74 — fix DM blank modal flow and align global-chat profile block to bubble center */
 .network-page #dmBox{
   pointer-events:auto!important;
 }
@@ -2729,6 +2963,8 @@ body.dm-open{overflow:hidden!important}
 .network-page .dm-messages .system-note{
   margin:10px 0!important;
 }
+
+/* Global chat row alignment */
 .network-page .chat-row{
   grid-template-columns:42px 98px minmax(0,1fr)!important;
   column-gap:8px!important;
@@ -2780,6 +3016,7 @@ body.dm-open{overflow:hidden!important}
   white-space:nowrap!important;
   font-size:10px!important;
 }
+
 @media(max-width:620px){
   .network-page .chat-row{
     grid-template-columns:42px 92px minmax(0,1fr)!important;
@@ -2804,6 +3041,8 @@ body.dm-open{overflow:hidden!important}
     font-size:9px!important;
   }
 }
+
+/* v5.75 — profile action simplification + tighter friend identity block */
 #profileAction .compact-profile-card{
   width:min(430px,calc(100vw - 34px))!important;
 }
@@ -2818,6 +3057,7 @@ body.dm-open{overflow:hidden!important}
   max-height:64px!important;
 }
 #profileAction #profileBattle{display:none!important}
+
 .network-page #friendSearchResult .friend-card,
 .network-page #friendList .friend-card{
   grid-template-columns:58px minmax(104px,132px) auto!important;
@@ -2860,6 +3100,7 @@ body.dm-open{overflow:hidden!important}
   align-self:center!important;
   margin-top:0!important;
 }
+
 @media(max-width:620px){
   #profileAction #profileFriend.profile-friend-only{
     width:min(244px,100%)!important;
@@ -2894,6 +3135,9 @@ body.dm-open{overflow:hidden!important}
     font-size:12px!important;
   }
 }
+
+
+/* v5.76 home ui asset swap */
 .art-connect-btn{
   width:min(100%,420px)!important;
   margin:18px auto 0!important;
@@ -2910,6 +3154,7 @@ body.dm-open{overflow:hidden!important}
   height:auto;
   pointer-events:none;
 }
+
 .asset-back-link,
 .asset-close,
 .picker-close.asset-close,
@@ -2944,6 +3189,7 @@ body.dm-open{overflow:hidden!important}
   flex:0 0 auto;
 }
 .asset-back-link img{width:100%;height:auto}
+
 #titlePicker .nexus-picker-head .picker-close.asset-close,
 #avatarPicker .nexus-picker-head .picker-close.asset-close{
   width:44px!important;
@@ -2954,6 +3200,7 @@ body.dm-open{overflow:hidden!important}
 }
 #titlePicker .nexus-picker-head .picker-close.asset-close::before,
 #avatarPicker .nexus-picker-head .picker-close.asset-close::before{display:none!important}
+
 #profileAction #profileClose.asset-close,
 #dmClose.asset-close,
 .nexus-settings-close.asset-close{
@@ -2964,6 +3211,7 @@ body.dm-open{overflow:hidden!important}
   font-size:0!important;
   color:transparent!important;
 }
+
 @media(max-width:560px){
   .art-connect-btn{width:min(100%,360px)!important}
   .asset-back-link{width:min(156px,40vw)}
@@ -2978,6 +3226,9 @@ body.dm-open{overflow:hidden!important}
     min-height:42px!important;
   }
 }
+
+
+/* v5.76.2 — HOME battle flow BACK art only */
 .battle-stage-panel .wizard-back.wizard-back-art{
   width:118px!important;
   min-width:118px!important;
@@ -3004,6 +3255,8 @@ body.dm-open{overflow:hidden!important}
     height:auto!important;
   }
 }
+
+/* v5.77 — HOME profile hierarchy + dedicated info label artwork */
 .home-profile-v577{
   grid-template-columns:1fr 1fr!important;
   min-height:0!important;
@@ -3107,6 +3360,8 @@ body.dm-open{overflow:hidden!important}
   z-index:2;
   font-size:clamp(56px,9vw,74px)!important;
 }
+
+/* Battle request is the primary CTA within HOME battle flow. */
 .battle-stage-panel .art-action-button{
   width:min(640px,100%)!important;
   min-height:92px!important;
@@ -3116,6 +3371,7 @@ body.dm-open{overflow:hidden!important}
   height:92px!important;
   max-height:92px!important;
 }
+
 @media(max-width:560px){
   .home-profile-v577 .arena-identity{
     padding:12px 12px 14px!important;
@@ -3166,6 +3422,8 @@ body.dm-open{overflow:hidden!important}
     max-height:78px!important;
   }
 }
+
+/* v5.78 — HOME profile alignment + matched stat HUD panels */
 .home-profile-v577 .arena-profile-row{
   grid-template-columns:148px minmax(0,1fr)!important;
   gap:16px!important;
@@ -3210,6 +3468,8 @@ body.dm-open{overflow:hidden!important}
   font-size:27px!important;
   line-height:1!important;
 }
+
+/* TOTAL POINT and RANK use the same visual/card scale. */
 .home-profile-v577 .arena-metric{
   position:relative!important;
   min-height:210px!important;
@@ -3284,6 +3544,7 @@ body.dm-open{overflow:hidden!important}
 .home-profile-v577 .arena-metric .points{font-size:58px!important}
 .home-profile-v577 .rank-display{font-size:66px!important}
 .home-profile-v577 .live-chip{position:relative!important;z-index:4!important}
+
 @media(max-width:560px){
   .home-profile-v577 .arena-profile-row{
     grid-template-columns:122px minmax(0,1fr)!important;
@@ -3333,9 +3594,13 @@ body.dm-open{overflow:hidden!important}
   .home-profile-v577 .arena-metric .points{font-size:46px!important}
   .home-profile-v577 .rank-display{font-size:54px!important}
 }
+
+/* v5.79 — mobile profile vertical alignment + single-layer stat HUD */
 .home-profile-v577 .identity-data{
   transform:translateY(10px)!important;
 }
+
+/* Remove the older orbit/grid layer so TOTAL POINT / RANK use one clean HUD background only. */
 .home-profile-v577 .arena-metric .metric-grid,
 .home-profile-v577 .rank-orbit{
   display:none!important;
@@ -3346,6 +3611,7 @@ body.dm-open{overflow:hidden!important}
 .home-profile-v577 .rank-block::after{
   opacity:.58!important;
 }
+
 @media(max-width:560px){
   .home-profile-v577 .identity-data{
     transform:translateY(9px)!important;
@@ -3357,6 +3623,8 @@ body.dm-open{overflow:hidden!important}
     opacity:.50!important;
   }
 }
+
+/* v5.80 — HIT & BLOW dedicated UI art first pass */
 .hitblow-page .hb-ui-art{
   display:block;
   width:100%;
@@ -3461,6 +3729,9 @@ body.dm-open{overflow:hidden!important}
   .hitblow-page .hb-history-sheet-head .hb-modal-close{width:82px!important;min-width:82px!important}
   .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,280px)!important}
 }
+
+
+/* v5.81 — HIT&BLOW compact result controls + JANKEN UI first pass */
 .hitblow-page .hb-history-open.hb-art-button{
   width:min(100%,238px)!important;
   margin-top:8px!important;
@@ -3488,6 +3759,9 @@ body.dm-open{overflow:hidden!important}
   .hitblow-page .hb-history-open.hb-art-button{width:min(100%,220px)!important}
   .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,236px)!important}
 }
+
+
+/* v5.82 — HIT & BLOW asset edge fix + keep art fully inside controls */
 .hitblow-page .hb-status.art-status,
 .hitblow-page .hb-lock.hb-art-button,
 .hitblow-page .hb-history-open.hb-art-button,
@@ -3509,12 +3783,16 @@ body.dm-open{overflow:hidden!important}
   object-position:center!important;
   overflow:visible!important;
 }
+/* Slightly smaller result/history controls; padded source art now includes its own safe transparent edge. */
 .hitblow-page .hb-history-open.hb-art-button{width:min(100%,214px)!important}
 .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,224px)!important}
 @media(max-width:620px){
   .hitblow-page .hb-history-open.hb-art-button{width:min(100%,202px)!important}
   .hitblow-page .battle-home-btn.hb-result-home{width:min(100%,214px)!important}
 }
+
+/* v5.83 — battle status restraint + CHINCHIRO role hierarchy */
+/* HIT & BLOW: top-right state is information, not a hero action. Restore the original compact HUD. */
 .hitblow-page .hb-status,
 .hitblow-page .hb-status.art-status{
   width:auto!important;height:auto!important;min-width:118px!important;min-height:38px!important;
@@ -3530,6 +3808,8 @@ body.dm-open{overflow:hidden!important}
   border:1px solid rgba(84,217,255,.38)!important;background:rgba(4,19,31,.92)!important;
   color:#bdefff!important;font-size:10px!important;font-weight:900!important;letter-spacing:.12em!important;
 }
+
+/* CHINCHIRO: re-roll is the one primary action worth emphasizing. */
 .chinchiro-page .cc-roll-btn{
   width:min(430px,92%)!important;min-height:58px!important;margin:16px auto 7px!important;
   border:1px solid rgba(83,226,255,.68)!important;
@@ -3539,6 +3819,8 @@ body.dm-open{overflow:hidden!important}
   font-size:16px!important;letter-spacing:.08em!important;
 }
 .chinchiro-page .cc-roll-btn span{font-size:10px!important;color:#d5f8ff!important}
+
+/* Replace the always-open role tables with one compact, readable trigger. */
 .chinchiro-page .cc-rank-panel,.chinchiro-page .cc-role-guide{display:none!important}
 .chinchiro-page .cc-role-open{
   position:relative;width:100%;margin:12px 0 0;padding:12px 48px 12px 14px;
@@ -3550,6 +3832,7 @@ body.dm-open{overflow:hidden!important}
 .chinchiro-page .cc-role-open>strong{grid-row:2;font-size:15px;letter-spacing:.06em}
 .chinchiro-page .cc-role-open>i{grid-column:2;grid-row:1/3;align-self:center;font:800 7px ui-monospace,monospace;font-style:normal;letter-spacing:.06em;color:#7899aa;text-align:right}
 .chinchiro-page .cc-role-open>b{position:absolute;right:15px;top:50%;transform:translateY(-50%);font-size:22px;color:#6fe8ff}
+
 .cc-role-modal{position:fixed;inset:0;z-index:7000;display:grid;place-items:center;padding:14px;background:rgba(0,3,9,.88);backdrop-filter:blur(7px);opacity:0;transition:opacity .18s ease}
 .cc-role-modal.show{opacity:1}
 .cc-role-sheet{width:min(620px,100%);border:1px solid rgba(77,217,255,.38);background:linear-gradient(180deg,#03111e,#020812);box-shadow:0 0 45px rgba(38,190,255,.12);padding:14px}
@@ -3567,6 +3850,8 @@ body.dm-open{overflow:hidden!important}
 .cc-role-sheet>p{margin:5px 2px 1px;color:#718d9d;font-size:9px;line-height:1.6}
 .chinchiro-page .cc-role-now.pinzoro,.chinchiro-page .cc-roll-status .pinzoro{color:#ffe071}.chinchiro-page .cc-role-now.shigoro,.chinchiro-page .cc-roll-status .shigoro{color:#74ebff}
 @media(max-width:620px){.chinchiro-page .cc-role-open>i{display:none}.chinchiro-page .cc-role-open{grid-template-columns:1fr;padding-right:46px}.cc-role-sheet{padding:12px}.cc-role-ladder>div{grid-template-columns:30px 1fr auto;padding:9px 8px}.cc-role-ladder b{font-size:12px}.cc-role-ladder em{font-size:8px}}
+
+/* v5.84 — CHINCHIRO role guide: NO ROLE rank + visual dice examples */
 .cc-role-ladder>div{
   grid-template-columns:30px 106px minmax(0,1fr) auto!important;
   grid-template-rows:1fr!important;
@@ -3660,6 +3945,8 @@ body.dm-open{overflow:hidden!important}
   .cc-role-copy b{font-size:11px!important}
   .cc-role-copy span{font-size:8px!important}
 }
+
+/* v5.85 — chinchiro art controls + reliable 10-second result return */
 .chinchiro-page .cc-art-btn{
   padding:0!important;
   border:0!important;
@@ -3720,6 +4007,10 @@ body.dm-open{overflow:hidden!important}
   .chinchiro-page .cc-role-close{width:46px!important;height:46px!important;min-width:46px!important;min-height:46px!important;flex-basis:46px!important}
   .chinchiro-page .cc-roll-count{font-size:9px!important;right:11.5%!important;bottom:15%!important}
 }
+
+/* v5.86 — request-title fix, battle identity layout, role modal centering */
+
+/* Incoming battle request: use the app's individual neon accept / reject assets. */
 .battle-request-actions{
   align-items:center!important;
 }
@@ -3745,6 +4036,8 @@ body.dm-open{overflow:hidden!important}
   opacity:.48!important;
   filter:saturate(.6)!important;
 }
+
+/* Chinchiro role list: lock the sheet to the true viewport centre on iPhone/Safari. */
 .cc-role-modal{
   display:block!important;
   overflow:auto!important;
@@ -3761,6 +4054,8 @@ body.dm-open{overflow:hidden!important}
   overflow:auto!important;
   margin:0!important;
 }
+
+/* Battle player cards: avatar beside a stacked TITLE -> NAME identity block. */
 .hitblow-page #hbPlayers .battle-person,
 .janken-page #jkPlayers .battle-person,
 .chinchiro-page #ccPlayers .battle-person,
@@ -3861,6 +4156,8 @@ body.dm-open{overflow:hidden!important}
 .match-page #battlePlayers .battle-person:last-child>small{
   grid-column:1!important;
 }
+
+/* Pre-battle VS cut-in uses the same avatar + stacked identity language. */
 .prebattle-player{
   display:grid!important;
   grid-template-columns:min(32vw,150px) minmax(92px,148px)!important;
@@ -3913,6 +4210,7 @@ body.dm-open{overflow:hidden!important}
 .prebattle-player.prebattle-b>strong{
   grid-column:1!important;
 }
+
 @media(max-width:620px){
   .battle-request-art-btn img{max-height:64px!important}
   .cc-role-modal .cc-role-sheet{
@@ -3980,6 +4278,9 @@ body.dm-open{overflow:hidden!important}
     font-size:15px!important;
   }
 }
+
+/* v5.87 — battle identity vertical balance + title-art frame cleanup */
+/* Battle cards: avatar height is split visually into TITLE (upper half) / NAME (lower half). */
 .hitblow-page #hbPlayers .battle-person,
 .janken-page #jkPlayers .battle-person,
 .chinchiro-page #ccPlayers .battle-person,
@@ -4021,6 +4322,8 @@ body.dm-open{overflow:hidden!important}
   align-self:start!important;
   padding-top:2px!important;
 }
+
+/* Incoming battle request: title artwork is artwork only — no box/frame around it. */
 .battle-request-overlay .request-title-img,
 .battle-request-overlay .request-referee-title{
   border:0!important;
@@ -4031,6 +4334,8 @@ body.dm-open{overflow:hidden!important}
   aspect-ratio:auto!important;
   padding:0!important;
 }
+
+/* Pre-battle intro: keep title/name beside avatar and split them evenly across avatar height. */
 .prebattle-player{
   display:grid!important;
   grid-template-rows:1fr 1fr!important;
@@ -4058,6 +4363,8 @@ body.dm-open{overflow:hidden!important}
   margin:0!important;
   line-height:1.1!important;
 }
+
+/* Prevent the old generic image rule from drawing a cyan square around title artwork. */
 .prebattle-player img.prebattle-title-img,
 .request-player img.request-title-img{
   width:min(145px,100%)!important;
@@ -4065,6 +4372,7 @@ body.dm-open{overflow:hidden!important}
   max-height:40px!important;
   object-fit:contain!important;
 }
+
 @media(max-width:620px){
   .hitblow-page #hbPlayers .battle-player-title-img,
   .janken-page #jkPlayers .battle-player-title-img,
@@ -4089,6 +4397,8 @@ body.dm-open{overflow:hidden!important}
     max-height:28px!important;
   }
 }
+
+/* v5.88 — pre-battle identity cluster: larger title/name, tighter vertical spacing */
 .prebattle-player{
   grid-template-rows:auto auto!important;
   align-content:center!important;
@@ -4124,6 +4434,8 @@ body.dm-open{overflow:hidden!important}
     font-size:19px!important;
   }
 }
+
+/* v5.89 — experimental character cut-in for every pre-battle VS intro */
 .prebattle-intro{
   background:
     linear-gradient(165deg,rgba(0,7,14,.98),rgba(1,5,12,.94) 42%,rgba(3,8,20,.98)),
@@ -4147,6 +4459,7 @@ body.dm-open{overflow:hidden!important}
 .prebattle-intro::after{bottom:16vh;transform:skewY(-7deg) translateX(15vw)}
 .prebattle-intro.show::before{animation:vsStreakLeft .62s cubic-bezier(.2,.8,.2,1) both}
 .prebattle-intro.show::after{animation:vsStreakRight .62s cubic-bezier(.2,.8,.2,1) .08s both}
+
 .prebattle-player{
   width:min(48vw,430px)!important;
   grid-template-columns:min(28vw,190px) minmax(118px,190px)!important;
@@ -4204,6 +4517,7 @@ body.dm-open{overflow:hidden!important}
   text-shadow:0 0 18px #4fdcff,0 0 46px #713fff,0 0 90px rgba(255,255,255,.25)!important;
 }
 .prebattle-intro.show .prebattle-vs{animation:vsPunch .44s cubic-bezier(.2,1.45,.25,1) .34s both}
+
 @keyframes cutinFromLeft{
   0%{opacity:0;filter:blur(8px) brightness(1.6);transform:translateX(-42vw) skewX(-5deg) scale(.92)}
   62%{opacity:1;filter:blur(0) brightness(1.22);transform:translateX(2vw) skewX(-2deg) scale(1.015)}
@@ -4227,6 +4541,7 @@ body.dm-open{overflow:hidden!important}
   0%{opacity:0;transform:skewY(-7deg) translateX(22vw)}
   100%{opacity:1;transform:skewY(-7deg) translateX(0)}
 }
+
 @media(max-width:620px){
   .prebattle-player{
     width:58vw!important;
@@ -4251,6 +4566,8 @@ body.dm-open{overflow:hidden!important}
   .prebattle-a{left:3vw!important;top:13vh!important}
   .prebattle-b{right:3vw!important;bottom:13vh!important}
 }
+
+/* v5.90 — individual character cut-in art for avatar-01 / avatar-02 */
 .prebattle-player.prebattle-art-player{
   display:block!important;
   width:min(92vw,920px)!important;
@@ -4331,6 +4648,7 @@ body.dm-open{overflow:hidden!important}
 }
 .prebattle-intro.show .prebattle-art-player.prebattle-a{animation:cutinFromLeft .78s cubic-bezier(.16,.84,.18,1) both}
 .prebattle-intro.show .prebattle-art-player.prebattle-b{animation:cutinFromRight .78s cubic-bezier(.16,.84,.18,1) .10s both}
+
 @media(max-width:620px){
   .prebattle-player.prebattle-art-player{
     width:98vw!important;
@@ -4357,6 +4675,8 @@ body.dm-open{overflow:hidden!important}
     font-size:22px!important;
   }
 }
+
+/* v5.91 — lock cut-in composition to the approved top/bottom art layout */
 .prebattle-intro::before,
 .prebattle-intro::after{
   z-index:0!important;
@@ -4367,6 +4687,7 @@ body.dm-open{overflow:hidden!important}
 .prebattle-vs{
   z-index:5!important;
 }
+
 .prebattle-player.prebattle-art-player{
   width:min(94vw,920px)!important;
   opacity:1;
@@ -4412,6 +4733,7 @@ body.dm-open{overflow:hidden!important}
 .prebattle-player.prebattle-art-player strong{
   font-size:clamp(26px,5.2vw,42px)!important;
 }
+
 @media(max-width:620px){
   .prebattle-player.prebattle-art-player{
     width:96vw!important;
@@ -4445,6 +4767,8 @@ body.dm-open{overflow:hidden!important}
     font-size:23px!important;
   }
 }
+
+/* v5.92 — tighten VS cut-in composition to the approved close-stacked layout */
 .prebattle-player.prebattle-art-player{
   width:min(98vw,980px)!important;
   max-width:none!important;
@@ -4495,6 +4819,7 @@ body.dm-open{overflow:hidden!important}
   top:50%!important;
   font-size:clamp(82px,21vw,170px)!important;
 }
+
 @media(max-width:620px){
   .prebattle-player.prebattle-art-player{
     width:102vw!important;
@@ -4533,6 +4858,8 @@ body.dm-open{overflow:hidden!important}
     font-size:clamp(78px,22vw,116px)!important;
   }
 }
+
+/* v5.93 — remove rainbow backing panels and lock the cut-ins into one tight VS stack */
 .prebattle-intro::before,
 .prebattle-intro::after{
   display:none!important;
@@ -4541,6 +4868,8 @@ body.dm-open{overflow:hidden!important}
   border:0!important;
   opacity:0!important;
 }
+
+/* Keep the actual character art as the visual panels. */
 .prebattle-player.prebattle-art-player{
   background:transparent!important;
   border:0!important;
@@ -4573,6 +4902,8 @@ body.dm-open{overflow:hidden!important}
   top:50.5%!important;
   z-index:7!important;
 }
+
+/* Preserve centering during the entrance animation; old keyframes dropped translateX(-50%). */
 .prebattle-intro.show .prebattle-art-player.prebattle-a{
   animation:cutinCenteredLeft .78s cubic-bezier(.16,.84,.18,1) both!important;
 }
@@ -4589,6 +4920,8 @@ body.dm-open{overflow:hidden!important}
   62%{opacity:1;filter:blur(0) brightness(1.12);transform:translateX(calc(-50% - 1.5vw)) skewX(1deg) scale(1.01)}
   100%{opacity:1;filter:none;transform:translateX(-50%) skewX(0) scale(1)}
 }
+
+/* Identity sits inside each artwork's intentional empty side. */
 .prebattle-player.prebattle-art-player .prebattle-meta{
   top:47%!important;
   transform:translateY(-50%)!important;
@@ -4612,6 +4945,7 @@ body.dm-open{overflow:hidden!important}
   font-size:clamp(28px,5.4vw,43px)!important;
   line-height:.98!important;
 }
+
 @media(max-width:620px){
   .prebattle-player.prebattle-art-player.prebattle-a{
     top:25.5vh!important;
@@ -4640,6 +4974,8 @@ body.dm-open{overflow:hidden!important}
     font-size:25px!important;
   }
 }
+
+/* v5.94 — test: make top/bottom VS cut-ins flow in the same / direction */
 .prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
   transform:rotate(-6.5deg) scale(1.025)!important;
   transform-origin:50% 50%!important;
@@ -4652,6 +4988,8 @@ body.dm-open{overflow:hidden!important}
     transform:rotate(-6.5deg) scale(1.025)!important;
   }
 }
+
+/* v5.95 — raise the lower/blue cut-in while keeping the v5.94 parallel slash composition */
 .prebattle-player.prebattle-art-player.prebattle-b{
   top:54.5vh!important;
 }
@@ -4660,6 +4998,8 @@ body.dm-open{overflow:hidden!important}
     top:54.2vh!important;
   }
 }
+
+/* v5.96 — reduce lower cut-in rotation; keep v5.95 vertical position */
 .prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
   transform:rotate(-3deg) scale(1.015)!important;
   transform-origin:50% 50%!important;
@@ -4669,6 +5009,8 @@ body.dm-open{overflow:hidden!important}
     transform:rotate(-3deg) scale(1.015)!important;
   }
 }
+
+/* v5.97 — flat cut-in angle + raise lower/blue cut-in */
 .prebattle-player.prebattle-art-player .prebattle-cutart{
   transform:rotate(0deg) scale(1.015)!important;
   transform-origin:50% 50%!important;
@@ -4684,6 +5026,8 @@ body.dm-open{overflow:hidden!important}
     top:52.5vh!important;
   }
 }
+
+/* v5.98 — blue lower cut-in asset swap; render the artwork at its native angle */
 .prebattle-player.prebattle-art-player.prebattle-b .prebattle-cutart{
   transform:rotate(0deg) scale(1.015)!important;
   transform-origin:50% 50%!important;
@@ -4693,11 +5037,15 @@ body.dm-open{overflow:hidden!important}
     transform:rotate(0deg) scale(1.015)!important;
   }
 }
+
+/* v6.00 — approved cut-in swap + identity placement tuning */
+/* Upper slot: title/name slightly toward upper-left. */
 .prebattle-player.prebattle-art-player.prebattle-a .prebattle-meta{
   top:41.5%!important;
   right:13.5%!important;
   left:auto!important;
 }
+/* Lower slot: title/name farther toward lower-right. */
 .prebattle-player.prebattle-art-player.prebattle-b .prebattle-meta{
   top:57%!important;
   left:15.5%!important;
@@ -4713,6 +5061,8 @@ body.dm-open{overflow:hidden!important}
     left:15%!important;
   }
 }
+
+/* v6.01 — staged VS entrance: upper from left -> lower from right -> VS punch */
 .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a{
   animation:cutinStageFromLeft .46s cubic-bezier(.14,.88,.22,1) 0s both!important;
 }
@@ -4746,6 +5096,8 @@ body.dm-open{overflow:hidden!important}
     animation-delay:0s!important;
   }
 }
+
+/* v6.02 — VS intro: show the complete composition at once. No staged movement. */
 .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a,
 .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-b{
   animation:none!important;
@@ -4759,44 +5111,57 @@ body.dm-open{overflow:hidden!important}
   filter:none!important;
   transform:translate(-50%,-50%) scale(1)!important;
 }
-.hitblow-page .battle-person strong,
-.janken-page .battle-person strong,
-.chinchiro-page .battle-person strong,
-.match-page .battle-person strong,
-.prebattle-player strong,
-.prebattle-player.prebattle-art-player strong{
-  display:block!important;
-  min-width:0!important;
-  max-width:100%!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  word-break:keep-all!important;
-  overflow-wrap:normal!important;
-}
-.hitblow-page.nexus-ui-shift::after,
-.janken-page.nexus-ui-shift::after,
-.chinchiro-page.nexus-ui-shift::after,
-.match-page.nexus-ui-shift::after,
-.hitblow-page.nexus-ui-shift:after,
-.janken-page.nexus-ui-shift:after,
-.chinchiro-page.nexus-ui-shift:after,
-.match-page.nexus-ui-shift:after{
-  display:none!important;
-  content:none!important;
+
+
+/* v6.07 — game screen lightweight / anti-flicker */
+.hitblow-page .cyber-bg,
+.janken-page .cyber-bg,
+.chinchiro-page .cyber-bg,
+.match-page .cyber-bg,
+.hitblow-page .scanline,
+.janken-page .scanline,
+.chinchiro-page .scanline,
+.match-page .scanline{
   animation:none!important;
+  transform:none!important;
+  will-change:auto!important;
+}
+.hitblow-page .cyber-bg::before,
+.hitblow-page .cyber-bg::after,
+.janken-page .cyber-bg::before,
+.janken-page .cyber-bg::after,
+.chinchiro-page .cyber-bg::before,
+.chinchiro-page .cyber-bg::after,
+.match-page .cyber-bg::before,
+.match-page .cyber-bg::after{
+  animation:none!important;
+}
+.hitblow-page .topbar,
+.janken-page .topbar,
+.chinchiro-page .topbar,
+.match-page .topbar,
+.hitblow-page .bottom-arena-nav,
+.janken-page .bottom-arena-nav,
+.chinchiro-page .bottom-arena-nav,
+.match-page .bottom-arena-nav{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
 }
 .hitblow-page .prebattle-intro,
 .janken-page .prebattle-intro,
 .chinchiro-page .prebattle-intro,
-.match-page .prebattle-intro,
-.hitblow-page .battle-person,
-.janken-page .battle-person,
-.chinchiro-page .battle-person,
-.match-page .battle-person{
+.match-page .prebattle-intro{
+  contain:layout paint!important;
+  isolation:isolate!important;
+}
+.hitblow-page .prebattle-cutart,
+.janken-page .prebattle-cutart,
+.chinchiro-page .prebattle-cutart,
+.match-page .prebattle-cutart{
   backface-visibility:hidden!important;
   -webkit-backface-visibility:hidden!important;
-  transform-style:flat!important;
+  will-change:auto!important;
+  image-rendering:auto!important;
 }
 .hitblow-page .prebattle-intro *,
 .janken-page .prebattle-intro *,
@@ -4814,4 +5179,12 @@ body.dm-open{overflow:hidden!important}
 .match-page .prebattle-intro.show .prebattle-vs{
   animation:none!important;
   filter:none!important;
+}
+@media(max-width:620px){
+  .hitblow-page .system-panel,
+  .janken-page .system-panel,
+  .chinchiro-page .system-panel,
+  .match-page .system-panel{
+    box-shadow:0 10px 28px rgba(0,0,0,.28)!important;
+  }
 }
