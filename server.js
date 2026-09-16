@@ -1070,7 +1070,7 @@ app.get(['/hit-blow.html','/janken.html','/chinchiro.html','/match.html'], (req,
 app.get('/cutin-assets/:file', (req,res,next)=>{
   const file = String(req.params.file||'');
   if(!/^avatar-(0[1-9]|1[0-2])-(top|bottom)\.webp$/.test(file)) return res.sendStatus(404);
-  res.set('Cache-Control','no-store, no-cache, must-revalidate');
+  res.set('Cache-Control','public, max-age=31536000, immutable');
   res.sendFile(path.join(__dirname,file), err=>{ if(err) next(err); });
 });
 

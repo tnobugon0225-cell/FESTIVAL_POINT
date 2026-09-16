@@ -5136,3 +5136,11 @@ body.dm-open{overflow:hidden!important}
     top:50%!important;
   }
 }
+
+
+/* v6.14 — VS/lower slot fixed; only upper cut-in moves upward. */
+@media(max-width:620px){
+ .prebattle-player.prebattle-art-player.prebattle-a{top:calc(50% - 52.6vw)!important;}
+ .prebattle-player.prebattle-art-player.prebattle-b{top:calc(50% + 3vw)!important;}
+ .prebattle-vs{top:50%!important;}
+}
