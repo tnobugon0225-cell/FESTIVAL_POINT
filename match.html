@@ -1,5 +1,13 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02050b"><title>BATTLE | NEXUS:ZERO</title><link rel="stylesheet" href="/style.css"><script src="/bgm.js" defer></script><script src="/ui-fx.js" defer></script></head>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02050b"><title>BATTLE | NEXUS:ZERO</title><link rel="stylesheet" href="/style.css?v=6.19"><script src="/bgm.js" defer></script><script src="/ui-fx.js" defer></script><style id="v619-cutin-position-fix">
+@media(max-width:620px){
+  .prebattle-intro .prebattle-player.prebattle-art-player.prebattle-a,
+  .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a{
+    top:15vh!important;
+    bottom:auto!important;
+  }
+}
+</style></head>
 <body class="player-page match-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
 <nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><span class="match-live-nav">BATTLE LINK</span></div></nav>
@@ -36,11 +44,8 @@ function startResultReturn(matchId){if(resultReturnMatchId===matchId&&resultCoun
 function setState(cls,kicker,title,subtitle,badge){const s=$('#matchScreen');s.className='match-screen '+cls;$('#stateKicker').textContent=kicker;$('#stateTitle').textContent=title;$('#stateSubtitle').textContent=subtitle;$('#stateBadge').textContent=badge}
 function approval(label,ok){return `<span class="approval-chip ${ok?'approved':'waiting'}">${label} ${ok?'✓':'…'}</span>`}
 
-function cutinArtSrc(p,side){const k=String(p?.avatarKey||'');if(/^avatar-(0[1-9]|1[0-2])$/.test(k))return `/cutin-assets/${k}-${side}.webp?v=614`;return ''}
-const cutinWarmCache=new Map();
-function warmCutin(src){if(!src||cutinWarmCache.has(src))return;const im=new Image();im.decoding='async';try{im.fetchPriority='high'}catch(e){};im.src=src;cutinWarmCache.set(src,im)}
-function preloadBattleCutins(m){if(!m)return;warmCutin(cutinArtSrc(m.challenger,'top'));warmCutin(cutinArtSrc(m.opponent,'bottom'))}
-function cutinPlayer(p,side){const art=cutinArtSrc(p,side);const cls=side==='top'?'prebattle-a':'prebattle-b';if(art)return `<div class="prebattle-player ${cls} prebattle-art-player"><img class="prebattle-cutart" src="${art}" alt="" loading="eager" decoding="async" fetchpriority="high"><div class="prebattle-meta"><img class="prebattle-title-img" src="${titleImage(p)}" alt="${esc(titleName(p))}"><strong>${esc(p.name)}</strong></div></div>`;return `<div class="prebattle-player ${cls}"><img src="${avatarSrc(p.avatarKey)}"><img class="prebattle-title-img" src="${titleImage(p)}" alt="${esc(titleName(p))}"><strong>${esc(p.name)}</strong></div>`}
+function cutinArtSrc(p,side){const k=String(p?.avatarKey||'');if(k==='avatar-01'||k==='avatar-02')return `/ui/cutins/${k}-${side}.webp`;return ''}
+function cutinPlayer(p,side){const art=cutinArtSrc(p,side);const cls=side==='top'?'prebattle-a':'prebattle-b';if(art)return `<div class="prebattle-player ${cls} prebattle-art-player"><img class="prebattle-cutart" src="${art}" alt=""><div class="prebattle-meta"><img class="prebattle-title-img" src="${titleImage(p)}" alt="${esc(titleName(p))}"><strong>${esc(p.name)}</strong></div></div>`;return `<div class="prebattle-player ${cls}"><img src="${avatarSrc(p.avatarKey)}"><img class="prebattle-title-img" src="${titleImage(p)}" alt="${esc(titleName(p))}"><strong>${esc(p.name)}</strong></div>`}
 function showBattleIntro(m,onDone){if(introRunning)return;const key=`nexusIntro:custom:${m.id}`;if(sessionStorage.getItem(key)==='1'){onDone();return}sessionStorage.setItem(key,'1');introRunning=true;const o=document.createElement('div');o.className='prebattle-intro';o.innerHTML=`${cutinPlayer(m.challenger,'top')}<div class="prebattle-vs">VS</div>${cutinPlayer(m.opponent,'bottom')}`;document.body.appendChild(o);setTimeout(()=>o.classList.add('show'),30);setTimeout(()=>{o.classList.remove('show');setTimeout(()=>{o.remove();introRunning=false;onDone()},330)},5200)}
 async function load(){
  try{

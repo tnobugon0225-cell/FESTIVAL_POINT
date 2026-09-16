@@ -5112,12 +5112,11 @@ body.dm-open{overflow:hidden!important}
   transform:translate(-50%,-50%) scale(1)!important;
 }
 
-/* v6.17 — canonical mobile VS spacing fix.
-   IMPORTANT: /style.css is served from public/style.css by express.static().
-   Keep VS and lower cut-in exactly where they are; move only upper cut-in upward. */
+/* v6.19 — mobile upper cut-in hard position. Lower cut-in and VS intentionally untouched. */
 @media(max-width:620px){
   .prebattle-intro .prebattle-player.prebattle-art-player.prebattle-a,
   .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a{
-    top:calc(50% - 59.6vw)!important;
+    top:15vh!important;
+    bottom:auto!important;
   }
 }
