@@ -5144,3 +5144,10 @@ body.dm-open{overflow:hidden!important}
  .prebattle-player.prebattle-art-player.prebattle-b{top:calc(50% + 3vw)!important;}
  .prebattle-vs{top:50%!important;}
 }
+
+/* v6.15 — upper cut-in clearance tuning only. VS and lower slot stay locked. */
+@media(max-width:620px){
+  .prebattle-player.prebattle-art-player.prebattle-a{
+    top:calc(50% - 59.6vw)!important;
+  }
+}
