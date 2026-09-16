@@ -5112,79 +5112,27 @@ body.dm-open{overflow:hidden!important}
   transform:translate(-50%,-50%) scale(1)!important;
 }
 
-
-/* v6.07 — game screen lightweight / anti-flicker */
-.hitblow-page .cyber-bg,
-.janken-page .cyber-bg,
-.chinchiro-page .cyber-bg,
-.match-page .cyber-bg,
-.hitblow-page .scanline,
-.janken-page .scanline,
-.chinchiro-page .scanline,
-.match-page .scanline{
-  animation:none!important;
-  transform:none!important;
-  will-change:auto!important;
-}
-.hitblow-page .cyber-bg::before,
-.hitblow-page .cyber-bg::after,
-.janken-page .cyber-bg::before,
-.janken-page .cyber-bg::after,
-.chinchiro-page .cyber-bg::before,
-.chinchiro-page .cyber-bg::after,
-.match-page .cyber-bg::before,
-.match-page .cyber-bg::after{
-  animation:none!important;
-}
-.hitblow-page .topbar,
-.janken-page .topbar,
-.chinchiro-page .topbar,
-.match-page .topbar,
-.hitblow-page .bottom-arena-nav,
-.janken-page .bottom-arena-nav,
-.chinchiro-page .bottom-arena-nav,
-.match-page .bottom-arena-nav{
-  -webkit-backdrop-filter:none!important;
-  backdrop-filter:none!important;
-}
-.hitblow-page .prebattle-intro,
-.janken-page .prebattle-intro,
-.chinchiro-page .prebattle-intro,
-.match-page .prebattle-intro{
-  contain:layout paint!important;
-  isolation:isolate!important;
-}
-.hitblow-page .prebattle-cutart,
-.janken-page .prebattle-cutart,
-.chinchiro-page .prebattle-cutart,
-.match-page .prebattle-cutart{
-  backface-visibility:hidden!important;
-  -webkit-backface-visibility:hidden!important;
-  will-change:auto!important;
-  image-rendering:auto!important;
-}
-.hitblow-page .prebattle-intro *,
-.janken-page .prebattle-intro *,
-.chinchiro-page .prebattle-intro *,
-.match-page .prebattle-intro *{
-  transition:none!important;
-}
-.hitblow-page .prebattle-intro.show .prebattle-player,
-.janken-page .prebattle-intro.show .prebattle-player,
-.chinchiro-page .prebattle-intro.show .prebattle-player,
-.match-page .prebattle-intro.show .prebattle-player,
-.hitblow-page .prebattle-intro.show .prebattle-vs,
-.janken-page .prebattle-intro.show .prebattle-vs,
-.chinchiro-page .prebattle-intro.show .prebattle-vs,
-.match-page .prebattle-intro.show .prebattle-vs{
-  animation:none!important;
-  filter:none!important;
-}
+/* v6.13 — symmetric cut-in spacing around the VS center. Images/assets untouched. */
 @media(max-width:620px){
-  .hitblow-page .system-panel,
-  .janken-page .system-panel,
-  .chinchiro-page .system-panel,
-  .match-page .system-panel{
-    box-shadow:0 10px 28px rgba(0,0,0,.28)!important;
+  /* Both slots use the same rendered width so their geometry is comparable. */
+  .prebattle-player.prebattle-art-player.prebattle-a,
+  .prebattle-player.prebattle-art-player.prebattle-b{
+    width:104vw!important;
+  }
+
+  /*
+    Anchor both cut-ins to the VS center instead of unrelated vh values.
+    Approved artwork is ~2.5:1, so 104vw renders at ~41.6vw tall.
+    3vw is reserved on each side of the VS center.
+  */
+  .prebattle-player.prebattle-art-player.prebattle-a{
+    top:calc(50% - 44.6vw)!important;
+  }
+  .prebattle-player.prebattle-art-player.prebattle-b{
+    top:calc(50% + 3vw)!important;
+  }
+
+  .prebattle-vs{
+    top:50%!important;
   }
 }
