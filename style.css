@@ -5112,13 +5112,12 @@ body.dm-open{overflow:hidden!important}
   transform:translate(-50%,-50%) scale(1)!important;
 }
 
-/* v6.22 — position-only correction.
-   Keep VS and lower cut-in exactly where v6.21 places them; move only upper cut-in upward. */
-.prebattle-player.prebattle-art-player.prebattle-a{
-  top:20.5vh!important;
-}
-@media(max-width:620px){
-  .prebattle-player.prebattle-art-player.prebattle-a{
+/* v6.23 — authoritative mobile upper cut-in position.
+   /style.css is served from public/style.css. VS and lower slot remain untouched. */
+@media (max-width:620px){
+  .prebattle-intro .prebattle-player.prebattle-art-player.prebattle-a,
+  .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a{
     top:20.5vh!important;
+    bottom:auto!important;
   }
 }
