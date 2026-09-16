@@ -1060,11 +1060,9 @@ app.get('/api/live-matches',requireUser,async(req,res,next)=>{try{const q=await 
 app.get('/api/spectate/quick/:id',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const r=await query(`${quickSelect} WHERE q.id=$1`,[id]);if(!r.rows[0])return res.status(404).json({error:'試合が見つかりません'});const m=publicQuickMatch(r.rows[0],0);const out={match:m,guesses:[],rounds:[],rolls:[]};if(m.gameType==='hitblow'){const g=await query('SELECT player_id,player_name,turn_no,guess,hits,blows,created_at FROM hit_blow_guesses WHERE match_id=$1 ORDER BY id',[id]);out.guesses=g.rows.map(x=>({...x,player_id:Number(x.player_id),turn_no:Number(x.turn_no),hits:Number(x.hits),blows:Number(x.blows)}))}else if(m.gameType==='janken'){const j=await query('SELECT round_no,challenger_choice,opponent_choice,winner_user_id,result,created_at FROM janken_rounds WHERE match_id=$1 ORDER BY id',[id]);out.rounds=j.rows.map(x=>({...x,round_no:Number(x.round_no),winner_user_id:x.winner_user_id?Number(x.winner_user_id):null}))}else if(m.gameType==='chinchiro'){const c=await query('SELECT round_no,player_id,player_name,attempt_no,dice,role,role_value,created_at FROM chinchiro_rolls WHERE match_id=$1 ORDER BY id',[id]);out.rolls=c.rows.map(x=>({...x,round_no:Number(x.round_no),player_id:Number(x.player_id),attempt_no:Number(x.attempt_no),role_value:Number(x.role_value)}))}res.json(out)}catch(e){next(e)}});
 
 app.use(express.static(path.join(__dirname,'public'),{
-  etag:false,
-  lastModified:false,
-  maxAge:0,
+  etag:false,lastModified:false,maxAge:0,
   setHeaders(res){
-    res.set('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.set('Cache-Control','no-store, no-cache, must-revalidate');
     res.set('Pragma','no-cache');
     res.set('Expires','0');
   }
