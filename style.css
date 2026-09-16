@@ -5112,11 +5112,10 @@ body.dm-open{overflow:hidden!important}
   transform:translate(-50%,-50%) scale(1)!important;
 }
 
-/* v6.19 — mobile upper cut-in hard position. Lower cut-in and VS intentionally untouched. */
+
+/* v6.20 — definitive mobile VS geometry. Keep VS/lower locked; move upper only. */
 @media(max-width:620px){
-  .prebattle-intro .prebattle-player.prebattle-art-player.prebattle-a,
-  .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a{
-    top:15vh!important;
-    bottom:auto!important;
+  .prebattle-player.prebattle-art-player.prebattle-a{
+    top:22vh!important;
   }
 }
