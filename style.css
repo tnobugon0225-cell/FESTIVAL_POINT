@@ -5112,16 +5112,12 @@ body.dm-open{overflow:hidden!important}
   transform:translate(-50%,-50%) scale(1)!important;
 }
 
-/* v6.16 — live stylesheet fix: /style.css is served from public/style.css.
-   Keep VS/lower locked; move only the upper cut-in upward on mobile. */
+/* v6.17 — canonical mobile VS spacing fix.
+   IMPORTANT: /style.css is served from public/style.css by express.static().
+   Keep VS and lower cut-in exactly where they are; move only upper cut-in upward. */
 @media(max-width:620px){
-  .prebattle-player.prebattle-art-player.prebattle-a{
+  .prebattle-intro .prebattle-player.prebattle-art-player.prebattle-a,
+  .prebattle-intro.show .prebattle-player.prebattle-art-player.prebattle-a{
     top:calc(50% - 59.6vw)!important;
-  }
-  .prebattle-player.prebattle-art-player.prebattle-b{
-    top:calc(50% + 3vw)!important;
-  }
-  .prebattle-vs{
-    top:50%!important;
   }
 }
