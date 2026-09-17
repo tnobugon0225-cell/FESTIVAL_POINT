@@ -771,6 +771,26 @@ app.post('/api/quick-matches',requireUser,async(req,res,next)=>{
   }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });
 
+app.post('/api/quick-matches/:id/rematch',requireUser,async(req,res,next)=>{
+  const id=Number(req.params.id);const client=await pool.connect();
+  try{await client.query('BEGIN');
+    const old=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!old){await client.query('ROLLBACK');return res.status(404).json({error:'対戦が見つかりません'})}
+    if(old.status!=='completed'){await client.query('ROLLBACK');return res.status(409).json({error:'対戦終了後に再戦できます'})}
+    const me=Number(req.userId),a=Number(old.challenger_id),b=Number(old.opponent_id);
+    if(me!==a&&me!==b){await client.query('ROLLBACK');return res.status(403).json({error:'この対戦には参加していません'})}
+    const opponentId=me===a?b:a;
+    for(const uid of [me,opponentId]){if(await activeMatchForUser(uid,client)){await client.query('ROLLBACK');return res.status(409).json({error:'どちらかのプレイヤーに進行中のマッチがあります'})}}
+    const meRow=(await client.query('SELECT id,username,public_code,points FROM users WHERE id=$1 FOR UPDATE',[me])).rows[0];
+    const opRow=(await client.query('SELECT id,username,public_code,points FROM users WHERE id=$1 FOR UPDATE',[opponentId])).rows[0];
+    if(!meRow||!opRow||Number(meRow.points)<=0||Number(opRow.points)<=0){await client.query('ROLLBACK');return res.status(409).json({error:'再戦できないプレイヤー状態です'})}
+    const wager=Number(old.wager);const maxWager=Math.floor(Math.min(Number(meRow.points),Number(opRow.points))/10)*10;
+    if(wager>maxWager){await client.query('ROLLBACK');return res.status(409).json({error:`同じ ${wager}pt では再戦できません。どちらかの所持ポイントが不足しています`})}
+    const r=await client.query(`INSERT INTO quick_matches(challenger_id,opponent_id,challenger_name,opponent_name,challenger_code,opponent_code,wager,game_type) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,[me,opponentId,meRow.username,opRow.username,meRow.public_code,opRow.public_code,wager,old.game_type]);
+    await client.query('COMMIT');res.json({ok:true,match:publicQuickMatch(r.rows[0],me)});
+  }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
+});
+
 app.get('/api/quick-matches/me',requireUser,async(req,res,next)=>{try{
   let r=await query(`${quickSelect} WHERE (q.challenger_id=$1 OR q.opponent_id=$1) AND q.status=ANY($2::varchar[]) ORDER BY q.id DESC LIMIT 1`,[req.userId,QUICK_ACTIVE_STATUSES]);
   if(!r.rows[0])r=await query(`${quickSelect} WHERE (q.challenger_id=$1 OR q.opponent_id=$1) AND q.status='completed' AND q.completed_at>NOW()-INTERVAL '40 seconds' ORDER BY q.id DESC LIMIT 1`,[req.userId]);
