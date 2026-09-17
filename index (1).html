@@ -6,6 +6,15 @@
   <meta name="theme-color" content="#02050b">
   <title>NEXUS:ZERO</title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    .public-register-entry{margin:22px 0 14px;padding:18px;border:1px solid rgba(92,224,255,.34);background:rgba(2,16,29,.72);box-shadow:inset 3px 0 0 #45dfff,0 0 24px rgba(38,188,255,.08)}
+    .public-register-entry .eyebrow{margin-bottom:10px;color:#73e9ff;letter-spacing:.22em;font-size:12px;font-weight:800}
+    .public-register-btn{display:flex!important;align-items:center;justify-content:space-between;gap:14px;width:100%;min-height:64px;padding:14px 18px!important;border:1px solid #55dcff!important;background:linear-gradient(90deg,rgba(3,35,59,.96),rgba(14,22,57,.96))!important;color:#fff!important;text-decoration:none!important;font-size:18px!important;font-weight:900!important;letter-spacing:.04em;box-shadow:inset 0 0 22px rgba(43,202,255,.12),0 0 16px rgba(43,202,255,.08)}
+    .public-register-btn::before{content:'NEW PLAYER';font-size:10px;letter-spacing:.22em;color:#79eaff}
+    .public-register-btn::after{content:'›';font-size:30px;line-height:1;color:#79eaff}
+    .public-register-entry.hidden{display:none!important}
+    @media(max-width:560px){.public-register-entry{margin-top:18px;padding:14px}.public-register-btn{min-height:58px;font-size:17px!important;padding:12px 14px!important}}
+  </style>
   <script src="/bgm.js" defer></script>
   <script src="/ui-fx.js" defer></script>
 </head>
@@ -45,7 +54,7 @@
     </div>
   </div>
   <button id="loginBtn" class="primary-action art-connect-btn" type="button" aria-label="CONNECT"><img src="/ui/v576/connect.webp" alt="CONNECT"></button>
-  <div id="publicRegisterLink" class="public-register-entry hidden"><div class="eyebrow">NEW PLAYER</div><a href="/register" class="secondary public-register-btn">新規アカウント作成</a></div><p class="system-note">0ptでGAME OVERとなります。</p><p id="authMsg" class="error"></p>
+  <div id="publicRegisterLink" class="public-register-entry hidden"><div class="eyebrow">PUBLIC REGISTRATION</div><a href="/register" class="public-register-btn"><span>新規アカウント作成</span></a></div><p class="system-note">0ptでGAME OVERとなります。</p><p id="authMsg" class="error"></p>
 </section>
 
 <section id="account" class="hidden">
@@ -180,6 +189,8 @@
 <script>
 const $=s=>document.querySelector(s);const pressRun=(el,fn)=>window.NexusUI?.pulsePress?window.NexusUI.pulsePress(el,fn):fn();let timer=null;let authToken=localStorage.getItem('nexusParticipantToken')||'';let selectedAvatar='avatar-01';
 let accessTransitionRunning=false;
+const entryParams=new URLSearchParams(location.search);
+const sessionExpired=entryParams.get('session')==='expired'||entryParams.get('reason')==='session_expired';
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
 function setAccessState(percent,text){const bar=$('#accessProgressBar'),pct=$('#accessPercent'),status=$('#accessStatus');if(bar)bar.style.width=`${percent}%`;if(pct)pct.textContent=`${percent}%`;if(status)status.textContent=text}
 async function beginAccessTransition(){accessTransitionRunning=true;const el=$('#loginTransition');el.classList.remove('hidden','access-success','access-failed');setAccessState(8,'ACCESSING NEXUS NETWORK');await sleep(250);setAccessState(28,'VERIFYING PLAYER ID');await sleep(300);setAccessState(54,'AUTHENTICATING');await sleep(350);setAccessState(76,'SYNCHRONIZING PLAYER DATA')}
@@ -225,7 +236,7 @@ async function getRanking(me=null){
   return rows
 }
 function setRank(rows,me){const idx=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);$('#rankText').textContent=idx>=0?`#${idx+1}`:'OUT'}
-async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');window.NexusBGM?.clearTrack?.();getRanking().catch(()=>{});$('#authMsg').textContent=`ログインが切れました：${e.message}`;return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
+async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');window.NexusBGM?.clearTrack?.();getRanking().catch(()=>{});if(sessionExpired)$('#authMsg').textContent=`ログインが切れました：${e.message}`;else $('#authMsg').textContent='';return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
 $('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');window.NexusBGM?.setTrack('home');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));renderSelectedTitle(me.selectedTitle);if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
 async function auth(mode){
   if(accessTransitionRunning)return;
