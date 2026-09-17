@@ -1110,9 +1110,21 @@ app.get('/cutin-assets/:file', (req,res,next)=>{
   res.sendFile(path.join(__dirname,file), err=>{ if(err) next(err); });
 });
 
+// v6.34: canonical admin / registration pages.
+// Serve the root copies before express.static so stale /public copies or browser cache cannot win.
+app.get(['/admin','/admin.html'],(req,res,next)=>{
+  res.set('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma','no-cache');
+  res.set('Expires','0');
+  res.sendFile(path.join(__dirname,'admin.html'),err=>{if(err)next(err)});
+});
+app.get(['/register','/register.html'],(req,res,next)=>{
+  res.set('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma','no-cache');
+  res.set('Expires','0');
+  res.sendFile(path.join(__dirname,'register.html'),err=>{if(err)next(err)});
+});
 app.use(express.static(path.join(__dirname,'public')));
-app.get('/admin',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));
-app.get('/register',(req,res)=>res.sendFile(path.join(__dirname,'public','register.html')));
 app.get('/ranking',(req,res)=>res.sendFile(path.join(__dirname,'public','ranking.html')));
 app.get('/history',(req,res)=>res.sendFile(path.join(__dirname,'public','history.html')));
 app.get('/rule',(req,res)=>res.sendFile(path.join(__dirname,'public','rule.html')));
