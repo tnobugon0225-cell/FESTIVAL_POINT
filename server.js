@@ -1110,6 +1110,16 @@ app.get('/cutin-assets/:file', (req,res,next)=>{
   res.sendFile(path.join(__dirname,file), err=>{ if(err) next(err); });
 });
 
+// v6.35: canonical login page.
+// The wildcard route served public/index.html, while registration UI had only been added to root index.html.
+// Pin / and /index.html to the canonical root login page and disable cache so PUBLIC REGISTRATION is reflected immediately.
+app.get(['/', '/index.html'],(req,res,next)=>{
+  res.set('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma','no-cache');
+  res.set('Expires','0');
+  res.sendFile(path.join(__dirname,'index.html'),err=>{if(err)next(err)});
+});
+
 // v6.34: canonical admin / registration pages.
 // Serve the root copies before express.static so stale /public copies or browser cache cannot win.
 app.get(['/admin','/admin.html'],(req,res,next)=>{
