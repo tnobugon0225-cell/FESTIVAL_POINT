@@ -5125,3 +5125,18 @@ body.dm-open{overflow:hidden!important}
 .nexus-mail-image-button .mail-badge{position:absolute;right:2.5%;top:5%;transform:none;z-index:2;min-width:26px;height:26px;padding:0 7px;border:2px solid #fff;border-radius:999px;display:grid;place-items:center;background:#ff2d4f;color:#fff;font-size:12px;font-weight:900;line-height:1;box-shadow:0 0 15px rgba(255,45,79,.75)}
 .nexus-mail-image-button .mail-badge.hidden{display:none!important}
 @media(max-width:600px){.home-mail-strip{margin:3px 0 9px!important}.nexus-mail-image-button img{max-height:88px}.nexus-mail-image-button .mail-badge{min-width:23px;height:23px;font-size:11px;right:2%;top:2%}}
+
+/* v6.46 NEXUS MAIL visibility + full-screen inbox */
+.home-mail-strip{display:block!important;width:100%!important;margin:8px 0 16px!important}
+.home-mail-strip.hidden{display:none!important}
+.nexus-mail-image-button{width:100%!important;min-height:74px!important;overflow:visible!important}
+.nexus-mail-image-button img{width:100%!important;max-height:none!important;object-fit:contain!important;opacity:1!important;visibility:visible!important}
+.nexus-mail-modal{position:fixed!important;inset:0!important;z-index:2147483000!important;background:rgba(0,4,10,.96)!important;backdrop-filter:blur(10px)!important;display:block!important;padding:max(18px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom))!important;overflow:auto!important}
+.nexus-mail-modal.hidden{display:none!important}
+.nexus-mail-card{width:min(680px,100%)!important;min-height:calc(100dvh - 36px)!important;max-height:none!important;margin:0 auto!important;overflow:visible!important;padding:18px 14px 28px!important;background:#06101d!important;border:1px solid rgba(70,225,255,.48)!important;box-shadow:0 0 35px rgba(0,180,255,.18)!important}
+.nexus-mail-head{position:sticky!important;top:0!important;z-index:3!important;background:#06101d!important;padding:8px 0 14px!important}
+.nexus-mail-head strong{font-size:20px!important}
+.mail-item{padding:16px 13px!important;margin-top:12px!important}
+.mail-item-top strong{font-size:16px!important}.mail-item p{font-size:14px!important}
+body.mail-open{overflow:hidden!important}
+@media(max-width:600px){.home-mail-strip{margin:5px 0 12px!important}.nexus-mail-image-button{min-height:64px!important}.nexus-mail-image-button img{max-height:none!important}.nexus-mail-modal{padding:max(10px,env(safe-area-inset-top)) 8px max(10px,env(safe-area-inset-bottom))!important}.nexus-mail-card{min-height:calc(100dvh - 20px)!important;padding:14px 12px 24px!important}}
