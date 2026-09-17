@@ -1166,7 +1166,12 @@ for (const route of ['/match','/hit-blow','/janken','/chinchiro']) {
   });
 }
 app.get('/network',(req,res)=>res.sendFile(path.join(__dirname,'public','network.html')));
-app.get('/watch',(req,res)=>res.sendFile(path.join(__dirname,'public','watch.html')));
+app.get(['/watch','/watch.html'],(req,res,next)=>{
+  res.set('Cache-Control','no-store, no-cache, must-revalidate');
+  res.set('Pragma','no-cache');
+  res.set('Expires','0');
+  res.sendFile(path.join(__dirname,'watch.html'),err=>{if(err)next(err)});
+});
 app.get('*',(req,res)=>res.sendFile(path.join(__dirname,'public','index.html')));
 app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(err);res.status(500).json({error:'サーバー処理でエラーが発生しました'})});
 
