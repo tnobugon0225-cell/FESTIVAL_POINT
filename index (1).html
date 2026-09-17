@@ -62,6 +62,8 @@
     <img src="/nexus-zero-header-integrated.webp" alt="NEXUS:ZERO 奪え。守れ。生き残れ。" class="hero-logo integrated-header-logo">
   </section>
 
+  <section id="homeMailPanel" class="system-panel nexus-mail-panel home-mail-strip hidden"><button type="button" id="mailOpen" class="nexus-mail-button"><span class="mail-label">NEXUS MAIL // INFORMATION</span><span class="home-mail-main"><strong>運営からのお知らせ</strong><span id="mailLatest" class="mail-latest">最新のお知らせを確認</span></span><span class="mail-view-all">VIEW ALL &gt;</span><span id="mailBadge" class="mail-badge hidden">0</span></button></section>
+
   <section class="system-panel arena-status-panel">
     <div class="player-status-line"><span><i></i> PLAYER STATUS</span><strong>ONLINE</strong></div>
     <div class="arena-player-grid home-profile-v577">
@@ -154,6 +156,8 @@
 <section id="publicRanking" class="system-panel public-ranking"><div class="panel-head"><div><div class="eyebrow">LIVE STANDINGS</div><h2>現在のランキング</h2></div><a href="/ranking" data-nexus-nav="RANKING" class="secondary compact link-button">TOP 100</a></div><div id="publicRankingList"></div></section>
 </main>
 
+<div id="mailModal" class="nexus-mail-modal hidden"><div class="nexus-mail-card"><div class="nexus-mail-head"><div><span>NEXUS MAIL</span><strong>運営からのお知らせ</strong></div><button type="button" id="mailClose" class="ghost compact">CLOSE</button></div><div id="mailList" class="nexus-mail-list"></div></div></div>
+
 <div id="loginTransition" class="access-transition hidden" aria-live="polite" aria-label="NEXUS network access in progress">
   <div class="access-core" aria-hidden="true">
     <div class="access-ring ring-one"></div>
@@ -236,8 +240,11 @@ async function getRanking(me=null){
   return rows
 }
 function setRank(rows,me){const idx=rows.findIndex(x=>x.public_code===me.public_code||x.username===me.username);$('#rankText').textContent=idx>=0?`#${idx+1}`:'OUT'}
+async function loadMailBadge(){try{const d=await api('/api/announcements');const b=$('#mailBadge'),p=$('#homeMailPanel'),latest=$('#mailLatest');b.textContent=d.unread;b.classList.toggle('hidden',!d.unread);const first=d.items&&d.items[0];p.classList.toggle('hidden',!first);if(first)latest.textContent=first.title;return d}catch(e){return null}}
+function renderMail(d){$('#mailList').innerHTML=d&&d.items.length?d.items.map(x=>`<button type="button" class="mail-item ${x.read?'read':'unread'}" data-mail-id="${x.id}"><div class="mail-item-top"><strong>${esc(x.title)}</strong>${x.read?'':'<span>NEW</span>'}</div><p>${esc(x.body).replace(/\n/g,'<br>')}</p><small>${new Date(x.created_at).toLocaleString('ja-JP')}</small></button>`).join(''):'<p class="muted">お知らせはまだありません。</p>'}
+$('#mailOpen').onclick=async()=>{const d=await loadMailBadge();renderMail(d);$('#mailModal').classList.remove('hidden')};$('#mailClose').onclick=()=>$('#mailModal').classList.add('hidden');$('#mailModal').addEventListener('click',e=>{if(e.target.id==='mailModal')$('#mailModal').classList.add('hidden')});$('#mailList').addEventListener('click',async e=>{const el=e.target.closest('[data-mail-id]');if(!el||el.classList.contains('read'))return;try{await api('/api/announcements/'+el.dataset.mailId+'/read',{method:'POST'});el.classList.remove('unread');el.classList.add('read');el.querySelector('.mail-item-top span')?.remove();await loadMailBadge()}catch(_){}});
 async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');window.NexusBGM?.clearTrack?.();getRanking().catch(()=>{});if(sessionExpired)$('#authMsg').textContent=`ログインが切れました：${e.message}`;else $('#authMsg').textContent='';return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
-$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');window.NexusBGM?.setTrack('home');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));renderSelectedTitle(me.selectedTitle);if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
+$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');$('#publicRanking').classList.add('hidden');window.NexusBGM?.setTrack('home');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));renderSelectedTitle(me.selectedTitle);if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();loadMailBadge().catch(()=>{});clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
 async function auth(mode){
   if(accessTransitionRunning)return;
   $('#authMsg').textContent='';
