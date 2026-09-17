@@ -53,6 +53,8 @@ async function initDb() {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_code ON users(public_code);
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_ci ON users(LOWER(username));
+    ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMPTZ;
+
 
     CREATE TABLE IF NOT EXISTS staff (
       id BIGSERIAL PRIMARY KEY,
@@ -63,6 +65,22 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE UNIQUE INDEX IF NOT EXISTS idx_staff_username_ci ON staff(LOWER(username));
+
+    CREATE TABLE IF NOT EXISTS announcements (
+      id BIGSERIAL PRIMARY KEY,
+      title VARCHAR(60) NOT NULL,
+      body TEXT NOT NULL,
+      staff_id BIGINT REFERENCES staff(id) ON DELETE SET NULL,
+      staff_name TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS announcement_reads (
+      announcement_id BIGINT NOT NULL REFERENCES announcements(id) ON DELETE CASCADE,
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      read_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY(announcement_id,user_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_announcement_reads_user ON announcement_reads(user_id,announcement_id);
 
     CREATE TABLE IF NOT EXISTS app_settings (
       setting_key VARCHAR(64) PRIMARY KEY,
@@ -500,12 +518,16 @@ app.post('/api/logout', requireUser, (req, res) => req.session.destroy(() => res
 
 app.get('/api/me', requireUser, async (req, res, next) => {
   try {
+    await query('UPDATE users SET last_seen_at=NOW() WHERE id=$1',[req.userId]);
     await ensureBaseTitle(req.userId); await awardQuickBattleTitles(req.userId,'hitblow'); await awardQuickBattleTitles(req.userId,'janken'); await awardQuickBattleTitles(req.userId,'chinchiro'); await awardPodiumTitles();
     const u = await one('SELECT id,public_code,username,points,avatar_key,selected_title_key,created_at FROM users WHERE id=$1', [req.userId]);
     const titles=await query('SELECT title_key,unlocked_at FROM user_titles WHERE user_id=$1 ORDER BY unlocked_at,title_key',[req.userId]).catch(()=>({rows:[]}));
     res.json({ ...u, id:Number(u.id), points:Number(u.points), selectedTitle:titleMeta(u.selected_title_key), titles:titles.rows.map(x=>titleMeta(x.title_key)) });
   } catch(e){ next(e); }
 });
+app.get('/api/announcements',requireUser,async(req,res,next)=>{try{await query('UPDATE users SET last_seen_at=NOW() WHERE id=$1',[req.userId]);const r=await query(`SELECT a.id,a.title,a.body,a.staff_name,a.created_at,(ar.user_id IS NOT NULL) AS read FROM announcements a LEFT JOIN announcement_reads ar ON ar.announcement_id=a.id AND ar.user_id=$1 ORDER BY a.id DESC LIMIT 50`,[req.userId]);res.json({unread:r.rows.filter(x=>!x.read).length,items:r.rows.map(x=>({...x,id:Number(x.id),read:Boolean(x.read)}))})}catch(e){next(e)}});
+app.post('/api/announcements/:id/read',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const exists=await one('SELECT id FROM announcements WHERE id=$1',[id]);if(!exists)return res.status(404).json({error:'お知らせが見つかりません'});await query('INSERT INTO announcement_reads(announcement_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[id,req.userId]);res.json({ok:true})}catch(e){next(e)}});
+
 app.get('/api/titles',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);await awardQuickBattleTitles(req.userId,'hitblow');await awardQuickBattleTitles(req.userId,'janken');await awardQuickBattleTitles(req.userId,'chinchiro');await awardPodiumTitles();const u=await one('SELECT selected_title_key FROM users WHERE id=$1',[req.userId]);const r=await query('SELECT title_key,unlocked_at FROM user_titles WHERE user_id=$1',[req.userId]);const owned=new Map(r.rows.map(x=>[x.title_key,x.unlocked_at]));res.json({selectedKey:u?.selected_title_key||'rookie',titles:Object.keys(TITLE_DEFS).map(key=>({...titleMeta(key),owned:owned.has(key),unlockedAt:owned.get(key)||null}))});}catch(e){next(e)}});
 app.post('/api/titles/select',requireUser,async(req,res,next)=>{try{const key=String(req.body.key||'');const owned=await one('SELECT 1 FROM user_titles WHERE user_id=$1 AND title_key=$2',[req.userId,key]);if(!owned)return res.status(403).json({error:'未獲得の称号です'});await query('UPDATE users SET selected_title_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,title:titleMeta(key)});}catch(e){next(e)}});
 app.post('/api/me/avatar',requireUser,async(req,res,next)=>{try{const key=cleanAvatarKey(req.body.avatarKey);if(!key)return res.status(400).json({error:'アイコンを選択してください'});await query('UPDATE users SET avatar_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,avatarKey:key});}catch(e){next(e)}});
@@ -990,6 +1012,11 @@ app.post('/api/staff/login', loginGuard('staff'), async (req,res,next)=>{
 });
 app.post('/api/staff/logout',(req,res)=>req.session.destroy(()=>res.json({ok:true})));
 app.get('/api/staff/status',async(req,res,next)=>{try{if(!req.session.staffId)return res.json({loggedIn:false});const s=await one('SELECT id,username,role FROM staff WHERE id=$1',[req.session.staffId]);res.json({loggedIn:!!s,staff:s?{...s,id:Number(s.id)}:null})}catch(e){next(e)}});
+app.get('/api/staff/dashboard',requireStaff,async(req,res,next)=>{try{const [users,online,qToday,cToday,qActive,cActive,games]=await Promise.all([one('SELECT COUNT(*)::int n FROM users'),one("SELECT COUNT(*)::int n FROM users WHERE last_seen_at > NOW()-INTERVAL '35 seconds'"),one("SELECT COUNT(*)::int n FROM quick_matches WHERE status='completed' AND completed_at::date=CURRENT_DATE"),one("SELECT COUNT(*)::int n FROM matches WHERE status='completed' AND completed_at::date=CURRENT_DATE"),one("SELECT COUNT(*)::int n FROM quick_matches WHERE status IN ('pending','setup','in_progress')"),one("SELECT COUNT(*)::int n FROM matches WHERE status IN ('pending','matched','in_progress')"),query("SELECT game_type,COUNT(*)::int n FROM quick_matches WHERE status='completed' AND completed_at::date=CURRENT_DATE GROUP BY game_type")]);const byGame={hitblow:0,janken:0,chinchiro:0};for(const x of games.rows)if(x.game_type in byGame)byGame[x.game_type]=Number(x.n);res.json({registered:Number(users.n),online:Number(online.n),todayBattles:Number(qToday.n)+Number(cToday.n),activeBattles:Number(qActive.n)+Number(cActive.n),byGame,custom:Number(cToday.n)})}catch(e){next(e)}});
+app.get('/api/staff/announcements',requireStaff,async(req,res,next)=>{try{const r=await query(`SELECT a.id,a.title,a.body,a.staff_name,a.created_at,COUNT(ar.user_id)::int AS read_count FROM announcements a LEFT JOIN announcement_reads ar ON ar.announcement_id=a.id GROUP BY a.id ORDER BY a.id DESC LIMIT 30`);const total=await one('SELECT COUNT(*)::int n FROM users');res.json({totalUsers:Number(total.n),items:r.rows.map(x=>({...x,id:Number(x.id),read_count:Number(x.read_count)}))})}catch(e){next(e)}});
+app.post('/api/staff/announcements',requireAdmin,async(req,res,next)=>{try{const title=String(req.body.title||'').trim(),body=String(req.body.body||'').trim();if(!title||title.length>60)return res.status(400).json({error:'タイトルは1〜60文字で入力してください'});if(!body||body.length>1000)return res.status(400).json({error:'本文は1〜1000文字で入力してください'});const r=await query('INSERT INTO announcements(title,body,staff_id,staff_name) VALUES($1,$2,$3,$4) RETURNING id',[title,body,req.staff.id,req.staff.username]);await addAudit('adjust',`ANNOUNCEMENT // ${title}`,{staffName:req.staff.username});res.json({ok:true,id:Number(r.rows[0].id)})}catch(e){next(e)}});
+app.delete('/api/staff/announcements/:id',requireAdmin,async(req,res,next)=>{try{const r=await query('DELETE FROM announcements WHERE id=$1 RETURNING title',[Number(req.params.id)]);if(!r.rows[0])return res.status(404).json({error:'お知らせが見つかりません'});res.json({ok:true,title:r.rows[0].title})}catch(e){next(e)}});
+
 app.get('/api/staff/registration-setting',requireStaff,async(req,res,next)=>{try{res.json({enabled:await publicRegistrationEnabled()})}catch(e){next(e)}});
 app.post('/api/staff/registration-setting',requireAdmin,async(req,res,next)=>{try{const enabled=req.body.enabled===true;await query(`INSERT INTO app_settings(setting_key,setting_value,updated_at) VALUES('public_registration',$1,NOW()) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=NOW()`,[enabled?'on':'off']);await addAudit('adjust',`PUBLIC REGISTRATION ${enabled?'ON':'OFF'}`,{staffName:req.staff.username});res.json({ok:true,enabled})}catch(e){next(e)}});
 
