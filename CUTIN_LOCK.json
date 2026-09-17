@@ -1,1 +1,37 @@
-{"version":"6.49","locked":true,"renderer":"/public/cutin-lock.js","style":"/public/cutin-lock.css","avatars":"avatar-01..avatar-12","rule":"character-left=top, character-right=bottom","do_not_modify_without_explicit_user_request":true}
+{
+  "version": "6.50",
+  "status": "LOCKED",
+  "canonical_renderer": "INLINE_IN_BATTLE_PAGES",
+  "locked_files": [
+    "hit-blow.html",
+    "janken.html",
+    "chinchiro.html",
+    "match.html",
+    "avatar-01-top.webp",
+    "avatar-01-bottom.webp",
+    "avatar-02-top.webp",
+    "avatar-02-bottom.webp",
+    "avatar-03-top.webp",
+    "avatar-03-bottom.webp",
+    "avatar-04-top.webp",
+    "avatar-04-bottom.webp",
+    "avatar-05-top.webp",
+    "avatar-05-bottom.webp",
+    "avatar-06-top.webp",
+    "avatar-06-bottom.webp",
+    "avatar-07-top.webp",
+    "avatar-07-bottom.webp",
+    "avatar-08-top.webp",
+    "avatar-08-bottom.webp",
+    "avatar-09-top.webp",
+    "avatar-09-bottom.webp",
+    "avatar-10-top.webp",
+    "avatar-10-bottom.webp",
+    "avatar-11-top.webp",
+    "avatar-11-bottom.webp",
+    "avatar-12-top.webp",
+    "avatar-12-bottom.webp"
+  ],
+  "rule": "Do not modify cut-in renderer, cut-in CSS, asset mapping, positions, or assets unless the user explicitly requests a cut-in change.",
+  "source_of_truth": "Recovered from match (1).html in FESTIVAL_POINT-main (6).zip"
+}
