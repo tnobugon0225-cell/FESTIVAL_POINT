@@ -16,7 +16,7 @@ const PASSWORD_ENCRYPTION_KEY = process.env.PASSWORD_ENCRYPTION_KEY || SESSION_S
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'change-me-now';
 const BASE_URL = process.env.BASE_URL || '';
-const STARTING_POINTS = 100;
+const STARTING_POINTS = Math.max(1, Number(process.env.STARTING_POINTS || 100));
 const AVATAR_KEYS = ['avatar-01','avatar-02','avatar-03','avatar-04','avatar-05','avatar-06','avatar-07','avatar-08','avatar-09','avatar-10','avatar-11','avatar-12'];
 function cleanAvatarKey(v) {
   const key = String(v || '').trim();
@@ -48,7 +48,7 @@ async function initDb() {
       password_hash TEXT NOT NULL,
       password_ciphertext TEXT,
       avatar_key VARCHAR(20),
-      points INTEGER NOT NULL DEFAULT 100 CHECK(points >= 0),
+      points INTEGER NOT NULL DEFAULT 10 CHECK(points >= 0),
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
     CREATE UNIQUE INDEX IF NOT EXISTS idx_users_code ON users(public_code);
@@ -1093,9 +1093,26 @@ app.delete('/api/friends/:id',requireUser,async(req,res,next)=>{try{const id=Num
 app.get('/api/friends/:userId/messages',requireUser,async(req,res,next)=>{try{const otherId=Number(req.params.userId);if(!await acceptedFriend(req.userId,otherId))return res.status(403).json({error:'フレンドのみ個別メッセージを利用できます'});const r=await query(`SELECT d.id,d.sender_id,d.receiver_id,d.message,d.created_at,s.username AS sender_name,s.avatar_key AS sender_avatar_key,s.selected_title_key AS sender_selected_title_key FROM direct_messages d JOIN users s ON s.id=d.sender_id WHERE (d.sender_id=$1 AND d.receiver_id=$2) OR (d.sender_id=$2 AND d.receiver_id=$1) ORDER BY d.id DESC LIMIT 100`,[req.userId,otherId]);res.json(r.rows.reverse().map(x=>({id:Number(x.id),senderId:Number(x.sender_id),receiverId:Number(x.receiver_id),message:x.message,createdAt:x.created_at,sender:{name:x.sender_name,avatarKey:x.sender_avatar_key||'avatar-01',title:titleMeta(x.sender_selected_title_key||'rookie')}})))}catch(e){next(e)}});
 app.post('/api/friends/:userId/messages',requireUser,async(req,res,next)=>{try{const otherId=Number(req.params.userId),message=String(req.body.message||'').trim();if(!message||Array.from(message).length>100)return res.status(400).json({error:'個別メッセージは1〜100文字で入力してください'});if(!await acceptedFriend(req.userId,otherId))return res.status(403).json({error:'フレンドのみ個別メッセージを利用できます'});await query('INSERT INTO direct_messages(sender_id,receiver_id,message) VALUES($1,$2,$3)',[req.userId,otherId,message]);res.json({ok:true})}catch(e){next(e)}});
 app.get('/api/live-matches',requireUser,async(req,res,next)=>{try{const q=await query(`${quickSelect} WHERE q.status IN ('setup','in_progress') ORDER BY q.id DESC LIMIT 40`);const c=await query(`SELECT m.*,cu.avatar_key challenger_avatar,cu.selected_title_key challenger_title,ou.avatar_key opponent_avatar,ou.selected_title_key opponent_title,ru.avatar_key referee_avatar,ru.selected_title_key referee_title FROM matches m LEFT JOIN users cu ON cu.id=m.challenger_id LEFT JOIN users ou ON ou.id=m.opponent_id LEFT JOIN users ru ON ru.id=m.referee_id WHERE m.status IN ('matched','in_progress') ORDER BY m.id DESC LIMIT 20`);res.json({quick:q.rows.map(x=>publicQuickMatch(x,0)),custom:c.rows.map(x=>publicMatch(x,0))})}catch(e){next(e)}});
-app.get('/api/spectate/quick/:id',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const r=await query(`${quickSelect} WHERE q.id=$1`,[id]);if(!r.rows[0])return res.status(404).json({error:'試合が見つかりません'});const raw=r.rows[0];const m=publicQuickMatch(raw,0);m.spectate={challengerJankenChoice:raw.challenger_janken_choice||null,opponentJankenChoice:raw.opponent_janken_choice||null,liveSelection:raw.live_selection||'',turnPlayerId:raw.turn_player_id?Number(raw.turn_player_id):null,challengerSecret:raw.challenger_secret||null,opponentSecret:raw.opponent_secret||null};const out={match:m,guesses:[],rounds:[],rolls:[]};if(m.gameType==='hitblow'){const g=await query('SELECT player_id,player_name,turn_no,guess,hits,blows,created_at FROM hit_blow_guesses WHERE match_id=$1 ORDER BY id',[id]);out.guesses=g.rows.map(x=>({...x,player_id:Number(x.player_id),turn_no:Number(x.turn_no),hits:Number(x.hits),blows:Number(x.blows)}))}else if(m.gameType==='janken'){const j=await query('SELECT round_no,challenger_choice,opponent_choice,winner_user_id,result,created_at FROM janken_rounds WHERE match_id=$1 ORDER BY id',[id]);out.rounds=j.rows.map(x=>({...x,round_no:Number(x.round_no),winner_user_id:x.winner_user_id?Number(x.winner_user_id):null}))}else if(m.gameType==='chinchiro'){const c=await query('SELECT round_no,player_id,player_name,attempt_no,dice,role,role_value,created_at FROM chinchiro_rolls WHERE match_id=$1 ORDER BY id',[id]);out.rolls=c.rows.map(x=>({...x,round_no:Number(x.round_no),player_id:Number(x.player_id),attempt_no:Number(x.attempt_no),role_value:Number(x.role_value)}))}res.json(out)}catch(e){next(e)}});
-
-
+app.get('/api/spectate/quick/:id',requireUser,async(req,res,next)=>{try{
+  const id=Number(req.params.id);const r=await query(`${quickSelect} WHERE q.id=$1`,[id]);
+  if(!r.rows[0])return res.status(404).json({error:'試合が見つかりません'});
+  const raw=r.rows[0],m=publicQuickMatch(raw,0);
+  // Spectators deliberately receive live choices/secrets. Player APIs still keep rival secrets private.
+  m.spectate={challengerJankenChoice:raw.challenger_janken_choice||null,opponentJankenChoice:raw.opponent_janken_choice||null};
+  m.challengerSecret=raw.challenger_secret||null;m.opponentSecret=raw.opponent_secret||null;m.liveSelection=raw.live_selection||'';
+  const out={match:m,guesses:[],rounds:[],rolls:[]};
+  if(m.gameType==='hitblow'){
+    const g=await query('SELECT player_id,player_name,turn_no,guess,hits,blows,created_at FROM hit_blow_guesses WHERE match_id=$1 ORDER BY id',[id]);
+    out.guesses=g.rows.map(x=>({...x,player_id:Number(x.player_id),turn_no:Number(x.turn_no),hits:Number(x.hits),blows:Number(x.blows)}));
+  }else if(m.gameType==='janken'){
+    const j=await query('SELECT round_no,challenger_choice,opponent_choice,winner_user_id,result,created_at FROM janken_rounds WHERE match_id=$1 ORDER BY id',[id]);
+    out.rounds=j.rows.map(x=>({...x,round_no:Number(x.round_no),winner_user_id:x.winner_user_id?Number(x.winner_user_id):null}));
+  }else if(m.gameType==='chinchiro'){
+    const c=await query('SELECT round_no,player_id,player_name,attempt_no,dice,role,role_value,created_at FROM chinchiro_rolls WHERE match_id=$1 ORDER BY id',[id]);
+    out.rolls=c.rows.map(x=>({...x,round_no:Number(x.round_no),player_id:Number(x.player_id),attempt_no:Number(x.attempt_no),role_value:Number(x.role_value)}));
+  }
+  res.set('Cache-Control','no-store');res.json(out);
+}catch(e){next(e)}});
 // v6.10: canonical battle cut-ins.
 // Serve battle pages/assets from the project root so stale /public copies can never win.
 app.get(['/hit-blow.html','/janken.html','/chinchiro.html','/match.html'], (req,res,next)=>{
