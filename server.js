@@ -64,6 +64,13 @@ async function initDb() {
     );
     CREATE UNIQUE INDEX IF NOT EXISTS idx_staff_username_ci ON staff(LOWER(username));
 
+    CREATE TABLE IF NOT EXISTS app_settings (
+      setting_key VARCHAR(64) PRIMARY KEY,
+      setting_value TEXT NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    INSERT INTO app_settings(setting_key,setting_value) VALUES('public_registration','off') ON CONFLICT DO NOTHING;
+
     CREATE TABLE IF NOT EXISTS point_history (
       id BIGSERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -442,7 +449,34 @@ async function awardPodiumTitles(client=pool){const r=await client.query(`SELECT
 async function awardQuickBattleTitles(userId,gameType,client=pool){const r=await client.query(`SELECT COUNT(*)::int AS n FROM quick_matches WHERE status='completed' AND game_type=$1 AND (challenger_id=$2 OR opponent_id=$2)`,[gameType,userId]);const n=Number(r.rows[0]?.n||0);for(const t of [5,10,15])if(n>=t)await unlockTitle(userId,`${gameType}${t}`,client);}
 async function addAudit(category,summary,{userName=null,delta=null,counterpartName=null,staffName=null}={},client=pool){await client.query(`INSERT INTO admin_audit_log(category,summary,user_name,delta,counterpart_name,staff_name) VALUES($1,$2,$3,$4,$5,$6)`,[category,summary,userName,delta,counterpartName,staffName]);await client.query(`DELETE FROM admin_audit_log WHERE id NOT IN (SELECT id FROM admin_audit_log ORDER BY id DESC LIMIT 20)`);}
 
-app.post('/api/register', (req, res) => res.status(403).json({ error: '参加者アカウントはスタッフのみ作成できます' }));
+const publicRegisterAttempts=new Map();
+function registerClientKey(req){return String(req.ip||req.socket?.remoteAddress||'unknown')}
+function publicRegisterAllowed(req){
+  const key=registerClientKey(req), now=Date.now(), windowMs=10*60*1000, limit=3;
+  const recent=(publicRegisterAttempts.get(key)||[]).filter(t=>now-t<windowMs);
+  if(recent.length>=limit)return false;
+  recent.push(now);publicRegisterAttempts.set(key,recent);return true;
+}
+async function publicRegistrationEnabled(){const r=await one(`SELECT setting_value FROM app_settings WHERE setting_key='public_registration'`);return r?.setting_value==='on'}
+app.get('/api/registration/status',async(req,res,next)=>{try{res.json({enabled:await publicRegistrationEnabled()})}catch(e){next(e)}});
+app.post('/api/register', async (req,res,next)=>{
+  try{
+    if(!(await publicRegistrationEnabled()))return res.status(403).json({error:'現在、新規登録は受け付けていません'});
+    if(!publicRegisterAllowed(req))return res.status(429).json({error:'短時間に登録操作が繰り返されました。10分ほど待ってから再度お試しください'});
+    const username=cleanName(req.body.username), password=String(req.body.password||''), passwordConfirm=String(req.body.passwordConfirm||''), avatarKey=cleanAvatarKey(req.body.avatarKey)||'avatar-01';
+    if(username.length<2||username.length>20)return res.status(400).json({error:'プレイヤー名は2〜20文字で入力してください'});
+    if(!/^[^<>]{2,20}$/.test(username))return res.status(400).json({error:'プレイヤー名に使用できない文字が含まれています'});
+    if(password.length<6||password.length>72)return res.status(400).json({error:'パスワードは6〜72文字で入力してください'});
+    if(password!==passwordConfirm)return res.status(400).json({error:'確認用パスワードが一致しません'});
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');const hash=await bcrypt.hash(password,12),code=await makeCode(client),cipher=encryptPassword(password);
+      const r=await client.query('INSERT INTO users(public_code,username,password_hash,password_ciphertext,points,avatar_key) VALUES($1,$2,$3,$4,$5,$6) RETURNING id',[code,username,hash,cipher,STARTING_POINTS,avatarKey]);
+      await client.query('COMMIT');await ensureBaseTitle(Number(r.rows[0].id));
+      res.json({ok:true,username,code,startingPoints:STARTING_POINTS});
+    }catch(e){await client.query('ROLLBACK');if(e.code==='23505')return res.status(409).json({error:'そのプレイヤー名は現在使用中です'});throw e}finally{client.release()}
+  }catch(e){next(e)}
+});
 
 app.post('/api/login', loginGuard('participant'), async (req, res, next) => {
   try {
@@ -956,6 +990,8 @@ app.post('/api/staff/login', loginGuard('staff'), async (req,res,next)=>{
 });
 app.post('/api/staff/logout',(req,res)=>req.session.destroy(()=>res.json({ok:true})));
 app.get('/api/staff/status',async(req,res,next)=>{try{if(!req.session.staffId)return res.json({loggedIn:false});const s=await one('SELECT id,username,role FROM staff WHERE id=$1',[req.session.staffId]);res.json({loggedIn:!!s,staff:s?{...s,id:Number(s.id)}:null})}catch(e){next(e)}});
+app.get('/api/staff/registration-setting',requireStaff,async(req,res,next)=>{try{res.json({enabled:await publicRegistrationEnabled()})}catch(e){next(e)}});
+app.post('/api/staff/registration-setting',requireAdmin,async(req,res,next)=>{try{const enabled=req.body.enabled===true;await query(`INSERT INTO app_settings(setting_key,setting_value,updated_at) VALUES('public_registration',$1,NOW()) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=NOW()`,[enabled?'on':'off']);await addAudit('adjust',`PUBLIC REGISTRATION ${enabled?'ON':'OFF'}`,{staffName:req.staff.username});res.json({ok:true,enabled})}catch(e){next(e)}});
 
 app.get('/api/staff/users', requireStaff, async (req,res,next)=>{
   try{
@@ -1076,6 +1112,7 @@ app.get('/cutin-assets/:file', (req,res,next)=>{
 
 app.use(express.static(path.join(__dirname,'public')));
 app.get('/admin',(req,res)=>res.sendFile(path.join(__dirname,'public','admin.html')));
+app.get('/register',(req,res)=>res.sendFile(path.join(__dirname,'public','register.html')));
 app.get('/ranking',(req,res)=>res.sendFile(path.join(__dirname,'public','ranking.html')));
 app.get('/history',(req,res)=>res.sendFile(path.join(__dirname,'public','history.html')));
 app.get('/rule',(req,res)=>res.sendFile(path.join(__dirname,'public','rule.html')));
