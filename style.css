@@ -5112,5 +5112,5 @@ body.dm-open{overflow:hidden!important}
   transform:translate(-50%,-50%) scale(1)!important;
 }
 
-/* v6.32 public self registration */
+/* v6.33 public registration UI */
 .public-register-entry{margin:14px 0;text-align:center}.public-register-btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;text-decoration:none}.register-shell{max-width:760px}.register-panel{margin-top:20px}.register-panel label{display:block;margin-top:14px}.register-panel input{width:100%}.register-avatar-label{margin-top:22px}.register-panel .avatar-selector{margin:10px 0 20px}.register-panel .primary-action{width:100%;min-height:54px}.registration-success{text-align:center;padding:20px 4px}.register-code{font-size:clamp(28px,8vw,48px);letter-spacing:.12em;margin:20px auto}.register-login-link{display:flex;text-decoration:none;align-items:center;justify-content:center}.registration-switch-row{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:16px;border:1px solid rgba(80,220,255,.22);background:rgba(0,10,20,.55)}.registration-switch-row strong{font-size:18px}.admin-module-registration .ok{color:#7dffbe}.admin-module-registration .error{color:#ff7895}@media(max-width:640px){.registration-switch-row{align-items:stretch;flex-direction:column}.register-panel{padding-left:14px;padding-right:14px}}
