@@ -5157,3 +5157,29 @@ body.dm-open{overflow:hidden!important}
 #randomBattlePanel .random-match-logo{width:min(240px,62vw)!important;height:auto!important;aspect-ratio:1/1!important;object-fit:contain!important}
 #randomBattlePanel #randomJoinBtn,#randomBattlePanel #randomCancelBtn{width:100%!important;display:flex!important;justify-content:center!important;align-items:center!important;background:transparent!important}
 #randomBattlePanel #randomJoinBtn>img,#randomBattlePanel #randomCancelBtn>img{width:min(430px,92vw)!important;max-height:118px!important;object-fit:contain!important}
+
+/* v6.61 RANDOM MATCH mobile image hard lock — prevent intrinsic image width from widening the page */
+#randomBattlePanel,
+#randomBattlePanel .random-match-console,
+#randomIdleArea,
+#randomQueueArea{min-width:0!important;max-width:100%!important;overflow-x:hidden!important;box-sizing:border-box!important}
+#randomBattlePanel .random-image-btn,
+#randomBattlePanel #randomJoinBtn,
+#randomBattlePanel #randomCancelBtn{
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  width:100%!important;max-width:100%!important;min-width:0!important;
+  height:72px!important;min-height:72px!important;max-height:72px!important;
+  padding:0!important;margin:12px 0 0!important;overflow:hidden!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;
+}
+#randomBattlePanel .random-image-btn>img,
+#randomBattlePanel #randomJoinBtn>img,
+#randomBattlePanel #randomCancelBtn>img{
+  display:block!important;width:auto!important;height:64px!important;
+  max-width:94%!important;max-height:64px!important;min-width:0!important;
+  object-fit:contain!important;margin:0 auto!important;
+}
+@media(max-width:520px){
+ #randomBattlePanel .random-image-btn,#randomBattlePanel #randomJoinBtn,#randomBattlePanel #randomCancelBtn{height:64px!important;min-height:64px!important;max-height:64px!important}
+ #randomBattlePanel .random-image-btn>img,#randomBattlePanel #randomJoinBtn>img,#randomBattlePanel #randomCancelBtn>img{height:56px!important;max-height:56px!important;max-width:92%!important;width:auto!important}
+}
