@@ -5135,3 +5135,19 @@ body.dm-open{overflow:hidden!important}
 
 /* v6.58 RANDOM MATCH game draw */
 .random-draw-overlay{position:fixed!important;z-index:999998!important;inset:0!important;display:grid!important;place-items:center!important;background:rgba(0,5,15,.95)!important;opacity:0;transition:opacity .18s ease}.random-draw-overlay.hidden{display:none!important}.random-draw-overlay.show{opacity:1}.random-draw-core{width:min(94vw,680px);padding:38px 16px;text-align:center;border-top:2px solid #53eaff;border-bottom:2px solid #b24cff;background:#061326e8;box-shadow:0 0 55px #087bff44}.random-draw-core>span{display:block;color:#66efff;font-weight:1000;letter-spacing:.28em;font-size:14px}.random-draw-picks{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px;margin:26px 0}.random-draw-picks b{min-width:0;padding:14px 6px;border:1px solid #245b78;background:#020b16;color:#9cefff;font-size:11px;letter-spacing:.14em}.random-draw-picks em{display:block;margin-top:8px;color:#fff;font-style:normal;font-size:clamp(16px,4.7vw,25px);letter-spacing:0}.random-draw-picks i{font-style:normal;font-weight:1000;color:#ff6bd5}.random-draw-core>strong{display:block;padding:18px 8px;border:1px solid #53eaff;color:#fff;font-size:clamp(27px,8vw,48px);text-shadow:0 0 18px #39dfff;box-shadow:inset 0 0 22px #00bfff18}.random-draw-overlay.locked .random-draw-core>strong{border-color:#ff6bd5;box-shadow:0 0 28px #b936ff88,inset 0 0 24px #7a26ff44;animation:randomDrawLock .35s ease-out}@keyframes randomDrawLock{0%{transform:scale(1.12);filter:brightness(2.2)}100%{transform:scale(1);filter:brightness(1)}}
+
+/* v6.59 RANDOM MATCH asset root fix: all generated art is shipped as real files. */
+#randomBattlePanel .random-image-btn{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;min-height:0!important;overflow:visible!important}
+#randomBattlePanel .random-image-btn>img{display:block!important;width:min(100%,520px)!important;height:auto!important;margin:auto!important;object-fit:contain!important}
+#randomBattlePanel #randomJoinBtn>img{width:min(100%,430px)!important}
+#randomBattlePanel #randomCancelBtn>img{width:min(100%,430px)!important}
+#randomBattlePanel .random-wager-slot{position:relative!important;width:min(94%,560px)!important;height:auto!important;aspect-ratio:3/1!important;border:0!important;background:transparent!important;clip-path:none!important;box-shadow:none!important;overflow:visible!important}
+#randomBattlePanel .random-wager-slot .random-slot-art{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;z-index:0!important;pointer-events:none!important}
+#randomBattlePanel .random-wager-slot span,#randomBattlePanel .random-wager-slot small{position:relative!important;z-index:1!important}
+#randomBattlePanel .random-wager-slot span{font-size:clamp(42px,12vw,72px)!important}
+.random-confirm-core{position:relative!important;width:min(96vw,760px)!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;aspect-ratio:1672/941!important}
+.random-confirm-art{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important;z-index:0!important}
+.random-confirm-copy{position:absolute!important;z-index:1!important;left:19%!important;right:19%!important;top:35%!important;bottom:24%!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+.random-confirm-copy strong{margin:0 0 12px!important;font-size:clamp(28px,8vw,58px)!important}
+.random-confirm-copy div{font-size:clamp(18px,5vw,30px)!important}
+@media(max-width:520px){#randomBattlePanel .random-image-btn>img{width:100%!important}.random-confirm-core{width:100vw!important}}
