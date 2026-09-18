@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#02050b">
   <title>NEXUS:ZERO</title>
-  <link rel="stylesheet" href="/style.css?v=6.61">
+  <link rel="stylesheet" href="/style.css?v=6.62">
   <style>
     .public-register-entry{margin:22px 0 14px;padding:18px;border:1px solid rgba(92,224,255,.34);background:rgba(2,16,29,.72);box-shadow:inset 3px 0 0 #45dfff,0 0 24px rgba(38,188,255,.08)}
     .public-register-entry .eyebrow{margin-bottom:10px;color:#73e9ff;letter-spacing:.22em;font-size:12px;font-weight:800}
@@ -55,6 +55,11 @@
  #randomBattlePanel .random-game-select{max-width:100%!important;gap:3px!important}
  #randomBattlePanel .random-game-select>button{padding:1px!important}
 }
+</style>
+<style id="v662-random-button-inline-lock">
+#randomBattlePanel{contain:inline-size!important;max-width:100%!important;overflow-x:hidden!important}
+#randomBattlePanel #randomIdleArea,#randomBattlePanel #randomQueueArea{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
+@media(max-width:520px){#randomBattlePanel #randomJoinBtn,#randomBattlePanel #randomCancelBtn{height:62px!important;min-height:62px!important;max-height:62px!important}#randomBattlePanel #randomJoinBtn>img,#randomBattlePanel #randomCancelBtn>img{width:250px!important;height:56px!important;max-width:82vw!important;max-height:56px!important}}
 </style>
 </head>
 <body class="player-page v52-player">
@@ -165,8 +170,8 @@
       <div class="random-match-console">
         <img class="random-match-logo" src="/random-match-art.webp?v=660" alt="ランダムマッチ">
         <div class="random-queue-label">ONLINE QUEUE</div><div id="randomWaitingCount" class="random-queue-count">0 <small>PLAYERS WAITING</small></div>
-        <div id="randomIdleArea"><p class="random-note">相手を自動検索します。必要ポイント 10pt〜</p><button id="randomJoinBtn" class="random-main-btn random-image-btn" aria-label="START MATCHING"><img src="/random-start-art.webp?v=660" alt="START MATCHING"></button></div>
-        <div id="randomQueueArea" class="hidden"><div class="random-searching">SEARCHING<span>...</span></div><button id="randomCancelBtn" class="random-cancel-btn random-image-btn" aria-label="CANCEL"><img src="/random-cancel-art.webp?v=660" alt="CANCEL"></button></div>
+        <div id="randomIdleArea"><p class="random-note">相手を自動検索します。必要ポイント 10pt〜</p><button id="randomJoinBtn" class="random-main-btn random-image-btn" aria-label="START MATCHING" style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:72px!important;min-height:72px!important;max-height:72px!important;padding:0!important;margin:12px 0 0!important;overflow:hidden!important;border:0!important;background:transparent!important;box-shadow:none!important"><img src="/random-start-art.webp?v=662" alt="START MATCHING" width="900" height="640" style="display:block!important;width:280px!important;height:64px!important;max-width:86vw!important;max-height:64px!important;object-fit:contain!important;margin:0 auto!important"></button></div>
+        <div id="randomQueueArea" class="hidden"><div class="random-searching">SEARCHING<span>...</span></div><button id="randomCancelBtn" class="random-cancel-btn random-image-btn" aria-label="CANCEL" style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:72px!important;min-height:72px!important;max-height:72px!important;padding:0!important;margin:12px 0 0!important;overflow:hidden!important;border:0!important;background:transparent!important;box-shadow:none!important"><img src="/random-cancel-art.webp?v=662" alt="CANCEL" width="900" height="640" style="display:block!important;width:280px!important;height:64px!important;max-width:86vw!important;max-height:64px!important;object-fit:contain!important;margin:0 auto!important"></button></div>
         <div id="randomMatchedArea" class="hidden">
           <div class="random-found">MATCH FOUND</div><div class="random-slot-label">BATTLE POINT SLOT</div><div id="randomWagerSlot" class="random-wager-slot"><img class="random-slot-art" src="/random-point-slot-art.webp?v=660" alt=""><span>10</span><small>pt</small></div>
           <div class="random-game-title">SELECT YOUR GAME <strong id="randomCountdown">15</strong><small>SEC</small></div>
