@@ -205,6 +205,12 @@ body>.random-match-console.random-cinematic .random-choice-state{font-size:14px!
 body>.random-match-console.random-cinematic #randomWagerSlot.locked{animation:slotLockedPulse .8s ease 2!important}
 @keyframes slotLockedPulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 @keyframes gamefxReady{to{opacity:.35;text-shadow:0 0 18px #45ddff}}
+body>.random-match-console.random-cinematic .random-wager-slot span{font-size:clamp(48px,14vw,82px)!important;line-height:1!important}
+body>.random-match-console.random-cinematic .random-wager-slot small{right:18%!important;bottom:36%!important;font-size:clamp(13px,3.8vw,18px)!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside{top:49%!important;gap:0!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside strong{display:none!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside span{transform:translateY(20px)!important;font-size:clamp(14px,4vw,20px)!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-game-logo{position:absolute!important;left:50%!important;top:44%!important;transform:translate(-50%,-50%)!important;width:min(180px,34vw)!important;height:min(92px,17vw)!important;object-fit:contain!important;filter:drop-shadow(0 0 14px rgba(64,220,255,.7))!important;z-index:3!important}
 @media(max-width:390px){body>.random-match-console.random-cinematic .gamefx-picks{grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr)!important}body>.random-match-console.random-cinematic .gamefx-pick img{max-width:165px!important}}
 </style>
 </head>
@@ -332,7 +338,7 @@ body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,
             <button data-random-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="HIT & BLOW"></button><button data-random-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button><button data-random-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
           </div><div id="randomChoiceState" class="random-choice-state">SELECT ONE GAME</div>
         </div>
-        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core gamefx-draw"><span>GAME DRAW</span><div class="gamefx-picks"><div class="gamefx-pick" data-side="my"><small>YOUR PICK</small><img id="randomMyPickImg" src="/ui/v562/hitblow.webp" alt=""><em id="randomMyPick">---</em></div><i>OR</i><div class="gamefx-pick" data-side="rival"><small>RIVAL PICK</small><img id="randomRivalPickImg" src="/ui/v562/janken.webp" alt=""><em id="randomRivalPick">---</em></div></div><div id="randomDrawResult" class="gamefx-result">DRAWING</div><div id="randomWinnerHero" class="gamefx-winner hidden"><img id="randomWinnerImg" src="/ui/v562/hitblow.webp" alt=""><strong id="randomWinnerLabel">HIT &amp; BLOW</strong><small>GAME DECIDED</small></div></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core gamefx-confirm"><div class="gamefx-confirm-art"><img class="random-confirm-art" src="/random-confirm-art.webp?v=660" alt="BATTLE CONFIRMED"><div class="gamefx-confirm-inside"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><span id="randomConfirmWager">10 PT</span></div></div><div class="gamefx-start-pulse">READY</div></div></div>
+        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core gamefx-draw"><span>GAME DRAW</span><div class="gamefx-picks"><div class="gamefx-pick" data-side="my"><small>YOUR PICK</small><img id="randomMyPickImg" src="/ui/v562/hitblow.webp" alt=""><em id="randomMyPick">---</em></div><i>OR</i><div class="gamefx-pick" data-side="rival"><small>RIVAL PICK</small><img id="randomRivalPickImg" src="/ui/v562/janken.webp" alt=""><em id="randomRivalPick">---</em></div></div><div id="randomDrawResult" class="gamefx-result">DRAWING</div><div id="randomWinnerHero" class="gamefx-winner hidden"><img id="randomWinnerImg" src="/ui/v562/hitblow.webp" alt=""><strong id="randomWinnerLabel">HIT &amp; BLOW</strong><small>GAME DECIDED</small></div></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core gamefx-confirm"><div class="gamefx-confirm-art"><img class="random-confirm-art" src="/random-confirm-art.webp?v=660" alt="BATTLE CONFIRMED"><img id="randomConfirmGameLogo" class="gamefx-confirm-game-logo" src="/ui/v562/hitblow.webp" alt=""><div class="gamefx-confirm-inside"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><span id="randomConfirmWager">10 PT</span></div></div><div class="gamefx-start-pulse">READY</div></div></div>
       </div>
     </div>
 
@@ -575,7 +581,7 @@ function showRandomConfirmation(m){
     let delay=110;if(elapsed>900)delay=175;if(elapsed>1500)delay=260;if(elapsed>2050)delay=390;
     if(elapsed>2450){stopped=true;const wi=(finalKey===rivalKey&&finalKey!==myKey)?1:0;pickCards.forEach((x,i)=>{x.classList.remove('draw-hot');x.classList.toggle('draw-winner',i===wi)});result.textContent='GAME DECIDED';
       setTimeout(()=>{document.querySelector('.gamefx-picks').style.display='none';result.style.display='none';$('#randomWinnerImg').src=randomGameArt(finalKey);$('#randomWinnerLabel').textContent=final;hero.classList.remove('hidden')},450);return}setTimeout(step,delay)};step();
-  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>{draw.classList.add('hidden');const picks=document.querySelector('.gamefx-picks');if(picks)picks.style.display='';result.style.display='';hero.classList.add('hidden')},180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} PT`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},5100);
+  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>{draw.classList.add('hidden');const picks=document.querySelector('.gamefx-picks');if(picks)picks.style.display='';result.style.display='';hero.classList.add('hidden')},180);$('#randomConfirmGame').textContent=final;$('#randomConfirmGameLogo').src=randomGameArt(finalKey);$('#randomConfirmWager').textContent=`${m.wager} PT`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},5100);
   setTimeout(()=>{randomFlowActive=false;location.href=m.path},9300);
 }
 function randomSetView(data){
@@ -613,8 +619,8 @@ function runRandomWagerSlot(finalWager,done){
       el.classList.remove('rolling');
       el.classList.add('locked');
       $('#randomChoiceState').textContent=`${finalWager} PT LOCKED`;
-      randomSlotRevealUntil=Date.now()+1450;
-      setTimeout(()=>{$('#randomChoiceState').textContent='SELECT ONE GAME';done?.()},1450);
+      randomSlotRevealUntil=Date.now()+2600;
+      setTimeout(()=>{$('#randomChoiceState').textContent='SELECT ONE GAME';done?.()},2600);
       return;
     }
     setTimeout(spin,delay)
