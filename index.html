@@ -127,6 +127,45 @@ body>.random-match-console.random-cinematic .random-confirm-copy strong{display:
 body>.random-match-console.random-cinematic .random-confirm-copy div{font-size:clamp(18px,5.5vw,28px)!important;margin-top:12px!important}
 @media(max-width:390px){body>.random-match-console.random-cinematic .random-draw-picks{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr)!important;gap:5px!important}body>.random-match-console.random-cinematic .random-draw-picks>b{padding:12px 4px!important}body>.random-match-console.random-cinematic .random-draw-picks em{font-size:16px!important}}
 </style>
+
+<style id="v673-random-effects-polish">
+/* RANDOM MATCH polish: visible point machine + readable lock/draw animation. */
+body>.random-match-console.random-cinematic .random-wager-slot{
+  width:min(390px,88vw)!important;height:min(230px,52vw)!important;min-height:175px!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;overflow:visible!important;isolation:isolate!important;
+}
+body>.random-match-console.random-cinematic .random-wager-slot .random-slot-art{
+  display:block!important;position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  max-width:100%!important;max-height:100%!important;object-fit:contain!important;opacity:.96!important;z-index:0!important;
+  filter:drop-shadow(0 0 16px rgba(32,196,255,.28))!important;
+}
+body>.random-match-console.random-cinematic .random-wager-slot span{
+  position:relative!important;z-index:2!important;font-size:clamp(58px,18vw,96px)!important;line-height:1!important;
+  min-width:2.2ch!important;text-align:center!important;color:#fff!important;text-shadow:0 0 8px #fff,0 0 18px #19d9ff,0 0 38px #2468ff!important;
+}
+body>.random-match-console.random-cinematic .random-wager-slot small{
+  z-index:2!important;right:20%!important;bottom:16%!important;font-size:clamp(15px,4vw,20px)!important;
+}
+body>.random-match-console.random-cinematic .random-wager-slot.rolling span{animation:randomDigitPulse .12s linear infinite!important}
+body>.random-match-console.random-cinematic .random-wager-slot.locked span{animation:randomPointLock .65s ease-out both!important}
+body>.random-match-console.random-cinematic .random-wager-slot.locked .random-slot-art{animation:randomArtLock .65s ease-out both!important}
+@keyframes randomDigitPulse{50%{transform:scale(1.09);filter:brightness(1.35)}}
+@keyframes randomPointLock{0%{transform:scale(.72);opacity:.4}55%{transform:scale(1.28)}100%{transform:scale(1)}}
+@keyframes randomArtLock{50%{filter:drop-shadow(0 0 34px rgba(89,232,255,.9)) brightness(1.3)}}
+body>.random-match-console.random-cinematic .random-game-select{width:min(520px,90vw)!important;gap:6px!important}
+body>.random-match-console.random-cinematic .random-game-select>button.selected{animation:randomGameLocked .8s ease-in-out infinite alternate!important}
+@keyframes randomGameLocked{to{transform:scale(1.055);box-shadow:0 0 16px rgba(70,225,255,.8),inset 0 0 14px rgba(70,225,255,.25)}}
+body>.random-match-console.random-cinematic .random-draw-picks>b{transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease,opacity .12s ease!important}
+body>.random-match-console.random-cinematic .random-draw-picks>b.draw-hot{
+  transform:scale(1.035)!important;border-color:#8df4ff!important;box-shadow:0 0 28px rgba(54,215,255,.55),inset 0 0 24px rgba(54,215,255,.12)!important;opacity:1!important;
+}
+body>.random-match-console.random-cinematic .random-draw-picks>b.draw-dim{opacity:.42!important}
+body>.random-match-console.random-cinematic .random-draw-picks>b.draw-winner{
+  transform:scale(1.06)!important;border-color:#fff!important;box-shadow:0 0 38px rgba(84,231,255,.85),inset 0 0 28px rgba(84,231,255,.2)!important;opacity:1!important;
+}
+body>.random-match-console.random-cinematic #randomDrawResult.draw-decided{animation:randomResultPop .7s ease-out both!important}
+@keyframes randomResultPop{0%{transform:scale(.72);opacity:.25}55%{transform:scale(1.16)}100%{transform:scale(1);opacity:1}}
+</style>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -484,12 +523,26 @@ function showRandomConfirmation(m){
   const my=randomGameLabel(m.myChoice||m.selectedGame),rival=randomGameLabel(m.rivalChoice||m.selectedGame),final=randomGameLabel(m.selectedGame);
   $('#randomMyPick').textContent=my;$('#randomRivalPick').textContent=rival;$('#randomDrawResult').textContent='SELECTING...';
   draw.classList.remove('hidden','locked');requestAnimationFrame(()=>draw.classList.add('show'));
-  const candidates=[my,rival],result=$('#randomDrawResult');let n=0;
-  const spin=setInterval(()=>{result.textContent=candidates[n++%candidates.length]},120);
-  setTimeout(()=>{clearInterval(spin);result.textContent=final;draw.classList.add('locked')},1800);
-  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},3200);
+  const candidates=[my,rival],result=$('#randomDrawResult');
+  const pickCards=[...draw.querySelectorAll('.random-draw-picks>b')];let n=0,drawStopped=false;
+  result.textContent='DRAWING...';result.classList.remove('draw-decided');
+  pickCards.forEach(x=>x.classList.remove('draw-hot','draw-dim','draw-winner'));
+  const drawStart=performance.now();
+  const drawStep=()=>{
+    if(drawStopped)return;const elapsed=performance.now()-drawStart;const hot=n++%2;
+    pickCards.forEach((x,i)=>{x.classList.toggle('draw-hot',i===hot);x.classList.toggle('draw-dim',i!==hot)});
+    result.textContent=candidates[hot];
+    let delay=105;if(elapsed>1050)delay=170;if(elapsed>1650)delay=260;if(elapsed>2150)delay=390;
+    if(elapsed>2550){
+      drawStopped=true;const winnerIndex=(final===rival&&final!==my)?1:0;
+      pickCards.forEach((x,i)=>{x.classList.remove('draw-hot','draw-dim');x.classList.toggle('draw-winner',i===winnerIndex)});
+      result.textContent=`${final} // DECIDED`;result.classList.add('draw-decided');draw.classList.add('locked');return;
+    }
+    setTimeout(drawStep,delay);
+  };drawStep();
+  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},4300);
   // Keep BATTLE CONFIRMED on screen long enough to actually read it.
-  setTimeout(()=>{randomFlowActive=false;location.href=m.path},7400);
+  setTimeout(()=>{randomFlowActive=false;location.href=m.path},8500);
 }
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
