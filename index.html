@@ -168,12 +168,13 @@
         <div id="randomIdleArea"><p class="random-note">相手を自動検索します。必要ポイント 10pt〜</p><button id="randomJoinBtn" class="random-main-btn">START MATCHING</button></div>
         <div id="randomQueueArea" class="hidden"><div class="random-searching">SEARCHING<span>...</span></div><button id="randomCancelBtn" class="random-cancel-btn">CANCEL</button></div>
         <div id="randomMatchedArea" class="hidden">
-          <div class="random-found">MATCH FOUND</div><div class="random-slot-label">BATTLE POINT SLOT</div><div id="randomWagerSlot" class="random-wager-slot">10 <small>pt</small></div>
-          <div class="random-game-title">SELECT YOUR GAME <small>15 SEC</small></div>
+          <div class="random-found">MATCH FOUND</div><div class="random-slot-label">BATTLE POINT SLOT</div><div id="randomWagerSlot" class="random-wager-slot"><span>10</span><small>pt</small></div>
+          <div class="random-game-title">SELECT YOUR GAME <strong id="randomCountdown">15</strong><small>SEC</small></div>
           <div class="random-game-select">
             <button data-random-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="HIT & BLOW"></button><button data-random-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button><button data-random-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
           </div><div id="randomChoiceState" class="random-choice-state">SELECT ONE GAME</div>
         </div>
+        <div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core"><span>BATTLE CONFIRMED</span><strong id="randomConfirmGame">HIT &amp; BLOW</strong><div id="randomConfirmWager">10 BATTLE POINTS</div><em>BATTLE START</em></div></div>
       </div>
     </div>
 
@@ -368,20 +369,36 @@ $('#randomModeBtn').onclick=()=>pressRun($('#randomModeBtn'),()=>{showBattleWiza
 $('#quickModeBtn').onclick=()=>pressRun($('#quickModeBtn'),()=>showBattleWizard('games'));
 $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizard('custom'));
 document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false}showBattleWizard(next)})});
-let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false;
+let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null;
+function randomGameLabel(g){return g==='janken'?'JANKEN':g==='chinchiro'?'CHINCHIRO':'HIT & BLOW'}
+function startRandomCountdown(m){
+  clearInterval(randomCountdownTimer);const el=$('#randomCountdown');if(!el)return;
+  const tick=()=>{const started=new Date(m.selectionStartedAt).getTime();const left=Math.max(0,Math.ceil((started+15000-Date.now())/1000));el.textContent=String(Math.min(15,left));el.classList.toggle('danger',left<=5)};
+  tick();randomCountdownTimer=setInterval(tick,200);
+}
+function showRandomConfirmation(m){
+  if(randomReadyShownId===m.id)return;randomReadyShownId=m.id;clearInterval(randomCountdownTimer);
+  $('#randomConfirmGame').textContent=randomGameLabel(m.selectedGame);$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;
+  const o=$('#randomConfirmOverlay');o.classList.remove('hidden');requestAnimationFrame(()=>o.classList.add('show'));
+  setTimeout(()=>{location.href=m.path},2800);
+}
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
   const m=data.match||null;
   $('#randomIdleArea').classList.toggle('hidden',!!m||!!data.queued);$('#randomQueueArea').classList.toggle('hidden',!!m||!data.queued);$('#randomMatchedArea').classList.toggle('hidden',!m);
-  if(!m)return;
-  if(randomLastMatchId!==m.id){randomLastMatchId=m.id;randomSlotDone=false;runRandomWagerSlot(m.wager)}
+  if(!m){clearInterval(randomCountdownTimer);return}
+  if(randomLastMatchId!==m.id){randomLastMatchId=m.id;randomSlotDone=false;randomReadyShownId=null;document.querySelectorAll('[data-random-game]').forEach(b=>{b.disabled=true;b.classList.remove('selected')});runRandomWagerSlot(m.wager,()=>{document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=!!m.myChoice);startRandomCountdown(m)})}
   if(m.myChoice){document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=true);$('#randomChoiceState').textContent=m.rivalLocked?'BOTH PLAYERS LOCKED // DRAWING GAME...':'LOCKED // WAITING FOR RIVAL'}
-  if(m.status==='ready'&&m.path){$('#randomChoiceState').textContent=`SELECTED // ${m.selectedGame==='janken'?'JANKEN':m.selectedGame==='chinchiro'?'CHINCHIRO':'HIT & BLOW'} // ${m.wager}pt`;setTimeout(()=>location.href=m.path,700)}
+  if(m.status==='ready'&&m.path)showRandomConfirmation(m)
 }
-function runRandomWagerSlot(finalWager){if(randomSlotDone)return;randomSlotDone=true;const el=$('#randomWagerSlot'),vals=[10,20,30];let i=0;const t=setInterval(()=>{el.innerHTML=`${vals[i++%3]} <small>pt</small>`},90);setTimeout(()=>{clearInterval(t);el.innerHTML=`${finalWager} <small>pt</small>`;el.classList.add('locked')},1350)}
-async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden'))return;try{randomSetView(await api('/api/random-match/status'))}catch(e){}},1200)}}catch(e){}}
+function runRandomWagerSlot(finalWager,done){
+  if(randomSlotDone)return;randomSlotDone=true;const el=$('#randomWagerSlot'),vals=[10,20,30];el.classList.remove('locked');el.classList.add('rolling');
+  let i=0,delay=62,stopped=false;const start=performance.now();
+  const spin=()=>{if(stopped)return;const elapsed=performance.now()-start;el.innerHTML=`<span>${vals[i++%3]}</span><small>pt</small>`;if(elapsed>1700)delay=115;if(elapsed>2200)delay=190;if(elapsed>2550){stopped=true;el.innerHTML=`<span>${finalWager}</span><small>pt</small>`;el.classList.remove('rolling');el.classList.add('locked');$('#randomChoiceState').textContent='BATTLE POINT LOCKED';setTimeout(()=>{$('#randomChoiceState').textContent='SELECT ONE GAME';done?.()},350);return}setTimeout(spin,delay)};spin();
+}
+async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden'))return;try{randomSetView(await api('/api/random-match/status'))}catch(e){}},700)}}catch(e){}}
 $('#randomJoinBtn').onclick=async()=>{const b=$('#randomJoinBtn');b.disabled=true;try{randomSetView(await api('/api/random-match/join',{method:'POST'}));await randomPoll()}catch(e){alert(e.message)}finally{b.disabled=false}};
-$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});randomLastMatchId=null;randomSetView(await api('/api/random-match/status'))};
+$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});randomLastMatchId=null;clearInterval(randomCountdownTimer);randomSetView(await api('/api/random-match/status'))};
 document.querySelectorAll('[data-random-game]').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=true);b.classList.add('selected');$('#randomChoiceState').textContent='CHOICE LOCKED';try{const r=await api('/api/random-match/choice',{method:'POST',body:JSON.stringify({gameType:b.dataset.randomGame})});randomSetView({waiting:Number($('#randomWaitingCount').textContent)||0,queued:false,match:r.match})}catch(e){$('#randomChoiceState').textContent=e.message;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=false)}});
 let selectedQuickGame='hitblow';
 document.querySelectorAll('.quick-game-card[data-game]').forEach(card=>card.addEventListener('click',()=>{pressRun(card,()=>{selectedQuickGame=card.dataset.game;const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';$('#quickEntryName').textContent=label;showBattleWizard('quick-entry')})}));
