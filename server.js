@@ -1221,6 +1221,22 @@ app.get('/cutin-assets/:file', (req,res,next)=>{
   res.sendFile(path.join(__dirname,file), err=>{ if(err) next(err); });
 });
 
+// v6.60: canonical RANDOM MATCH assets. Keep these at project root so patch/deploy systems cannot drop nested asset folders.
+const RANDOM_MATCH_ASSETS = {
+  '/random-match-art.webp':'random-match-art.webp',
+  '/random-start-art.webp':'random-start-art.webp',
+  '/random-cancel-art.webp':'random-cancel-art.webp',
+  '/random-point-slot-art.webp':'random-point-slot-art.webp',
+  '/random-confirm-art.webp':'random-confirm-art.webp'
+};
+for (const [route,file] of Object.entries(RANDOM_MATCH_ASSETS)) {
+  app.get(route,(req,res,next)=>{
+    res.set('Cache-Control','no-store, no-cache, must-revalidate');
+    res.type('image/webp');
+    res.sendFile(path.join(__dirname,file),err=>{if(err)next(err)});
+  });
+}
+
 // v6.35: canonical login page.
 // The wildcard route served public/index.html, while registration UI had only been added to root index.html.
 // Pin / and /index.html to the canonical root login page and disable cache so PUBLIC REGISTRATION is reflected immediately.

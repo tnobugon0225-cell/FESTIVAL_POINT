@@ -5151,3 +5151,9 @@ body.dm-open{overflow:hidden!important}
 .random-confirm-copy strong{margin:0 0 12px!important;font-size:clamp(28px,8vw,58px)!important}
 .random-confirm-copy div{font-size:clamp(18px,5vw,30px)!important}
 @media(max-width:520px){#randomBattlePanel .random-image-btn>img{width:100%!important}.random-confirm-core{width:100vw!important}}
+
+/* v6.60 RANDOM MATCH root-asset + mobile sizing lock */
+#battleStepModes #randomModeBtn>img{width:100%!important;height:100%!important;object-fit:contain!important}
+#randomBattlePanel .random-match-logo{width:min(240px,62vw)!important;height:auto!important;aspect-ratio:1/1!important;object-fit:contain!important}
+#randomBattlePanel #randomJoinBtn,#randomBattlePanel #randomCancelBtn{width:100%!important;display:flex!important;justify-content:center!important;align-items:center!important;background:transparent!important}
+#randomBattlePanel #randomJoinBtn>img,#randomBattlePanel #randomCancelBtn>img{width:min(430px,92vw)!important;max-height:118px!important;object-fit:contain!important}
