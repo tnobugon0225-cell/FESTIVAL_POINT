@@ -61,6 +61,38 @@
 #randomBattlePanel #randomIdleArea,#randomBattlePanel #randomQueueArea{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
 @media(max-width:520px){#randomBattlePanel #randomJoinBtn{height:82px!important;min-height:82px!important;max-height:82px!important}#randomBattlePanel #randomJoinBtn>img{width:330px!important;height:74px!important;max-width:92vw!important;max-height:74px!important}#randomBattlePanel #randomCancelBtn{height:62px!important;min-height:62px!important;max-height:62px!important}#randomBattlePanel #randomCancelBtn>img{width:250px!important;height:56px!important;max-width:82vw!important;max-height:56px!important}}
 </style>
+
+<style id="v670-random-cinematic-flow">
+/* RANDOM MATCH is a cinematic, one-phase-at-a-time fullscreen flow on mobile. */
+body.random-cinematic-open{overflow:hidden!important}
+#randomBattlePanel .random-match-console.random-cinematic{position:fixed!important;inset:0!important;z-index:2147483000!important;width:100vw!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))!important;box-sizing:border-box!important;background:radial-gradient(circle at 50% 38%,rgba(0,115,190,.18),transparent 38%),rgba(1,7,15,.985)!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
+#randomBattlePanel .random-match-console.random-cinematic>.random-match-logo,#randomBattlePanel .random-match-console.random-cinematic>.random-queue-label,#randomBattlePanel .random-match-console.random-cinematic>.random-queue-count,#randomBattlePanel .random-match-console.random-cinematic>#randomIdleArea,#randomBattlePanel .random-match-console.random-cinematic>#randomQueueArea{display:none!important}
+#randomMatchedArea{width:min(620px,100%)!important;margin:auto!important;text-align:center!important}
+.random-cinematic #randomMatchedArea{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;min-height:100%!important;gap:12px!important}
+.random-cinematic .random-found{font-size:clamp(26px,8vw,48px)!important;font-weight:950!important;letter-spacing:.08em!important;color:#fff!important;text-shadow:0 0 18px #18d8ff!important;margin:0 0 8px!important}
+.random-cinematic .random-slot-label{font-size:12px!important;letter-spacing:.24em!important;color:#78eaff!important;margin:0!important}
+.random-cinematic .random-wager-slot{position:relative!important;display:grid!important;place-items:center!important;width:min(330px,78vw)!important;height:min(190px,42vw)!important;min-height:150px!important;margin:4px auto 8px!important;border:1px solid rgba(83,225,255,.5)!important;background:radial-gradient(circle,rgba(16,97,153,.32),rgba(2,13,25,.92) 68%)!important;box-shadow:inset 0 0 35px rgba(20,194,255,.16),0 0 30px rgba(0,153,255,.13)!important;overflow:hidden!important}
+.random-cinematic .random-wager-slot .random-slot-art{display:none!important}
+.random-cinematic .random-wager-slot span{font-size:clamp(70px,23vw,128px)!important;font-weight:950!important;line-height:.8!important;color:#fff!important;text-shadow:0 0 10px #19d9ff,0 0 28px #226cff!important}
+.random-cinematic .random-wager-slot small{position:absolute!important;right:12%!important;bottom:12%!important;font-size:18px!important;font-weight:900!important;color:#7cecff!important;text-transform:uppercase!important}
+.random-cinematic .random-game-title{font-size:clamp(18px,5.5vw,28px)!important;font-weight:900!important;letter-spacing:.05em!important;margin:0!important}
+.random-cinematic .random-game-title strong{font-size:1.4em!important;color:#74ecff!important}
+.random-cinematic .random-game-select{width:min(560px,100%)!important;gap:7px!important;margin:8px auto!important}
+.random-cinematic .random-game-select>button{border:1px solid rgba(76,221,255,.38)!important;background:rgba(3,16,29,.86)!important;border-radius:6px!important;transition:.18s transform,.18s opacity,.18s box-shadow!important}
+.random-cinematic .random-game-select>button.selected{transform:scale(1.04)!important;border-color:#8df4ff!important;box-shadow:0 0 24px rgba(54,215,255,.55)!important}
+.random-cinematic .random-game-select>button:disabled:not(.selected){opacity:.38!important}
+.random-cinematic .random-choice-state{font-size:13px!important;letter-spacing:.14em!important;color:#bcefff!important;min-height:20px!important}
+.random-cinematic.phase-slot .random-game-title,.random-cinematic.phase-slot .random-game-select,.random-cinematic.phase-slot .random-choice-state{display:none!important}
+.random-cinematic.phase-select .random-slot-label,.random-cinematic.phase-select .random-wager-slot{display:none!important}
+.random-cinematic.phase-select .random-found{font-size:16px!important;opacity:.72!important;margin-bottom:4px!important}
+.random-cinematic .random-draw-overlay,.random-cinematic .random-confirm-overlay{position:fixed!important;inset:0!important;z-index:2147483010!important;width:100vw!important;height:100dvh!important;margin:0!important;padding:24px 16px!important;box-sizing:border-box!important;background:rgba(0,5,14,.985)!important;align-items:center!important;justify-content:center!important}
+.random-cinematic .random-draw-overlay:not(.hidden),.random-cinematic .random-confirm-overlay:not(.hidden){display:flex!important}
+.random-cinematic .random-draw-core,.random-cinematic .random-confirm-core{width:min(560px,94vw)!important;max-height:88dvh!important;margin:auto!important;text-align:center!important;overflow:hidden!important}
+.random-cinematic .random-confirm-art{display:block!important;width:min(460px,90vw)!important;max-height:42dvh!important;object-fit:contain!important;margin:0 auto 14px!important}
+.random-cinematic .random-confirm-copy strong{font-size:clamp(30px,9vw,54px)!important}.random-cinematic .random-confirm-copy div{font-size:clamp(18px,5vw,28px)!important;color:#7cecff!important;margin-top:8px!important}
+@media(max-height:680px){.random-cinematic .random-found{font-size:25px!important}.random-cinematic .random-wager-slot{height:145px!important;min-height:145px!important}.random-cinematic .random-game-select{width:min(450px,92%)!important}.random-cinematic .random-game-title{font-size:17px!important}}
+</style>
+
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -384,13 +416,14 @@ $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizar
 document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false;randomFlowActive=false}showBattleWizard(next)})});
 let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null;
 function randomGameLabel(g){return g==='janken'?'JANKEN':g==='chinchiro'?'CHINCHIRO':'HIT & BLOW'}
+function setRandomCinematic(on,phase='slot'){const c=document.querySelector('#randomBattlePanel .random-match-console');if(!c)return;c.classList.toggle('random-cinematic',!!on);c.classList.remove('phase-slot','phase-select');if(on)c.classList.add(phase==='select'?'phase-select':'phase-slot');document.body.classList.toggle('random-cinematic-open',!!on)}
 function startRandomCountdown(m){
   clearInterval(randomCountdownTimer);const el=$('#randomCountdown');if(!el)return;
   const tick=()=>{const started=new Date(m.selectionStartedAt).getTime();const left=Math.max(0,Math.ceil((started+15000-Date.now())/1000));el.textContent=String(Math.min(15,left));el.classList.toggle('danger',left<=5)};
   tick();randomCountdownTimer=setInterval(tick,200);
 }
 function showRandomConfirmation(m){
-  if(randomReadyShownId===m.id)return;randomReadyShownId=m.id;clearInterval(randomCountdownTimer);
+  if(randomReadyShownId===m.id)return;setRandomCinematic(true,'select');randomReadyShownId=m.id;clearInterval(randomCountdownTimer);
   const draw=$('#randomDrawOverlay'),confirm=$('#randomConfirmOverlay');
   const my=randomGameLabel(m.myChoice||m.selectedGame),rival=randomGameLabel(m.rivalChoice||m.selectedGame),final=randomGameLabel(m.selectedGame);
   $('#randomMyPick').textContent=my;$('#randomRivalPick').textContent=rival;$('#randomDrawResult').textContent='SELECTING...';
@@ -405,8 +438,8 @@ function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
   const m=data.match||null;
   $('#randomIdleArea').classList.toggle('hidden',!!m||!!data.queued);$('#randomQueueArea').classList.toggle('hidden',!!m||!data.queued);$('#randomMatchedArea').classList.toggle('hidden',!m);
-  if(!m){clearInterval(randomCountdownTimer);return}
-  if(randomLastMatchId!==m.id){randomLastMatchId=m.id;randomSlotDone=false;randomReadyShownId=null;document.querySelectorAll('[data-random-game]').forEach(b=>{b.disabled=true;b.classList.remove('selected')});runRandomWagerSlot(m.wager,()=>{document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=!!m.myChoice);startRandomCountdown(m)})}
+  if(!m){clearInterval(randomCountdownTimer);setRandomCinematic(false);return}
+  if(randomLastMatchId!==m.id){randomLastMatchId=m.id;randomSlotDone=false;randomReadyShownId=null;setRandomCinematic(true,'slot');document.querySelectorAll('[data-random-game]').forEach(b=>{b.disabled=true;b.classList.remove('selected')});runRandomWagerSlot(m.wager,()=>{setRandomCinematic(true,'select');document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=!!m.myChoice);startRandomCountdown(m)})}
   if(m.myChoice){document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=true);$('#randomChoiceState').textContent=m.rivalLocked?'BOTH PLAYERS LOCKED // DRAWING GAME...':'LOCKED // WAITING FOR RIVAL'}
   if(m.status==='ready'&&m.path)showRandomConfirmation(m)
 }
@@ -422,7 +455,7 @@ function runRandomWagerSlot(finalWager,done){
 }
 async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden'))return;try{randomSetView(await api('/api/random-match/status'))}catch(e){}},700)}}catch(e){}}
 $('#randomJoinBtn').onclick=async()=>{randomFlowActive=true;const b=$('#randomJoinBtn');b.disabled=true;try{randomSetView(await api('/api/random-match/join',{method:'POST'}));await randomPoll()}catch(e){alert(e.message)}finally{b.disabled=false}};
-$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});randomFlowActive=false;randomLastMatchId=null;clearInterval(randomCountdownTimer);randomSetView(await api('/api/random-match/status'))};
+$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});setRandomCinematic(false);randomFlowActive=false;randomLastMatchId=null;clearInterval(randomCountdownTimer);randomSetView(await api('/api/random-match/status'))};
 document.querySelectorAll('[data-random-game]').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=true);b.classList.add('selected');$('#randomChoiceState').textContent='CHOICE LOCKED';try{const r=await api('/api/random-match/choice',{method:'POST',body:JSON.stringify({gameType:b.dataset.randomGame})});randomSetView({waiting:Number($('#randomWaitingCount').textContent)||0,queued:false,match:r.match})}catch(e){$('#randomChoiceState').textContent=e.message;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=false)}});
 let selectedQuickGame='hitblow';
 document.querySelectorAll('.quick-game-card[data-game]').forEach(card=>card.addEventListener('click',()=>{pressRun(card,()=>{selectedQuickGame=card.dataset.game;const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';$('#quickEntryName').textContent=label;showBattleWizard('quick-entry')})}));
