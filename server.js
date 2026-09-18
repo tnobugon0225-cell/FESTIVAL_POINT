@@ -209,6 +209,26 @@ async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_quick_matches_challenger ON quick_matches(challenger_id,status);
     CREATE INDEX IF NOT EXISTS idx_quick_matches_opponent ON quick_matches(opponent_id,status);
 
+    CREATE TABLE IF NOT EXISTS random_match_queue (
+      user_id BIGINT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      joined_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE TABLE IF NOT EXISTS random_matches (
+      id BIGSERIAL PRIMARY KEY,
+      player1_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      player2_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      player1_choice VARCHAR(20),
+      player2_choice VARCHAR(20),
+      wager INTEGER NOT NULL,
+      status VARCHAR(20) NOT NULL DEFAULT 'selecting',
+      selected_game VARCHAR(20),
+      quick_match_id BIGINT REFERENCES quick_matches(id) ON DELETE SET NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      selection_started_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_random_matches_p1 ON random_matches(player1_id,status);
+    CREATE INDEX IF NOT EXISTS idx_random_matches_p2 ON random_matches(player2_id,status);
+
     CREATE TABLE IF NOT EXISTS hit_blow_guesses (
       id BIGSERIAL PRIMARY KEY,
       match_id BIGINT NOT NULL REFERENCES quick_matches(id) ON DELETE CASCADE,
@@ -563,7 +583,9 @@ async function activeMatchForUser(userId, client=pool) {
   const r = await client.query(`SELECT id FROM matches WHERE status = ANY($1::varchar[]) AND (challenger_id=$2 OR opponent_id=$2 OR referee_id=$2) ORDER BY id DESC LIMIT 1`, [ACTIVE_MATCH_STATUSES, userId]);
   if(r.rows[0]) return {kind:'custom',...r.rows[0]};
   const q = await client.query(`SELECT id FROM quick_matches WHERE status = ANY($1::varchar[]) AND (challenger_id=$2 OR opponent_id=$2) ORDER BY id DESC LIMIT 1`, [['pending','setup','in_progress'], userId]);
-  return q.rows[0] ? {kind:'quick',...q.rows[0]} : null;
+  if(q.rows[0]) return {kind:'quick',...q.rows[0]};
+  const rm = await client.query(`SELECT id FROM random_matches WHERE status='selecting' AND (player1_id=$1 OR player2_id=$1) ORDER BY id DESC LIMIT 1`, [userId]);
+  return rm.rows[0] ? {kind:'random',...rm.rows[0]} : null;
 }
 function publicMatch(row, viewerId) {
   if(!row) return null;
@@ -700,6 +722,32 @@ app.post('/api/matches/:id/result', requireUser, async (req,res,next)=>{
 });
 
 
+
+// RANDOM MATCH ---------------------------------------------------------------
+const RANDOM_GAMES=['hitblow','janken','chinchiro'];
+function randomGame(){return RANDOM_GAMES[Math.floor(Math.random()*RANDOM_GAMES.length)]}
+function randomGamePath(g){return g==='janken'?'/janken':g==='chinchiro'?'/chinchiro':'/hit-blow'}
+async function finalizeRandomMatch(client,rm){
+  let p1=rm.player1_choice||null,p2=rm.player2_choice||null;
+  const expired=Date.now()-new Date(rm.selection_started_at).getTime()>=15000;
+  if(expired){if(!p1)p1=randomGame();if(!p2)p2=randomGame();}
+  if(!p1||!p2)return rm;
+  const selected=p1===p2?p1:(Math.random()<.5?p1:p2);
+  const users=(await client.query(`SELECT id,username,public_code FROM users WHERE id=ANY($1::bigint[])`,[[rm.player1_id,rm.player2_id]])).rows;
+  const a=users.find(x=>Number(x.id)===Number(rm.player1_id)),b=users.find(x=>Number(x.id)===Number(rm.player2_id));
+  if(!a||!b)throw new Error('RANDOM MATCH player missing');
+  let status='setup',first=null,started=null,jstart=null;
+  if(selected==='janken'){status='in_progress';started=new Date();jstart=new Date(Date.now()+4000)}
+  else if(selected==='chinchiro'){status='in_progress';started=new Date();first=Math.random()<.5?Number(a.id):Number(b.id)}
+  else first=Math.random()<.5?Number(a.id):Number(b.id);
+  const q=(await client.query(`INSERT INTO quick_matches(challenger_id,opponent_id,challenger_name,opponent_name,challenger_code,opponent_code,wager,game_type,opponent_approved,status,first_player_id,turn_player_id,matched_at,started_at,turn_started_at,janken_round,janken_round_started_at,chinchiro_round,chinchiro_attempt) VALUES($1,$2,$3,$4,$5,$6,$7,$8,TRUE,$9,$10,$11,NOW(),$12,$13,1,$14,1,0) RETURNING *`,[a.id,b.id,a.username,b.username,a.public_code,b.public_code,rm.wager,selected,status,first,selected==='chinchiro'?first:null,started,selected==='chinchiro'?new Date(Date.now()+4000):null,jstart])).rows[0];
+  return (await client.query(`UPDATE random_matches SET player1_choice=$1,player2_choice=$2,selected_game=$3,status='ready',quick_match_id=$4 WHERE id=$5 RETURNING *`,[p1,p2,selected,q.id,rm.id])).rows[0];
+}
+function publicRandomMatch(r,viewer){if(!r)return null;return {id:Number(r.id),status:r.status,wager:Number(r.wager),myChoice:Number(r.player1_id)===Number(viewer)?r.player1_choice:r.player2_choice,rivalLocked:Number(r.player1_id)===Number(viewer)?!!r.player2_choice:!!r.player1_choice,selectedGame:r.selected_game||null,quickMatchId:r.quick_match_id?Number(r.quick_match_id):null,selectionStartedAt:r.selection_started_at,path:r.selected_game?randomGamePath(r.selected_game):null}}
+app.get('/api/random-match/status',requireUser,async(req,res,next)=>{const client=await pool.connect();try{await client.query('BEGIN');await client.query(`DELETE FROM random_match_queue WHERE joined_at < NOW()-INTERVAL '20 seconds'`);await client.query('UPDATE random_match_queue SET joined_at=NOW() WHERE user_id=$1',[req.userId]);let rm=(await client.query(`SELECT * FROM random_matches WHERE (player1_id=$1 OR player2_id=$1) AND status=ANY($2::varchar[]) ORDER BY id DESC LIMIT 1 FOR UPDATE`,[req.userId,['selecting','ready']])).rows[0];if(rm&&rm.status==='selecting')rm=await finalizeRandomMatch(client,rm);const c=(await client.query('SELECT COUNT(*)::int AS n FROM random_match_queue')).rows[0].n;const queued=!!(await client.query('SELECT 1 FROM random_match_queue WHERE user_id=$1',[req.userId])).rows[0];await client.query('COMMIT');res.json({waiting:Number(c),queued,match:publicRandomMatch(rm,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
+app.post('/api/random-match/join',requireUser,async(req,res,next)=>{const client=await pool.connect();try{await client.query('BEGIN');const me=(await client.query('SELECT id,points FROM users WHERE id=$1 FOR UPDATE',[req.userId])).rows[0];if(!me||Number(me.points)<10){await client.query('ROLLBACK');return res.status(400).json({error:'RANDOM MATCHには10pt以上必要です'})}if(await activeMatchForUser(req.userId,client)){await client.query('ROLLBACK');return res.status(409).json({error:'進行中の対戦があります'})}await client.query('DELETE FROM random_match_queue WHERE user_id=$1',[req.userId]);const rival=(await client.query(`SELECT q.user_id,u.points FROM random_match_queue q JOIN users u ON u.id=q.user_id WHERE q.user_id<>$1 AND u.points>=10 ORDER BY q.joined_at FOR UPDATE SKIP LOCKED LIMIT 1`,[req.userId])).rows[0];if(!rival){await client.query('INSERT INTO random_match_queue(user_id) VALUES($1) ON CONFLICT(user_id) DO UPDATE SET joined_at=NOW()',[req.userId]);await client.query('COMMIT');return res.json({ok:true,matched:false})}if(await activeMatchForUser(rival.user_id,client)){await client.query('DELETE FROM random_match_queue WHERE user_id=$1',[rival.user_id]);await client.query('INSERT INTO random_match_queue(user_id) VALUES($1) ON CONFLICT(user_id) DO NOTHING',[req.userId]);await client.query('COMMIT');return res.json({ok:true,matched:false})}await client.query('DELETE FROM random_match_queue WHERE user_id=$1',[rival.user_id]);const cap=Math.min(Number(me.points),Number(rival.points));const opts=[10,20,30].filter(x=>x<=cap);const wager=opts[Math.floor(Math.random()*opts.length)];const rm=(await client.query(`INSERT INTO random_matches(player1_id,player2_id,wager) VALUES($1,$2,$3) RETURNING *`,[rival.user_id,req.userId,wager])).rows[0];await client.query('COMMIT');res.json({ok:true,matched:true,match:publicRandomMatch(rm,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
+app.post('/api/random-match/cancel',requireUser,async(req,res,next)=>{try{await query('DELETE FROM random_match_queue WHERE user_id=$1',[req.userId]);res.json({ok:true});}catch(e){next(e)}});
+app.post('/api/random-match/choice',requireUser,async(req,res,next)=>{const choice=String(req.body.gameType||'');if(!RANDOM_GAMES.includes(choice))return res.status(400).json({error:'ゲームを選択してください'});const client=await pool.connect();try{await client.query('BEGIN');let rm=(await client.query(`SELECT * FROM random_matches WHERE (player1_id=$1 OR player2_id=$1) AND status='selecting' ORDER BY id DESC LIMIT 1 FOR UPDATE`,[req.userId])).rows[0];if(!rm){await client.query('ROLLBACK');return res.status(404).json({error:'選択中のRANDOM MATCHがありません'})}const col=Number(rm.player1_id)===Number(req.userId)?'player1_choice':'player2_choice';if(!rm[col])rm=(await client.query(`UPDATE random_matches SET ${col}=$1 WHERE id=$2 RETURNING *`,[choice,rm.id])).rows[0];rm=await finalizeRandomMatch(client,rm);await client.query('COMMIT');res.json({ok:true,match:publicRandomMatch(rm,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
 
 // QUICK BATTLE: HIT & BLOW ----------------------------------------------------
 const QUICK_ACTIVE_STATUSES=['pending','setup','in_progress'];

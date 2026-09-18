@@ -135,9 +135,27 @@
   <section id="battleStage" class="system-panel battle-stage-panel hidden" data-battle-step="root">
     <div id="battleStepModes" class="battle-wizard-step hidden">
       <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="root" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span>SELECT BATTLE TYPE</span></div>
-      <div class="art-choice-grid two">
+      <div class="art-choice-grid two random-mode-grid">
+        <button type="button" id="randomModeBtn" class="art-choice"><img src="/ui/random-match.webp" alt="ランダムマッチ"></button>
         <button type="button" id="quickModeBtn" class="art-choice"><img src="/ui/v562/quick-battle.webp" alt="クイックバトル"></button>
         <button type="button" id="customModeBtn" class="art-choice"><img src="/ui/v562/custom-battle.webp" alt="カスタムマッチング"></button>
+      </div>
+    </div>
+
+    <div id="randomBattlePanel" class="battle-mode-panel hidden">
+      <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="modes" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span>RANDOM MATCH</span></div>
+      <div class="random-match-console">
+        <img class="random-match-logo" src="/ui/random-match.webp" alt="ランダムマッチ">
+        <div class="random-queue-label">ONLINE QUEUE</div><div id="randomWaitingCount" class="random-queue-count">0 <small>PLAYERS WAITING</small></div>
+        <div id="randomIdleArea"><p class="random-note">相手を自動検索します。必要ポイント 10pt〜</p><button id="randomJoinBtn" class="random-main-btn">START MATCHING</button></div>
+        <div id="randomQueueArea" class="hidden"><div class="random-searching">SEARCHING<span>...</span></div><button id="randomCancelBtn" class="random-cancel-btn">CANCEL</button></div>
+        <div id="randomMatchedArea" class="hidden">
+          <div class="random-found">MATCH FOUND</div><div class="random-slot-label">BATTLE POINT SLOT</div><div id="randomWagerSlot" class="random-wager-slot">10 <small>pt</small></div>
+          <div class="random-game-title">SELECT YOUR GAME <small>15 SEC</small></div>
+          <div class="random-game-select">
+            <button data-random-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="HIT & BLOW"></button><button data-random-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button><button data-random-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
+          </div><div id="randomChoiceState" class="random-choice-state">SELECT ONE GAME</div>
+        </div>
       </div>
     </div>
 
@@ -314,6 +332,7 @@ function showBattleWizard(step){
   const isRoot=step==='root';
   $('#battleStepModes').classList.toggle('hidden',step!=='modes');
   $('#quickBattlePanel').classList.toggle('hidden',!['games','quick-entry'].includes(step));
+  $('#randomBattlePanel').classList.toggle('hidden',step!=='random');
   $('#customBattlePanel').classList.toggle('hidden',step!=='custom');
   $('#quickGameSelect')?.classList.toggle('hidden',step!=='games');
   $('#quickEntryPanel')?.classList.toggle('hidden',step!=='quick-entry');
@@ -327,9 +346,25 @@ function showBattleWizard(step){
   }
 }
 $('#battleHubOpen').onclick=()=>pressRun($('#battleHubOpen'),()=>showBattleWizard('modes'));
+$('#randomModeBtn').onclick=()=>pressRun($('#randomModeBtn'),()=>{showBattleWizard('random');randomPoll(true)});
 $('#quickModeBtn').onclick=()=>pressRun($('#quickModeBtn'),()=>showBattleWizard('games'));
 $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizard('custom'));
 document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,()=>showBattleWizard(next))});
+let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false;
+function randomSetView(data){
+  $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
+  const m=data.match||null;
+  $('#randomIdleArea').classList.toggle('hidden',!!m||!!data.queued);$('#randomQueueArea').classList.toggle('hidden',!!m||!data.queued);$('#randomMatchedArea').classList.toggle('hidden',!m);
+  if(!m)return;
+  if(randomLastMatchId!==m.id){randomLastMatchId=m.id;randomSlotDone=false;runRandomWagerSlot(m.wager)}
+  if(m.myChoice){document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=true);$('#randomChoiceState').textContent=m.rivalLocked?'BOTH PLAYERS LOCKED // DRAWING GAME...':'LOCKED // WAITING FOR RIVAL'}
+  if(m.status==='ready'&&m.path){$('#randomChoiceState').textContent=`SELECTED // ${m.selectedGame==='janken'?'JANKEN':m.selectedGame==='chinchiro'?'CHINCHIRO':'HIT & BLOW'} // ${m.wager}pt`;setTimeout(()=>location.href=m.path,700)}
+}
+function runRandomWagerSlot(finalWager){if(randomSlotDone)return;randomSlotDone=true;const el=$('#randomWagerSlot'),vals=[10,20,30];let i=0;const t=setInterval(()=>{el.innerHTML=`${vals[i++%3]} <small>pt</small>`},90);setTimeout(()=>{clearInterval(t);el.innerHTML=`${finalWager} <small>pt</small>`;el.classList.add('locked')},1350)}
+async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden'))return;try{randomSetView(await api('/api/random-match/status'))}catch(e){}},1200)}}catch(e){}}
+$('#randomJoinBtn').onclick=async()=>{const b=$('#randomJoinBtn');b.disabled=true;try{randomSetView(await api('/api/random-match/join',{method:'POST'}));await randomPoll()}catch(e){alert(e.message)}finally{b.disabled=false}};
+$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});randomLastMatchId=null;randomSetView(await api('/api/random-match/status'))};
+document.querySelectorAll('[data-random-game]').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=true);b.classList.add('selected');$('#randomChoiceState').textContent='CHOICE LOCKED';try{const r=await api('/api/random-match/choice',{method:'POST',body:JSON.stringify({gameType:b.dataset.randomGame})});randomSetView({waiting:Number($('#randomWaitingCount').textContent)||0,queued:false,match:r.match})}catch(e){$('#randomChoiceState').textContent=e.message;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=false)}});
 let selectedQuickGame='hitblow';
 document.querySelectorAll('.quick-game-card[data-game]').forEach(card=>card.addEventListener('click',()=>{pressRun(card,()=>{selectedQuickGame=card.dataset.game;const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';$('#quickEntryName').textContent=label;showBattleWizard('quick-entry')})}));
 $('#quickChallengeBtn').onclick=async()=>{const btn=$('#quickChallengeBtn');const msg=$('#quickMatchCreateMsg');msg.textContent='';try{btn.disabled=true;const wager=Number($('#quickWagerAmount').value);if(!Number.isInteger(wager)||wager<10||wager%10!==0)throw new Error('対戦ポイントは10pt刻みで入力してください');const r=await api('/api/quick-matches',{method:'POST',body:JSON.stringify({opponentCode:$('#quickOpponentCode').value,wager,gameType:selectedQuickGame})});const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';msg.className='ok';msg.textContent=`${label}申請を送信しました / ${r.match.wager}pt`;$('#quickWagerAmount').value='';await sleep(350);location.href=selectedQuickGame==='janken'?'/janken':selectedQuickGame==='chinchiro'?'/chinchiro':'/hit-blow'}catch(e){msg.className='error';msg.textContent=e.message}finally{btn.disabled=false}};
