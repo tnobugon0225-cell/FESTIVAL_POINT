@@ -5112,30 +5112,12 @@ body.dm-open{overflow:hidden!important}
   transform:translate(-50%,-50%) scale(1)!important;
 }
 
-/* v6.53 RANDOM MATCH — canonical /style.css mobile layout fix */
-#battleStepModes .random-mode-grid{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:6px!important;width:100%!important;max-width:1050px!important;margin:0 auto!important;
-}
-#battleStepModes .random-mode-grid>.art-choice{
-  display:block!important;width:100%!important;min-width:0!important;aspect-ratio:1/1!important;
-  padding:0!important;overflow:hidden!important;background:transparent!important;border:0!important;clip-path:none!important;
-}
-#battleStepModes .random-mode-grid>.art-choice>img{
-  display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;
-  aspect-ratio:1/1!important;object-fit:contain!important;
-}
-#randomBattlePanel,#randomBattlePanel *{box-sizing:border-box}
+/* v6.54 RANDOM MATCH canonical — served /style.css */
+.battle-stage-panel .random-mode-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;align-items:stretch!important;width:100%!important}
+.battle-stage-panel .random-mode-grid .art-choice{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;aspect-ratio:1/1!important;padding:0!important;overflow:hidden!important;background:transparent!important;border:0!important}
+.battle-stage-panel .random-mode-grid .art-choice img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;object-fit:contain!important}
 #randomBattlePanel{width:100%!important;max-width:100%!important;overflow:hidden!important}
-#randomBattlePanel .random-match-console{width:100%!important;max-width:900px!important;margin:0 auto!important;overflow:hidden!important;padding:10px!important}
-#randomBattlePanel .random-match-logo{display:block!important;width:min(260px,55vw)!important;height:auto!important;max-width:70%!important;margin:0 auto 8px!important;object-fit:contain!important}
-#randomBattlePanel .random-game-select{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%!important;max-width:720px!important;gap:6px!important;margin:10px auto!important}
-#randomBattlePanel .random-game-select>button{display:block!important;width:100%!important;min-width:0!important;aspect-ratio:1/1!important;overflow:hidden!important;padding:0!important}
-#randomBattlePanel .random-game-select>button>img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important}
-@media(max-width:760px){
- #battleStepModes .random-mode-grid{gap:3px!important}
- #randomBattlePanel .random-match-console{padding:8px 6px 12px!important}
- #randomBattlePanel .random-match-logo{width:min(210px,52vw)!important}
- #randomBattlePanel .random-game-select{gap:3px!important}
-}
+#randomBattlePanel .random-match-console{width:100%!important;max-width:900px!important;margin:0 auto!important;box-sizing:border-box!important;overflow:hidden!important;text-align:center!important;padding:10px 12px 16px!important;border:1px solid rgba(69,216,255,.18)!important;background:rgba(2,10,20,.56)!important}
+#randomBattlePanel .random-match-logo{display:block!important;width:min(300px,58vw)!important;height:auto!important;max-width:72%!important;margin:0 auto 8px!important;object-fit:contain!important}
+.random-queue-label,.random-slot-label,.random-game-title{font-size:11px!important;letter-spacing:.22em!important;color:#6de7ff!important;font-weight:900!important}.random-queue-count{font-size:36px!important;font-weight:900!important;color:#f5fbff!important;margin:4px 0 14px!important}.random-queue-count small{display:block!important;font-size:10px!important;letter-spacing:.16em!important;color:#8ba6bb!important}.random-note{font-size:13px!important;color:#a8bdca!important}.random-main-btn,.random-cancel-btn{width:min(440px,94%)!important;min-height:58px!important;border:1px solid #62e7ff!important;background:#07192b!important;color:white!important;font-weight:900!important;letter-spacing:.08em!important;font-size:16px!important}.random-cancel-btn{border-color:#ff4f92!important;color:#ff8bb7!important;background:#170814!important}.random-searching,.random-found{font-size:20px!important;font-weight:900!important;letter-spacing:.16em!important;color:#7cecff!important;margin:16px 0!important}.random-wager-slot{font-size:48px!important;font-weight:900!important;line-height:1!important;margin:8px auto 22px!important;width:170px!important;padding:12px!important;border:1px solid #8a58ff!important;background:#060b18!important}.random-wager-slot small{font-size:15px!important}.random-game-select{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important;width:100%!important;max-width:720px!important;margin:10px auto!important}.random-game-select button{display:flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;width:100%!important;aspect-ratio:1/1!important;overflow:hidden!important;border:1px solid rgba(78,216,255,.22)!important;background:transparent!important;padding:0!important}.random-game-select img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;object-fit:contain!important}.random-game-select button.selected{border-color:#fff!important;box-shadow:0 0 18px #a93cff!important}.random-game-select button:disabled:not(.selected){opacity:.35!important}.random-choice-state{min-height:28px!important;color:#b7c9d7!important;font-size:11px!important;letter-spacing:.13em!important;font-weight:800!important;margin-top:8px!important}
+@media(max-width:760px){.battle-stage-panel .random-mode-grid{gap:3px!important}.battle-stage-panel .random-mode-grid .art-choice{aspect-ratio:1/1!important}#randomBattlePanel .random-match-console{padding:8px 6px 12px!important}#randomBattlePanel .random-match-logo{width:min(220px,52vw)!important}.random-game-select{gap:3px!important}}

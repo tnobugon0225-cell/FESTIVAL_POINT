@@ -1,12 +1,13 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02050b"><title>CHINCHIRO | NEXUS:ZERO</title><link rel="stylesheet" href="/style.css?v=6.50"><script src="/bgm.js" defer></script><script src="/ui-fx.js" defer></script></head>
+<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02050b"><title>CHINCHIRO | NEXUS:ZERO</title><link rel="stylesheet" href="/style.css?v=6.54"><script src="/bgm.js" defer></script><script src="/ui-fx.js" defer></script></head>
 <body class="player-page chinchiro-page"><div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="scanline"></div></div>
-<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><span>CHINCHIRO</span></div></nav>
+<nav class="topbar"><a class="brand-mini" href="/" onclick="return nexusBattleHome(event)"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><span>CHINCHIRO</span></div></nav>
 <main class="cc-shell"><section class="system-panel cc-screen"><div class="cc-head"><div><div class="eyebrow">QUICK BATTLE // SYSTEM JUDGEMENT</div><h1>CHINCHIRO</h1><p>BO3 // FIRST TO 2 WINS // 3 DICE</p></div><div id="ccStatus" class="hb-status">CONNECTING</div></div><div id="ccPlayers" class="battle-player-row quick-versus-row"></div><div id="ccPoints" class="jk-points"></div><div id="ccBody"></div><p id="ccMsg" class="match-action-msg"></p></section></main>
 <script>
 const $=s=>document.querySelector(s),authToken=localStorage.getItem('nexusParticipantToken')||'';
 let matchId=null,poll=null,lastView='',rolling=false,externalCutin=false,returnTimer=null,playerHeaderKey='',rollFeedReady=false,lastSeenRollKey='';
 for(let i=1;i<=6;i++){const im=new Image();im.src=`/dice/dice-${i}.webp`}
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}const r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers});const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
+async function nexusBattleHome(e){if(e)e.preventDefault();try{await api('/api/random-match/leave',{method:'POST'})}catch(_){}location.href='/';return false}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(k){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(k||''))?k:'avatar-01'}.webp`}
 const TITLE_NAMES={rookie:'ROOKIE',rank1:'APEX // #1',rank2:'VANGUARD // #2',rank3:'ELITE // #3',hitblow5:'CODE HUNTER I',hitblow10:'CODE HUNTER II',hitblow15:'CODE BREAKER',janken5:'SIGNAL FIGHTER I',janken10:'SIGNAL FIGHTER II',janken15:'SIGNAL DOMINATOR',chinchiro5:'DICE RUNNER I',chinchiro10:'DICE RUNNER II',chinchiro15:'DICE MASTER'};

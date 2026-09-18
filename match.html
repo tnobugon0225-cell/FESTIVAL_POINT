@@ -1,8 +1,8 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02050b"><title>BATTLE | NEXUS:ZERO</title><link rel="stylesheet" href="/style.css?v=6.50"><script src="/bgm.js" defer></script><script src="/ui-fx.js" defer></script></head>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#02050b"><title>BATTLE | NEXUS:ZERO</title><link rel="stylesheet" href="/style.css?v=6.54"><script src="/bgm.js" defer></script><script src="/ui-fx.js" defer></script></head>
 <body class="player-page match-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
-<nav class="topbar"><a class="brand-mini" href="/"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><span class="match-live-nav">BATTLE LINK</span></div></nav>
+<nav class="topbar"><a class="brand-mini" href="/" onclick="return nexusBattleHome(event)"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><span class="match-live-nav">BATTLE LINK</span></div></nav>
 <main class="match-screen-shell">
   <section id="matchScreen" class="match-screen state-loading">
     <div class="match-screen-grid" aria-hidden="true"></div>
@@ -23,6 +23,7 @@
 window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('matching'));
 const $=s=>document.querySelector(s);let authToken=localStorage.getItem('nexusParticipantToken')||'',timer=null,startTimer=null,lastStatus='',resultReturnTimer=null,resultCountdownTimer=null,resultReturnMatchId=null,judging=false,introRunning=false,rejectBusy=false;
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const x=new Error('ネットワーク通信に失敗しました');x.status=0;throw x}const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
+async function nexusBattleHome(e){if(e)e.preventDefault();try{await api('/api/random-match/leave',{method:'POST'})}catch(_){}location.href='/';return false}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
 const TITLE_NAMES={rookie:'ROOKIE',rank1:'APEX // #1',rank2:'VANGUARD // #2',rank3:'ELITE // #3',hitblow5:'CODE HUNTER I',hitblow10:'CODE HUNTER II',hitblow15:'CODE BREAKER',janken5:'SIGNAL FIGHTER I',janken10:'SIGNAL FIGHTER II',janken15:'SIGNAL DOMINATOR',chinchiro5:'DICE RUNNER I',chinchiro10:'DICE RUNNER II',chinchiro15:'DICE MASTER'};
@@ -84,5 +85,5 @@ async function rejectMatch(id,btn){if(rejectBusy)return;if(!confirm('この対�
 window.addEventListener('pageshow',()=>{rejectBusy=false;document.querySelectorAll('.reject-match-btn').forEach(b=>b.disabled=false)});
 async function start(id){startTimer=null;try{await api(`/api/matches/${id}/start`,{method:'POST'});await load()}catch(e){}}
 async function judge(id,winnerId,nameEncoded){if(judging)return;const name=decodeURIComponent(nameEncoded);if(!confirm(`${name} の勝利で確定しますか？`))return;judging=true;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=true);$('#battleMsg').className='match-action-msg';$('#battleMsg').textContent='勝敗を確定しています...';try{await api(`/api/matches/${id}/result`,{method:'POST',body:JSON.stringify({winnerId})});clearInterval(timer);await load()}catch(e){judging=false,introRunning=false;document.querySelectorAll('.judge-win-btn').forEach(b=>b.disabled=false);$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
-$('#backHome').onclick=()=>location.href='/';load();timer=setInterval(load,2000);
+$('#backHome').onclick=(e)=>nexusBattleHome(e);load();timer=setInterval(load,2000);
 </script></body></html>
