@@ -166,6 +166,44 @@ body>.random-match-console.random-cinematic .random-draw-picks>b.draw-winner{
 body>.random-match-console.random-cinematic #randomDrawResult.draw-decided{animation:randomResultPop .7s ease-out both!important}
 @keyframes randomResultPop{0%{transform:scale(.72);opacity:.25}55%{transform:scale(1.16)}100%{transform:scale(1);opacity:1}}
 </style>
+
+<style id="v674-random-gamefx">
+/* Image-led RANDOM MATCH presentation. */
+body>.random-match-console.random-cinematic .random-wager-slot{height:min(205px,46vw)!important}
+body>.random-match-console.random-cinematic .random-wager-slot span{position:absolute!important;left:50%!important;top:48%!important;transform:translate(-50%,-50%)!important;width:34%!important;min-width:0!important;font-size:clamp(48px,15vw,78px)!important}
+body>.random-match-console.random-cinematic .random-wager-slot small{position:absolute!important;left:66%!important;right:auto!important;bottom:auto!important;top:55%!important;transform:translateY(-50%)!important;font-size:clamp(13px,3.5vw,18px)!important;text-transform:uppercase!important}
+body>.random-match-console.random-cinematic .random-wager-slot.rolling span{animation:randomDigitGlow .13s linear infinite!important}
+body>.random-match-console.random-cinematic .random-wager-slot.locked span{animation:randomPointCentered .7s ease-out both!important}
+@keyframes randomDigitGlow{50%{filter:brightness(1.5);text-shadow:0 0 20px #fff,0 0 38px #1fdfff}}
+@keyframes randomPointCentered{0%{transform:translate(-50%,-50%) scale(.7);opacity:.4}55%{transform:translate(-50%,-50%) scale(1.22)}100%{transform:translate(-50%,-50%) scale(1)}}
+body>.random-match-console.random-cinematic .gamefx-draw{gap:16px!important;width:min(620px,96vw)!important}
+body>.random-match-console.random-cinematic .gamefx-draw>span{font-size:clamp(24px,7vw,36px)!important;letter-spacing:.18em!important}
+body>.random-match-console.random-cinematic .gamefx-picks{display:grid!important;grid-template-columns:minmax(0,1fr) 34px minmax(0,1fr)!important;align-items:center!important;width:100%!important;gap:5px!important}
+body>.random-match-console.random-cinematic .gamefx-picks>i{font-style:normal!important;color:#7feaff!important;font-weight:900!important;font-size:18px!important}
+body>.random-match-console.random-cinematic .gamefx-pick{min-width:0!important;text-align:center!important;opacity:.5!important;transform:scale(.92)!important;transition:.14s ease!important}
+body>.random-match-console.random-cinematic .gamefx-pick small{display:block!important;margin-bottom:4px!important;color:#cfefff!important;font-weight:900!important;letter-spacing:.14em!important;font-size:11px!important}
+body>.random-match-console.random-cinematic .gamefx-pick img{display:block!important;width:100%!important;max-width:205px!important;aspect-ratio:1/1!important;object-fit:contain!important;margin:auto!important;filter:brightness(.68) saturate(.8)!important}
+body>.random-match-console.random-cinematic .gamefx-pick em{display:block!important;margin-top:-4px!important;color:#fff!important;font-style:normal!important;font-weight:900!important;font-size:clamp(13px,3.7vw,19px)!important;white-space:nowrap!important}
+body>.random-match-console.random-cinematic .gamefx-pick.draw-hot{opacity:1!important;transform:scale(1.06)!important;filter:drop-shadow(0 0 18px rgba(60,225,255,.75))!important}
+body>.random-match-console.random-cinematic .gamefx-pick.draw-hot img{filter:brightness(1.18) saturate(1.18)!important}
+body>.random-match-console.random-cinematic .gamefx-pick.draw-winner{opacity:1!important;transform:scale(1.08)!important;filter:drop-shadow(0 0 26px rgba(83,230,255,.9))!important}
+body>.random-match-console.random-cinematic .gamefx-result{min-height:32px!important;color:#8eeeff!important;font-weight:900!important;letter-spacing:.22em!important;font-size:14px!important}
+body>.random-match-console.random-cinematic .gamefx-winner{display:flex!important;flex-direction:column!important;align-items:center!important;animation:gamefxHero .7s cubic-bezier(.2,.8,.2,1) both!important}
+body>.random-match-console.random-cinematic .gamefx-winner.hidden{display:none!important}
+body>.random-match-console.random-cinematic .gamefx-winner img{width:min(265px,58vw)!important;aspect-ratio:1/1!important;object-fit:contain!important;filter:drop-shadow(0 0 26px rgba(71,224,255,.75))!important}
+body>.random-match-console.random-cinematic .gamefx-winner strong{margin-top:-16px!important;font-size:clamp(25px,7vw,38px)!important;color:#fff!important;text-shadow:0 0 20px rgba(87,229,255,.75)!important}
+body>.random-match-console.random-cinematic .gamefx-winner small{margin-top:7px!important;color:#7eeaff!important;font-weight:900!important;letter-spacing:.24em!important}
+@keyframes gamefxHero{0%{opacity:0;transform:scale(.55)}60%{opacity:1;transform:scale(1.1)}100%{transform:scale(1)}}
+body>.random-match-console.random-cinematic .gamefx-confirm{width:min(650px,96vw)!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-art{position:relative!important;width:100%!important;margin:auto!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-art>.random-confirm-art{display:block!important;width:100%!important;height:auto!important;max-height:58dvh!important;object-fit:contain!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside{position:absolute!important;left:50%!important;top:48%!important;transform:translate(-50%,-50%)!important;width:50%!important;display:flex!important;flex-direction:column!important;align-items:center!important;gap:7px!important;text-shadow:0 0 14px #07101f,0 0 22px #26dfff!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside strong{font-size:clamp(18px,5.3vw,30px)!important;line-height:1!important;white-space:nowrap!important;color:#fff!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside span{font-size:clamp(14px,4vw,22px)!important;color:#7feaff!important;font-weight:900!important}
+body>.random-match-console.random-cinematic .gamefx-start-pulse{margin-top:8px!important;color:#bdf7ff!important;font-weight:900!important;letter-spacing:.32em!important;animation:gamefxReady 1s ease-in-out infinite alternate!important}
+@keyframes gamefxReady{to{opacity:.35;text-shadow:0 0 18px #45ddff}}
+@media(max-width:390px){body>.random-match-console.random-cinematic .gamefx-picks{grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr)!important}body>.random-match-console.random-cinematic .gamefx-pick img{max-width:165px!important}}
+</style>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -291,7 +329,7 @@ body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,
             <button data-random-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="HIT & BLOW"></button><button data-random-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button><button data-random-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
           </div><div id="randomChoiceState" class="random-choice-state">SELECT ONE GAME</div>
         </div>
-        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core"><span>GAME DRAW</span><div class="random-draw-picks"><b>YOUR PICK<em id="randomMyPick">---</em></b><i>OR</i><b>RIVAL PICK<em id="randomRivalPick">---</em></b></div><strong id="randomDrawResult">SELECTING...</strong></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core"><img class="random-confirm-art" src="/random-confirm-art.webp?v=660" alt="BATTLE CONFIRMED"><div class="random-confirm-copy"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><div id="randomConfirmWager">10 BATTLE POINTS</div></div></div></div>
+        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core gamefx-draw"><span>GAME DRAW</span><div class="gamefx-picks"><div class="gamefx-pick" data-side="my"><small>YOUR PICK</small><img id="randomMyPickImg" src="/ui/v562/hitblow.webp" alt=""><em id="randomMyPick">---</em></div><i>OR</i><div class="gamefx-pick" data-side="rival"><small>RIVAL PICK</small><img id="randomRivalPickImg" src="/ui/v562/janken.webp" alt=""><em id="randomRivalPick">---</em></div></div><div id="randomDrawResult" class="gamefx-result">DRAWING</div><div id="randomWinnerHero" class="gamefx-winner hidden"><img id="randomWinnerImg" src="/ui/v562/hitblow.webp" alt=""><strong id="randomWinnerLabel">HIT &amp; BLOW</strong><small>GAME DECIDED</small></div></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core gamefx-confirm"><div class="gamefx-confirm-art"><img class="random-confirm-art" src="/random-confirm-art.webp?v=660" alt="BATTLE CONFIRMED"><div class="gamefx-confirm-inside"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><span id="randomConfirmWager">10 PT</span></div></div><div class="gamefx-start-pulse">READY</div></div></div>
       </div>
     </div>
 
@@ -496,6 +534,7 @@ $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizar
 document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false;randomFlowActive=false}showBattleWizard(next)})});
 let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null;
 function randomGameLabel(g){return g==='janken'?'JANKEN':g==='chinchiro'?'CHINCHIRO':'HIT & BLOW'}
+function randomGameArt(g){const k=g==='janken'?'janken':g==='chinchiro'?'chinchiro':'hitblow';return `/ui/v562/${k}.webp`}
 let randomCinematicHome=null;
 function setRandomCinematic(on,phase='slot'){
   const panel=document.querySelector('#randomBattlePanel');
@@ -520,29 +559,20 @@ function startRandomCountdown(m){
 function showRandomConfirmation(m){
   if(randomReadyShownId===m.id)return;setRandomCinematic(true,'select');randomReadyShownId=m.id;clearInterval(randomCountdownTimer);
   const draw=$('#randomDrawOverlay'),confirm=$('#randomConfirmOverlay');
-  const my=randomGameLabel(m.myChoice||m.selectedGame),rival=randomGameLabel(m.rivalChoice||m.selectedGame),final=randomGameLabel(m.selectedGame);
-  $('#randomMyPick').textContent=my;$('#randomRivalPick').textContent=rival;$('#randomDrawResult').textContent='SELECTING...';
-  draw.classList.remove('hidden','locked');requestAnimationFrame(()=>draw.classList.add('show'));
-  const candidates=[my,rival],result=$('#randomDrawResult');
-  const pickCards=[...draw.querySelectorAll('.random-draw-picks>b')];let n=0,drawStopped=false;
-  result.textContent='DRAWING...';result.classList.remove('draw-decided');
-  pickCards.forEach(x=>x.classList.remove('draw-hot','draw-dim','draw-winner'));
-  const drawStart=performance.now();
-  const drawStep=()=>{
-    if(drawStopped)return;const elapsed=performance.now()-drawStart;const hot=n++%2;
-    pickCards.forEach((x,i)=>{x.classList.toggle('draw-hot',i===hot);x.classList.toggle('draw-dim',i!==hot)});
-    result.textContent=candidates[hot];
-    let delay=105;if(elapsed>1050)delay=170;if(elapsed>1650)delay=260;if(elapsed>2150)delay=390;
-    if(elapsed>2550){
-      drawStopped=true;const winnerIndex=(final===rival&&final!==my)?1:0;
-      pickCards.forEach((x,i)=>{x.classList.remove('draw-hot','draw-dim');x.classList.toggle('draw-winner',i===winnerIndex)});
-      result.textContent=`${final} // DECIDED`;result.classList.add('draw-decided');draw.classList.add('locked');return;
-    }
-    setTimeout(drawStep,delay);
-  };drawStep();
-  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},4300);
-  // Keep BATTLE CONFIRMED on screen long enough to actually read it.
-  setTimeout(()=>{randomFlowActive=false;location.href=m.path},8500);
+  const myKey=m.myChoice||m.selectedGame,rivalKey=m.rivalChoice||m.selectedGame,finalKey=m.selectedGame;
+  const my=randomGameLabel(myKey),rival=randomGameLabel(rivalKey),final=randomGameLabel(finalKey);
+  $('#randomMyPick').textContent=my;$('#randomRivalPick').textContent=rival;
+  $('#randomMyPickImg').src=randomGameArt(myKey);$('#randomRivalPickImg').src=randomGameArt(rivalKey);
+  const result=$('#randomDrawResult'),hero=$('#randomWinnerHero'),pickCards=[...draw.querySelectorAll('.gamefx-pick')];
+  hero.classList.add('hidden');pickCards.forEach(x=>x.classList.remove('draw-hot','draw-winner'));result.textContent='DRAWING';
+  draw.classList.remove('hidden');requestAnimationFrame(()=>draw.classList.add('show'));
+  let n=0,stopped=false;const started=performance.now();
+  const step=()=>{if(stopped)return;const elapsed=performance.now()-started,hot=n++%2;pickCards.forEach((x,i)=>x.classList.toggle('draw-hot',i===hot));
+    let delay=110;if(elapsed>900)delay=175;if(elapsed>1500)delay=260;if(elapsed>2050)delay=390;
+    if(elapsed>2450){stopped=true;const wi=(finalKey===rivalKey&&finalKey!==myKey)?1:0;pickCards.forEach((x,i)=>{x.classList.remove('draw-hot');x.classList.toggle('draw-winner',i===wi)});result.textContent='GAME DECIDED';
+      setTimeout(()=>{document.querySelector('.gamefx-picks').style.display='none';result.style.display='none';$('#randomWinnerImg').src=randomGameArt(finalKey);$('#randomWinnerLabel').textContent=final;hero.classList.remove('hidden')},450);return}setTimeout(step,delay)};step();
+  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>{draw.classList.add('hidden');const picks=document.querySelector('.gamefx-picks');if(picks)picks.style.display='';result.style.display='';hero.classList.add('hidden')},180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} PT`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},5100);
+  setTimeout(()=>{randomFlowActive=false;location.href=m.path},9300);
 }
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
