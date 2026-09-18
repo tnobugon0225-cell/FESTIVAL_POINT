@@ -238,6 +238,46 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
  body>.random-match-console.random-cinematic .gamefx-confirm-inside span{font-size:12px!important}
 }
 </style>
+
+<style id="v676-random-neonfix">
+/* Final mobile alignment pass: smaller point digits + text-led neon confirmation. */
+body>.random-match-console.random-cinematic .random-wager-slot span{
+  left:50%!important;top:49%!important;width:25%!important;
+  font-size:clamp(38px,11vw,58px)!important;line-height:.9!important;
+}
+body>.random-match-console.random-cinematic .random-wager-slot small{
+  left:67%!important;right:auto!important;top:51%!important;bottom:auto!important;
+  transform:translateY(-50%)!important;font-size:clamp(11px,3vw,15px)!important;
+}
+body>.random-match-console.random-cinematic .gamefx-confirm-game-logo{display:none!important}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside{
+  left:50%!important;top:0!important;transform:none!important;width:100%!important;height:100%!important;
+  display:block!important;pointer-events:none!important;text-shadow:none!important;
+}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside strong{
+  display:block!important;position:absolute!important;left:50%!important;top:48.5%!important;
+  transform:translate(-50%,-50%)!important;width:52%!important;text-align:center!important;
+  color:#eafcff!important;font-size:clamp(17px,4.8vw,27px)!important;line-height:1!important;
+  font-weight:1000!important;letter-spacing:.045em!important;white-space:nowrap!important;
+  -webkit-text-stroke:.35px rgba(255,255,255,.95)!important;
+  text-shadow:0 0 2px #fff,0 0 7px #6ff5ff,0 0 14px #00d9ff,0 0 24px #6b4dff!important;
+  filter:drop-shadow(0 0 5px rgba(66,226,255,.9))!important;
+}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside strong::before,
+body>.random-match-console.random-cinematic .gamefx-confirm-inside strong::after{
+  content:'';position:absolute;top:50%;width:20%;height:1px;background:linear-gradient(90deg,transparent,#72f5ff);
+  box-shadow:0 0 7px #36e8ff;opacity:.85;
+}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside strong::before{right:103%}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside strong::after{left:103%;transform:scaleX(-1)}
+body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
+  display:block!important;position:absolute!important;left:50%!important;top:61.8%!important;
+  transform:translate(-50%,-50%)!important;width:29%!important;text-align:center!important;
+  color:#8df4ff!important;font-size:clamp(13px,3.6vw,19px)!important;line-height:1!important;
+  font-weight:1000!important;letter-spacing:.08em!important;white-space:nowrap!important;
+  text-shadow:0 0 5px #22dfff,0 0 12px rgba(70,126,255,.95)!important;
+}
+</style>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
