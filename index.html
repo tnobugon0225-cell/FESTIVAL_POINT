@@ -174,7 +174,7 @@
             <button data-random-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="HIT & BLOW"></button><button data-random-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button><button data-random-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
           </div><div id="randomChoiceState" class="random-choice-state">SELECT ONE GAME</div>
         </div>
-        <div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core"><span>BATTLE CONFIRMED</span><strong id="randomConfirmGame">HIT &amp; BLOW</strong><div id="randomConfirmWager">10 BATTLE POINTS</div><em>BATTLE START</em></div></div>
+        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core"><span>GAME DRAW</span><div class="random-draw-picks"><b>YOUR PICK<em id="randomMyPick">---</em></b><i>OR</i><b>RIVAL PICK<em id="randomRivalPick">---</em></b></div><strong id="randomDrawResult">SELECTING...</strong></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core"><span>BATTLE CONFIRMED</span><strong id="randomConfirmGame">HIT &amp; BLOW</strong><div id="randomConfirmWager">10 BATTLE POINTS</div><em>BATTLE START</em></div></div>
       </div>
     </div>
 
@@ -378,9 +378,15 @@ function startRandomCountdown(m){
 }
 function showRandomConfirmation(m){
   if(randomReadyShownId===m.id)return;randomReadyShownId=m.id;clearInterval(randomCountdownTimer);
-  $('#randomConfirmGame').textContent=randomGameLabel(m.selectedGame);$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;
-  const o=$('#randomConfirmOverlay');o.classList.remove('hidden');requestAnimationFrame(()=>o.classList.add('show'));
-  setTimeout(()=>{location.href=m.path},2800);
+  const draw=$('#randomDrawOverlay'),confirm=$('#randomConfirmOverlay');
+  const my=randomGameLabel(m.myChoice||m.selectedGame),rival=randomGameLabel(m.rivalChoice||m.selectedGame),final=randomGameLabel(m.selectedGame);
+  $('#randomMyPick').textContent=my;$('#randomRivalPick').textContent=rival;$('#randomDrawResult').textContent='SELECTING...';
+  draw.classList.remove('hidden','locked');requestAnimationFrame(()=>draw.classList.add('show'));
+  const candidates=[my,rival],result=$('#randomDrawResult');let n=0;
+  const spin=setInterval(()=>{result.textContent=candidates[n++%candidates.length]},120);
+  setTimeout(()=>{clearInterval(spin);result.textContent=final;draw.classList.add('locked')},1450);
+  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},2200);
+  setTimeout(()=>{location.href=m.path},5000);
 }
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
