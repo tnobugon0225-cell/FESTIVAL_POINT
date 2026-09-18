@@ -93,6 +93,40 @@ body.random-cinematic-open{overflow:hidden!important}
 @media(max-height:680px){.random-cinematic .random-found{font-size:25px!important}.random-cinematic .random-wager-slot{height:145px!important;min-height:145px!important}.random-cinematic .random-game-select{width:min(450px,92%)!important}.random-cinematic .random-game-title{font-size:17px!important}}
 </style>
 
+
+<style id="v672-random-stage-rebuild">
+/* Isolated RANDOM MATCH stage: no inherited HOME layout, one phase at a time. */
+body.random-cinematic-open{overflow:hidden!important}
+body.random-cinematic-open>header,body.random-cinematic-open>main,body.random-cinematic-open>.cyber-bg{visibility:hidden!important}
+body>.random-match-console.random-cinematic{visibility:visible!important;position:fixed!important;inset:0!important;z-index:2147483640!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-width:none!important;margin:0!important;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))!important;box-sizing:border-box!important;overflow:hidden!important;background:#010814!important;display:flex!important;align-items:center!important;justify-content:center!important;contain:layout paint!important}
+body>.random-match-console.random-cinematic>.random-match-logo,body>.random-match-console.random-cinematic>.random-queue-label,body>.random-match-console.random-cinematic>.random-queue-count,body>.random-match-console.random-cinematic>#randomIdleArea,body>.random-match-console.random-cinematic>#randomQueueArea{display:none!important}
+body>.random-match-console.random-cinematic #randomMatchedArea{display:flex!important;width:100%!important;height:100%!important;max-width:620px!important;max-height:none!important;margin:0 auto!important;padding:0!important;box-sizing:border-box!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:14px!important;overflow:hidden!important;text-align:center!important}
+body>.random-match-console.random-cinematic .random-found{margin:0!important;font-size:clamp(24px,7vw,42px)!important;line-height:1.05!important}
+body>.random-match-console.random-cinematic .random-slot-label{margin:0!important}
+body>.random-match-console.random-cinematic .random-wager-slot{width:min(310px,78vw)!important;height:min(180px,38dvh)!important;min-height:145px!important;margin:2px auto!important}
+body>.random-match-console.random-cinematic .random-game-title{margin:0!important}
+body>.random-match-console.random-cinematic .random-game-select{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:min(560px,94vw)!important;gap:8px!important;margin:8px auto!important}
+body>.random-match-console.random-cinematic .random-game-select>button{width:100%!important;min-width:0!important;aspect-ratio:1/1!important;padding:3px!important;overflow:hidden!important}
+body>.random-match-console.random-cinematic .random-game-select img{display:block!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;object-fit:contain!important;transform:none!important}
+body>.random-match-console.random-cinematic.phase-slot .random-game-title,body>.random-match-console.random-cinematic.phase-slot .random-game-select,body>.random-match-console.random-cinematic.phase-slot .random-choice-state{display:none!important}
+body>.random-match-console.random-cinematic.phase-select .random-slot-label,body>.random-match-console.random-cinematic.phase-select .random-wager-slot{display:none!important}
+body>.random-match-console.random-cinematic.phase-select .random-found{font-size:15px!important;opacity:.65!important}
+body>.random-match-console.random-cinematic .random-draw-overlay,body>.random-match-console.random-cinematic .random-confirm-overlay{position:fixed!important;inset:0!important;z-index:20!important;width:100vw!important;height:100dvh!important;padding:max(22px,env(safe-area-inset-top)) 18px max(22px,env(safe-area-inset-bottom))!important;box-sizing:border-box!important;background:#010814!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
+body>.random-match-console.random-cinematic .random-draw-overlay:not(.hidden),body>.random-match-console.random-cinematic .random-confirm-overlay:not(.hidden){display:flex!important}
+body>.random-match-console.random-cinematic .random-draw-core{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:18px!important;width:min(560px,94vw)!important;margin:auto!important;overflow:hidden!important}
+body>.random-match-console.random-cinematic .random-draw-core>span{font-size:clamp(20px,6vw,30px)!important;letter-spacing:.14em!important}
+body>.random-match-console.random-cinematic .random-draw-picks{display:grid!important;grid-template-columns:minmax(0,1fr) 42px minmax(0,1fr)!important;align-items:stretch!important;width:100%!important;gap:8px!important}
+body>.random-match-console.random-cinematic .random-draw-picks>b{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;min-width:0!important;min-height:130px!important;padding:14px 8px!important;border:1px solid rgba(78,222,255,.35)!important;background:rgba(5,20,37,.78)!important;font-size:12px!important;letter-spacing:.1em!important;overflow:hidden!important}
+body>.random-match-console.random-cinematic .random-draw-picks em{display:block!important;width:100%!important;margin-top:12px!important;font-style:normal!important;font-size:clamp(17px,5vw,28px)!important;line-height:1.05!important;overflow-wrap:anywhere!important;color:#fff!important}
+body>.random-match-console.random-cinematic .random-draw-picks i{display:flex!important;align-items:center!important;justify-content:center!important;font-style:normal!important;color:#78eaff!important;font-weight:900!important}
+body>.random-match-console.random-cinematic #randomDrawResult{display:block!important;width:100%!important;min-height:52px!important;font-size:clamp(25px,8vw,44px)!important;line-height:1.1!important;overflow-wrap:anywhere!important;color:#fff!important;text-shadow:0 0 18px #19d9ff!important}
+body>.random-match-console.random-cinematic .random-confirm-core{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;width:min(560px,94vw)!important;max-height:90dvh!important;margin:auto!important;overflow:hidden!important}
+body>.random-match-console.random-cinematic .random-confirm-art{display:block!important;width:min(500px,90vw)!important;height:auto!important;max-width:90vw!important;max-height:42dvh!important;object-fit:contain!important;margin:0 auto 18px!important;transform:none!important}
+body>.random-match-console.random-cinematic .random-confirm-copy{width:100%!important;text-align:center!important}
+body>.random-match-console.random-cinematic .random-confirm-copy strong{display:block!important;font-size:clamp(30px,9vw,52px)!important;line-height:1.05!important;overflow-wrap:anywhere!important}
+body>.random-match-console.random-cinematic .random-confirm-copy div{font-size:clamp(18px,5.5vw,28px)!important;margin-top:12px!important}
+@media(max-width:390px){body>.random-match-console.random-cinematic .random-draw-picks{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr)!important;gap:5px!important}body>.random-match-console.random-cinematic .random-draw-picks>b{padding:12px 4px!important}body>.random-match-console.random-cinematic .random-draw-picks em{font-size:16px!important}}
+</style>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -452,10 +486,10 @@ function showRandomConfirmation(m){
   draw.classList.remove('hidden','locked');requestAnimationFrame(()=>draw.classList.add('show'));
   const candidates=[my,rival],result=$('#randomDrawResult');let n=0;
   const spin=setInterval(()=>{result.textContent=candidates[n++%candidates.length]},120);
-  setTimeout(()=>{clearInterval(spin);result.textContent=final;draw.classList.add('locked')},1450);
-  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},2600);
+  setTimeout(()=>{clearInterval(spin);result.textContent=final;draw.classList.add('locked')},1800);
+  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},3200);
   // Keep BATTLE CONFIRMED on screen long enough to actually read it.
-  setTimeout(()=>{randomFlowActive=false;location.href=m.path},7000);
+  setTimeout(()=>{randomFlowActive=false;location.href=m.path},7400);
 }
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
