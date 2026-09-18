@@ -99,6 +99,13 @@ body.random-cinematic-open{overflow:hidden!important}
 <nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a class="active" href="/" data-nexus-nav="HOME">HOME</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/history" data-nexus-nav="HISTORY">HISTORY</a></div></nav>
 
 <main class="app-shell arena-shell">
+
+<style id="v671-random-cinematic-ios-fix">
+body.random-cinematic-open>header,body.random-cinematic-open>main,body.random-cinematic-open>.cyber-bg{visibility:hidden!important}
+body> .random-match-console.random-cinematic{visibility:visible!important;position:fixed!important;inset:0!important;z-index:2147483640!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-width:none!important;margin:0!important;transform:none!important;overflow:hidden!important}
+body> .random-match-console.random-cinematic *{visibility:visible}
+body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,100%)!important;max-height:100%!important;overflow:hidden!important}
+</style>
 <section id="auth" class="system-panel auth-panel auth-v52">
   <div class="hero-lockup integrated-lockup">
     <img src="/nexus-zero-header-integrated.webp" alt="NEXUS:ZERO 奪え。守れ。生き残れ。" class="hero-logo integrated-header-logo">
@@ -416,7 +423,22 @@ $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizar
 document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false;randomFlowActive=false}showBattleWizard(next)})});
 let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null;
 function randomGameLabel(g){return g==='janken'?'JANKEN':g==='chinchiro'?'CHINCHIRO':'HIT & BLOW'}
-function setRandomCinematic(on,phase='slot'){const c=document.querySelector('#randomBattlePanel .random-match-console');if(!c)return;c.classList.toggle('random-cinematic',!!on);c.classList.remove('phase-slot','phase-select');if(on)c.classList.add(phase==='select'?'phase-select':'phase-slot');document.body.classList.toggle('random-cinematic-open',!!on)}
+let randomCinematicHome=null;
+function setRandomCinematic(on,phase='slot'){
+  const panel=document.querySelector('#randomBattlePanel');
+  const c=panel?.querySelector('.random-match-console')||document.body.querySelector(':scope > .random-match-console.random-cinematic');
+  if(!c)return;
+  if(on){
+    // Portal the cinematic directly under <body>. iOS Safari can make position:fixed behave
+    // like an in-page element when one of its ancestors creates a containing block.
+    if(c.parentElement!==document.body){randomCinematicHome={parent:c.parentElement,next:c.nextSibling};document.body.appendChild(c)}
+    c.classList.add('random-cinematic');c.classList.remove('phase-slot','phase-select');c.classList.add(phase==='select'?'phase-select':'phase-slot');
+    document.body.classList.add('random-cinematic-open');
+  }else{
+    c.classList.remove('random-cinematic','phase-slot','phase-select');document.body.classList.remove('random-cinematic-open');
+    if(randomCinematicHome?.parent){const {parent,next}=randomCinematicHome;next&&next.parentNode===parent?parent.insertBefore(c,next):parent.appendChild(c);randomCinematicHome=null}
+  }
+}
 function startRandomCountdown(m){
   clearInterval(randomCountdownTimer);const el=$('#randomCountdown');if(!el)return;
   const tick=()=>{const started=new Date(m.selectionStartedAt).getTime();const left=Math.max(0,Math.ceil((started+15000-Date.now())/1000));el.textContent=String(Math.min(15,left));el.classList.toggle('danger',left<=5)};
@@ -431,8 +453,9 @@ function showRandomConfirmation(m){
   const candidates=[my,rival],result=$('#randomDrawResult');let n=0;
   const spin=setInterval(()=>{result.textContent=candidates[n++%candidates.length]},120);
   setTimeout(()=>{clearInterval(spin);result.textContent=final;draw.classList.add('locked')},1450);
-  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},2200);
-  setTimeout(()=>{randomFlowActive=false;location.href=m.path},5000);
+  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},2600);
+  // Keep BATTLE CONFIRMED on screen long enough to actually read it.
+  setTimeout(()=>{randomFlowActive=false;location.href=m.path},7000);
 }
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
