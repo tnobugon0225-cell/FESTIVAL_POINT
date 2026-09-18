@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#02050b">
   <title>NEXUS:ZERO</title>
-  <link rel="stylesheet" href="/style.css?v=6.54">
+  <link rel="stylesheet" href="/style.css?v=6.55">
   <style>
     .public-register-entry{margin:22px 0 14px;padding:18px;border:1px solid rgba(92,224,255,.34);background:rgba(2,16,29,.72);box-shadow:inset 3px 0 0 #45dfff,0 0 24px rgba(38,188,255,.08)}
     .public-register-entry .eyebrow{margin-bottom:10px;color:#73e9ff;letter-spacing:.22em;font-size:12px;font-weight:800}
@@ -136,7 +136,7 @@
     <div id="battleStepModes" class="battle-wizard-step hidden">
       <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="root" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span>SELECT BATTLE TYPE</span></div>
       <div class="art-choice-grid two random-mode-grid">
-        <button type="button" id="randomModeBtn" class="art-choice"><img src="/ui/random-match.webp?v=6.54" alt="ランダムマッチ"></button>
+        <button type="button" id="randomModeBtn" class="art-choice"><img src="/ui/random-match.webp?v=6.55" alt="ランダムマッチ"></button>
         <button type="button" id="quickModeBtn" class="art-choice"><img src="/ui/v562/quick-battle.webp" alt="クイックバトル"></button>
         <button type="button" id="customModeBtn" class="art-choice"><img src="/ui/v562/custom-battle.webp" alt="カスタムマッチング"></button>
       </div>
@@ -145,7 +145,7 @@
     <div id="randomBattlePanel" class="battle-mode-panel hidden">
       <div class="wizard-bar"><button type="button" class="wizard-back wizard-back-art" data-battle-back="modes" aria-label="BACK"><img src="/ui/v576/back.webp" alt="BACK"></button><span>RANDOM MATCH</span></div>
       <div class="random-match-console">
-        <img class="random-match-logo" src="/ui/random-match.webp?v=6.54" alt="ランダムマッチ">
+        <img class="random-match-logo" src="/ui/random-match.webp?v=6.55" alt="ランダムマッチ">
         <div class="random-queue-label">ONLINE QUEUE</div><div id="randomWaitingCount" class="random-queue-count">0 <small>PLAYERS WAITING</small></div>
         <div id="randomIdleArea"><p class="random-note">相手を自動検索します。必要ポイント 10pt〜</p><button id="randomJoinBtn" class="random-main-btn">START MATCHING</button></div>
         <div id="randomQueueArea" class="hidden"><div class="random-searching">SEARCHING<span>...</span></div><button id="randomCancelBtn" class="random-cancel-btn">CANCEL</button></div>
@@ -349,7 +349,7 @@ $('#battleHubOpen').onclick=()=>pressRun($('#battleHubOpen'),()=>showBattleWizar
 $('#randomModeBtn').onclick=()=>pressRun($('#randomModeBtn'),()=>{showBattleWizard('random');randomPoll(true)});
 $('#quickModeBtn').onclick=()=>pressRun($('#quickModeBtn'),()=>showBattleWizard('games'));
 $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizard('custom'));
-document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,()=>showBattleWizard(next))});
+document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false}showBattleWizard(next)})});
 let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false;
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
