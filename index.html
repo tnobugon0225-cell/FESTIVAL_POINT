@@ -201,6 +201,9 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside{position:abso
 body>.random-match-console.random-cinematic .gamefx-confirm-inside strong{font-size:clamp(18px,5.3vw,30px)!important;line-height:1!important;white-space:nowrap!important;color:#fff!important}
 body>.random-match-console.random-cinematic .gamefx-confirm-inside span{font-size:clamp(14px,4vw,22px)!important;color:#7feaff!important;font-weight:900!important}
 body>.random-match-console.random-cinematic .gamefx-start-pulse{margin-top:8px!important;color:#bdf7ff!important;font-weight:900!important;letter-spacing:.32em!important;animation:gamefxReady 1s ease-in-out infinite alternate!important}
+body>.random-match-console.random-cinematic .random-choice-state{font-size:14px!important;letter-spacing:.18em!important;color:#93efff!important;min-height:22px!important}
+body>.random-match-console.random-cinematic #randomWagerSlot.locked{animation:slotLockedPulse .8s ease 2!important}
+@keyframes slotLockedPulse{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
 @keyframes gamefxReady{to{opacity:.35;text-shadow:0 0 18px #45ddff}}
 @media(max-width:390px){body>.random-match-console.random-cinematic .gamefx-picks{grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr)!important}body>.random-match-console.random-cinematic .gamefx-pick img{max-width:165px!important}}
 </style>
@@ -532,7 +535,7 @@ $('#randomModeBtn').onclick=()=>pressRun($('#randomModeBtn'),()=>{randomFlowActi
 $('#quickModeBtn').onclick=()=>pressRun($('#quickModeBtn'),()=>showBattleWizard('games'));
 $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizard('custom'));
 document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false;randomFlowActive=false}showBattleWizard(next)})});
-let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null;
+let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null,randomSlotRevealUntil=0,randomReadyTimer=null;
 function randomGameLabel(g){return g==='janken'?'JANKEN':g==='chinchiro'?'CHINCHIRO':'HIT & BLOW'}
 function randomGameArt(g){const k=g==='janken'?'janken':g==='chinchiro'?'chinchiro':'hitblow';return `/ui/v562/${k}.webp`}
 let randomCinematicHome=null;
@@ -557,6 +560,7 @@ function startRandomCountdown(m){
   tick();randomCountdownTimer=setInterval(tick,200);
 }
 function showRandomConfirmation(m){
+  clearTimeout(randomReadyTimer);
   if(randomReadyShownId===m.id)return;setRandomCinematic(true,'select');randomReadyShownId=m.id;clearInterval(randomCountdownTimer);
   const draw=$('#randomDrawOverlay'),confirm=$('#randomConfirmOverlay');
   const myKey=m.myChoice||m.selectedGame,rivalKey=m.rivalChoice||m.selectedGame,finalKey=m.selectedGame;
@@ -578,10 +582,16 @@ function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
   const m=data.match||null;
   $('#randomIdleArea').classList.toggle('hidden',!!m||!!data.queued);$('#randomQueueArea').classList.toggle('hidden',!!m||!data.queued);$('#randomMatchedArea').classList.toggle('hidden',!m);
-  if(!m){clearInterval(randomCountdownTimer);setRandomCinematic(false);return}
+  if(!m){clearInterval(randomCountdownTimer);clearTimeout(randomReadyTimer);randomSlotRevealUntil=0;setRandomCinematic(false);return}
   if(randomLastMatchId!==m.id){randomLastMatchId=m.id;randomSlotDone=false;randomReadyShownId=null;setRandomCinematic(true,'slot');document.querySelectorAll('[data-random-game]').forEach(b=>{b.disabled=true;b.classList.remove('selected')});runRandomWagerSlot(m.wager,()=>{setRandomCinematic(true,'select');document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=!!m.myChoice);startRandomCountdown(m)})}
   if(m.myChoice){document.querySelectorAll('[data-random-game]').forEach(b=>b.disabled=true);$('#randomChoiceState').textContent=m.rivalLocked?'BOTH PLAYERS LOCKED // DRAWING GAME...':'LOCKED // WAITING FOR RIVAL'}
-  if(m.status==='ready'&&m.path)showRandomConfirmation(m)
+  if(m.status==='ready'&&m.path){
+    const wait=Math.max(0,randomSlotRevealUntil-Date.now());
+    if(wait>0){
+      clearTimeout(randomReadyTimer);
+      randomReadyTimer=setTimeout(()=>showRandomConfirmation(m),wait+120);
+    }else showRandomConfirmation(m)
+  }
 }
 function runRandomWagerSlot(finalWager,done){
   if(randomSlotDone)return;randomSlotDone=true;const el=$('#randomWagerSlot'),vals=[10,20,30];el.classList.remove('locked');el.classList.add('rolling');
@@ -591,11 +601,29 @@ function runRandomWagerSlot(finalWager,done){
   if(!valueEl){valueEl=document.createElement('span');el.appendChild(valueEl)}
   if(!unitEl){unitEl=document.createElement('small');unitEl.textContent='pt';el.appendChild(unitEl)}
   const setValue=v=>{valueEl.textContent=String(v)};
-  const spin=()=>{if(stopped)return;const elapsed=performance.now()-start;setValue(vals[i++%3]);if(elapsed>1700)delay=115;if(elapsed>2200)delay=190;if(elapsed>2550){stopped=true;setValue(finalWager);el.classList.remove('rolling');el.classList.add('locked');$('#randomChoiceState').textContent='BATTLE POINT LOCKED';setTimeout(()=>{$('#randomChoiceState').textContent='SELECT ONE GAME';done?.()},350);return}setTimeout(spin,delay)};spin();
+  const spin=()=>{
+    if(stopped)return;
+    const elapsed=performance.now()-start;
+    setValue(vals[i++%3]);
+    if(elapsed>1700)delay=115;
+    if(elapsed>2200)delay=190;
+    if(elapsed>2550){
+      stopped=true;
+      setValue(finalWager);
+      el.classList.remove('rolling');
+      el.classList.add('locked');
+      $('#randomChoiceState').textContent=`${finalWager} PT LOCKED`;
+      randomSlotRevealUntil=Date.now()+1450;
+      setTimeout(()=>{$('#randomChoiceState').textContent='SELECT ONE GAME';done?.()},1450);
+      return;
+    }
+    setTimeout(spin,delay)
+  };
+  spin();
 }
 async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden'))return;try{randomSetView(await api('/api/random-match/status'))}catch(e){}},700)}}catch(e){}}
 $('#randomJoinBtn').onclick=async()=>{randomFlowActive=true;const b=$('#randomJoinBtn');b.disabled=true;try{randomSetView(await api('/api/random-match/join',{method:'POST'}));await randomPoll()}catch(e){alert(e.message)}finally{b.disabled=false}};
-$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});setRandomCinematic(false);randomFlowActive=false;randomLastMatchId=null;clearInterval(randomCountdownTimer);randomSetView(await api('/api/random-match/status'))};
+$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});setRandomCinematic(false);randomFlowActive=false;randomLastMatchId=null;clearInterval(randomCountdownTimer);clearTimeout(randomReadyTimer);randomSlotRevealUntil=0;randomSetView(await api('/api/random-match/status'))};
 document.querySelectorAll('[data-random-game]').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=true);b.classList.add('selected');$('#randomChoiceState').textContent='CHOICE LOCKED';try{const r=await api('/api/random-match/choice',{method:'POST',body:JSON.stringify({gameType:b.dataset.randomGame})});randomSetView({waiting:Number($('#randomWaitingCount').textContent)||0,queued:false,match:r.match})}catch(e){$('#randomChoiceState').textContent=e.message;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=false)}});
 let selectedQuickGame='hitblow';
 document.querySelectorAll('.quick-game-card[data-game]').forEach(card=>card.addEventListener('click',()=>{pressRun(card,()=>{selectedQuickGame=card.dataset.game;const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';$('#quickEntryName').textContent=label;showBattleWizard('quick-entry')})}));
