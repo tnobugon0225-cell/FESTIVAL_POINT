@@ -338,7 +338,7 @@ async function auth(mode){
     $('#authMsg').textContent=e.message
   }finally{loginBtn.disabled=false}
 }
-let currentMatch=null,matchPollTimer=null,lastRequestNoticeId=null;
+let currentMatch=null,matchPollTimer=null,lastRequestNoticeId=null,randomFlowActive=false;
 function incomingNeedsDecision(m){return m&&m.status==='pending'&&((m.kind==='quick'&&m.role==='opponent'&&!m.opponentApproved)||(m.kind!=='quick'&&((m.role==='opponent'&&!m.opponentApproved)||(m.role==='referee'&&!m.refereeApproved))))}
 function quickGameName(m){return m.gameType==='janken'?'JANKEN BO5':m.gameType==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW'}
 function quickGamePath(m){return m.gameType==='janken'?'/janken':m.gameType==='chinchiro'?'/chinchiro':'/hit-blow'}
@@ -346,7 +346,15 @@ function requestRoleText(m){if(m.kind==='quick')return `QUICK BATTLE / ${quickGa
 function requestTitle(p){const k=String(p?.titleKey||p?.title?.key||'rookie');return `/titles/${k}.webp`}function renderRequestInfo(m){if(m.kind==='quick')return `<div class="request-game-tag">QUICK BATTLE // ${m.gameType==='janken'?'JANKEN BO5':m.gameType==='chinchiro'?'CHINCHIRO BO3':'CODE BREAK'}</div><div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><img class="request-title-img" src="${requestTitle(m.challenger)}" alt=""><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><img class="request-title-img" src="${requestTitle(m.opponent)}" alt=""><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta quick-request-meta"><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`;return `<div class="request-versus"><div class="request-player"><img src="${avatarSrc(m.challenger.avatarKey)}" alt=""><span>CHALLENGER</span><img class="request-title-img" src="${requestTitle(m.challenger)}" alt=""><strong>${esc(m.challenger.name)}</strong><small>ID ${esc(m.challenger.code)}</small></div><b>VS</b><div class="request-player"><img src="${avatarSrc(m.opponent.avatarKey)}" alt=""><span>RIVAL</span><img class="request-title-img" src="${requestTitle(m.opponent)}" alt=""><strong>${esc(m.opponent.name)}</strong><small>ID ${esc(m.opponent.code)}</small></div></div><div class="request-meta"><span class="request-referee"><img class="request-referee-avatar" src="${avatarSrc(m.referee.avatarKey)}" alt=""><i>REFEREE</i><img class="request-referee-title request-title-img" src="${requestTitle(m.referee)}" alt=""><strong>${esc(m.referee.name)}</strong></span><span>BATTLE POINTS <strong>${Number(m.wager).toLocaleString()} pt</strong></span></div>`}
 function showBattleRequest(m){currentMatch=m;lastRequestNoticeId=`${m.kind||'custom'}-${m.id}`;$('#battleRequestRole').textContent=requestRoleText(m);$('#battleRequestInfo').innerHTML=renderRequestInfo(m);$('#battleRequestMsg').textContent='';$('#battleRequestOverlay').classList.remove('hidden');document.body.classList.add('modal-lock')}
 function hideBattleRequest(){$('#battleRequestOverlay').classList.add('hidden');document.body.classList.remove('modal-lock')}
-async function checkMatchNotification(){if(!authToken)return;try{const qr=await api('/api/quick-matches/me');const qm=qr.match||null;if(qm){currentMatch=qm;if(incomingNeedsDecision(qm)){const key=`quick-${qm.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(qm);return}hideBattleRequest();if(['pending','setup','in_progress'].includes(qm.status)){location.href=quickGamePath(qm);return}}const r=await api('/api/matches/me');const m=r.match||null;currentMatch=m;if(!m){hideBattleRequest();return}if(incomingNeedsDecision(m)){const key=`custom-${m.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(m);return}hideBattleRequest();if(['pending','matched','in_progress'].includes(m.status)&&location.pathname!=='/match')location.href='/match'}catch(e){}}
+async function checkMatchNotification(){if(!authToken)return;try{
+  // RANDOM MATCH owns navigation while its selection/confirmation sequence is active.
+  // This prevents the quick-match record created behind the scenes from skipping the slot/game animations.
+  if(randomFlowActive)return;
+  const rd=await api('/api/random-match/status').catch(()=>null);
+  if(rd?.match&&['selecting','ready'].includes(rd.match.status)){
+    randomFlowActive=true;showBattleWizard('random');randomSetView(rd);randomPoll(true);return;
+  }
+  const qr=await api('/api/quick-matches/me');const qm=qr.match||null;if(qm){currentMatch=qm;if(incomingNeedsDecision(qm)){const key=`quick-${qm.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(qm);return}hideBattleRequest();if(['pending','setup','in_progress'].includes(qm.status)){location.href=quickGamePath(qm);return}}const r=await api('/api/matches/me');const m=r.match||null;currentMatch=m;if(!m){hideBattleRequest();return}if(incomingNeedsDecision(m)){const key=`custom-${m.id}`;if($('#battleRequestOverlay').classList.contains('hidden')&&lastRequestNoticeId!==key)showBattleRequest(m);return}hideBattleRequest();if(['pending','matched','in_progress'].includes(m.status)&&location.pathname!=='/match')location.href='/match'}catch(e){}}
 function startMatchPolling(){clearInterval(matchPollTimer);matchPollTimer=setInterval(checkMatchNotification,3000)}
 $('#battleRequestApprove').onclick=async()=>{if(!currentMatch)return;const btn=$('#battleRequestApprove');btn.disabled=true;$('#battleRequestMsg').textContent='承認処理中...';try{if(currentMatch.kind==='quick'){await api(`/api/quick-matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent=`承認しました。${quickGameName(currentMatch)}へ接続します。`;await sleep(350);location.href=quickGamePath(currentMatch)}else{await api(`/api/matches/${currentMatch.id}/approve`,{method:'POST'});$('#battleRequestMsg').textContent='承認しました。対戦画面へ接続します。';await sleep(350);location.href='/match'}}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=`承認できませんでした：${e.message}`;btn.disabled=false}};
 $('#battleRequestReject').onclick=async()=>{if(!currentMatch)return;if(!confirm('この対戦申請を拒否しますか？'))return;const btn=$('#battleRequestReject');btn.disabled=true;try{const url=currentMatch.kind==='quick'?`/api/quick-matches/${currentMatch.id}/reject`:`/api/matches/${currentMatch.id}/reject`;await api(url,{method:'POST'});currentMatch=null;hideBattleRequest();lastRequestNoticeId=null}catch(e){$('#battleRequestMsg').className='match-action-msg error';$('#battleRequestMsg').textContent=e.message;btn.disabled=false}};
@@ -370,10 +378,10 @@ function showBattleWizard(step){
   }
 }
 $('#battleHubOpen').onclick=()=>pressRun($('#battleHubOpen'),()=>showBattleWizard('modes'));
-$('#randomModeBtn').onclick=()=>pressRun($('#randomModeBtn'),()=>{showBattleWizard('random');randomPoll(true)});
+$('#randomModeBtn').onclick=()=>pressRun($('#randomModeBtn'),()=>{randomFlowActive=true;showBattleWizard('random');randomPoll(true)});
 $('#quickModeBtn').onclick=()=>pressRun($('#quickModeBtn'),()=>showBattleWizard('games'));
 $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizard('custom'));
-document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false}showBattleWizard(next)})});
+document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false;randomFlowActive=false}showBattleWizard(next)})});
 let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null;
 function randomGameLabel(g){return g==='janken'?'JANKEN':g==='chinchiro'?'CHINCHIRO':'HIT & BLOW'}
 function startRandomCountdown(m){
@@ -391,7 +399,7 @@ function showRandomConfirmation(m){
   const spin=setInterval(()=>{result.textContent=candidates[n++%candidates.length]},120);
   setTimeout(()=>{clearInterval(spin);result.textContent=final;draw.classList.add('locked')},1450);
   setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>draw.classList.add('hidden'),180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} BATTLE POINTS`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},2200);
-  setTimeout(()=>{location.href=m.path},5000);
+  setTimeout(()=>{randomFlowActive=false;location.href=m.path},5000);
 }
 function randomSetView(data){
   $('#randomWaitingCount').innerHTML=`${Number(data.waiting||0)} <small>PLAYERS WAITING</small>`;
@@ -405,11 +413,16 @@ function randomSetView(data){
 function runRandomWagerSlot(finalWager,done){
   if(randomSlotDone)return;randomSlotDone=true;const el=$('#randomWagerSlot'),vals=[10,20,30];el.classList.remove('locked');el.classList.add('rolling');
   let i=0,delay=62,stopped=false;const start=performance.now();
-  const spin=()=>{if(stopped)return;const elapsed=performance.now()-start;el.innerHTML=`<span>${vals[i++%3]}</span><small>pt</small>`;if(elapsed>1700)delay=115;if(elapsed>2200)delay=190;if(elapsed>2550){stopped=true;el.innerHTML=`<span>${finalWager}</span><small>pt</small>`;el.classList.remove('rolling');el.classList.add('locked');$('#randomChoiceState').textContent='BATTLE POINT LOCKED';setTimeout(()=>{$('#randomChoiceState').textContent='SELECT ONE GAME';done?.()},350);return}setTimeout(spin,delay)};spin();
+  // Keep the slot artwork mounted; only change the number. Replacing innerHTML used to delete the art.
+  let valueEl=el.querySelector('span');let unitEl=el.querySelector('small');
+  if(!valueEl){valueEl=document.createElement('span');el.appendChild(valueEl)}
+  if(!unitEl){unitEl=document.createElement('small');unitEl.textContent='pt';el.appendChild(unitEl)}
+  const setValue=v=>{valueEl.textContent=String(v)};
+  const spin=()=>{if(stopped)return;const elapsed=performance.now()-start;setValue(vals[i++%3]);if(elapsed>1700)delay=115;if(elapsed>2200)delay=190;if(elapsed>2550){stopped=true;setValue(finalWager);el.classList.remove('rolling');el.classList.add('locked');$('#randomChoiceState').textContent='BATTLE POINT LOCKED';setTimeout(()=>{$('#randomChoiceState').textContent='SELECT ONE GAME';done?.()},350);return}setTimeout(spin,delay)};spin();
 }
 async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden'))return;try{randomSetView(await api('/api/random-match/status'))}catch(e){}},700)}}catch(e){}}
-$('#randomJoinBtn').onclick=async()=>{const b=$('#randomJoinBtn');b.disabled=true;try{randomSetView(await api('/api/random-match/join',{method:'POST'}));await randomPoll()}catch(e){alert(e.message)}finally{b.disabled=false}};
-$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});randomLastMatchId=null;clearInterval(randomCountdownTimer);randomSetView(await api('/api/random-match/status'))};
+$('#randomJoinBtn').onclick=async()=>{randomFlowActive=true;const b=$('#randomJoinBtn');b.disabled=true;try{randomSetView(await api('/api/random-match/join',{method:'POST'}));await randomPoll()}catch(e){alert(e.message)}finally{b.disabled=false}};
+$('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});randomFlowActive=false;randomLastMatchId=null;clearInterval(randomCountdownTimer);randomSetView(await api('/api/random-match/status'))};
 document.querySelectorAll('[data-random-game]').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=true);b.classList.add('selected');$('#randomChoiceState').textContent='CHOICE LOCKED';try{const r=await api('/api/random-match/choice',{method:'POST',body:JSON.stringify({gameType:b.dataset.randomGame})});randomSetView({waiting:Number($('#randomWaitingCount').textContent)||0,queued:false,match:r.match})}catch(e){$('#randomChoiceState').textContent=e.message;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=false)}});
 let selectedQuickGame='hitblow';
 document.querySelectorAll('.quick-game-card[data-game]').forEach(card=>card.addEventListener('click',()=>{pressRun(card,()=>{selectedQuickGame=card.dataset.game;const label=selectedQuickGame==='janken'?'JANKEN BO5':selectedQuickGame==='chinchiro'?'CHINCHIRO BO3':'HIT & BLOW';$('#quickEntryName').textContent=label;showBattleWizard('quick-entry')})}));
