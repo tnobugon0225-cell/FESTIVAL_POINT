@@ -668,7 +668,7 @@ function showRandomConfirmation(m){
     let delay=110;if(elapsed>900)delay=175;if(elapsed>1500)delay=260;if(elapsed>2050)delay=390;
     if(elapsed>2450){stopped=true;const wi=(finalKey===rivalKey&&finalKey!==myKey)?1:0;pickCards.forEach((x,i)=>{x.classList.remove('draw-hot');x.classList.toggle('draw-winner',i===wi)});result.textContent='GAME DECIDED';
       setTimeout(()=>{document.querySelector('.gamefx-picks').style.display='none';result.style.display='none';$('#randomWinnerImg').src=randomGameArt(finalKey);$('#randomWinnerLabel').textContent=final;hero.classList.remove('hidden')},450);return}setTimeout(step,delay)};step();
-  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>{draw.classList.add('hidden');const picks=document.querySelector('.gamefx-picks');if(picks)picks.style.display='';result.style.display='';hero.classList.add('hidden')},180);$('#randomConfirmGame').textContent=final;$('#randomConfirmGameLogo').src=randomGameArt(finalKey);$('#randomConfirmWager').textContent=`${m.wager} PT`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},5100);
+  setTimeout(()=>{draw.classList.remove('show');setTimeout(()=>{draw.classList.add('hidden');const picks=document.querySelector('.gamefx-picks');if(picks)picks.style.display='';result.style.display='';hero.classList.add('hidden')},180);$('#randomConfirmGame').textContent=final;$('#randomConfirmWager').textContent=`${m.wager} PT`;confirm.classList.remove('hidden');requestAnimationFrame(()=>confirm.classList.add('show'))},5100);
   setTimeout(()=>{randomFlowActive=false;location.href=m.path},9300);
 }
 function randomSetView(data){
