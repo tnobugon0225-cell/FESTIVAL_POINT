@@ -258,6 +258,48 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
 }
 </style>
 
+
+<style id="v684-confirm-stage-lock">
+/* v684 — confirmation artwork and labels share one immutable 900x507 coordinate plane. */
+#randomConfirmOverlay .random-confirm-stage{
+  position:relative!important;
+  width:min(650px,96vw)!important;
+  aspect-ratio:900/507!important;
+  margin:0 auto!important;
+  flex:0 0 auto!important;
+}
+#randomConfirmOverlay .random-confirm-stage-art{
+  position:absolute!important;inset:0!important;
+  display:block!important;width:100%!important;height:100%!important;
+  max-width:none!important;max-height:none!important;object-fit:fill!important;
+  margin:0!important;transform:none!important;
+}
+#randomConfirmOverlay .random-confirm-stage-labels{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  pointer-events:none!important;transform:none!important;
+}
+#randomConfirmOverlay #randomConfirmGame{
+  display:flex!important;position:absolute!important;
+  left:24.5%!important;top:37.5%!important;width:51%!important;height:16.6%!important;
+  align-items:center!important;justify-content:center!important;
+  margin:0!important;padding:0!important;transform:none!important;text-align:center!important;
+  color:#f4fdff!important;font-size:clamp(15px,4.1vw,23px)!important;line-height:1!important;
+  font-weight:1000!important;letter-spacing:.055em!important;white-space:nowrap!important;
+  -webkit-text-stroke:.3px rgba(255,255,255,.9)!important;
+  text-shadow:0 0 2px #fff,0 0 7px #79f7ff,0 0 14px #00d9ff,0 0 22px #684cff!important;
+  filter:drop-shadow(0 0 4px rgba(66,226,255,.8))!important;
+}
+#randomConfirmOverlay #randomConfirmWager{
+  display:flex!important;position:absolute!important;
+  left:32.5%!important;top:58.4%!important;width:35%!important;height:10.7%!important;
+  align-items:center!important;justify-content:center!important;
+  margin:0!important;padding:0!important;transform:none!important;text-align:center!important;
+  color:#8df4ff!important;font-size:clamp(10px,2.8vw,15px)!important;line-height:1!important;
+  font-weight:1000!important;letter-spacing:.06em!important;white-space:nowrap!important;
+  text-shadow:0 0 5px #22dfff,0 0 10px rgba(70,126,255,.9)!important;
+}
+#randomConfirmOverlay #randomConfirmGame::before,#randomConfirmOverlay #randomConfirmGame::after{display:none!important;content:none!important}
+</style>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -383,7 +425,7 @@ body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,
             <button data-random-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="HIT & BLOW"></button><button data-random-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button><button data-random-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
           </div><div id="randomChoiceState" class="random-choice-state">SELECT ONE GAME</div>
         </div>
-        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core gamefx-draw"><span>GAME DRAW</span><div class="gamefx-picks"><div class="gamefx-pick" data-side="my"><small>YOUR PICK</small><img id="randomMyPickImg" src="/ui/v562/hitblow.webp" alt=""><em id="randomMyPick">---</em></div><i>OR</i><div class="gamefx-pick" data-side="rival"><small>RIVAL PICK</small><img id="randomRivalPickImg" src="/ui/v562/janken.webp" alt=""><em id="randomRivalPick">---</em></div></div><div id="randomDrawResult" class="gamefx-result">DRAWING</div><div id="randomWinnerHero" class="gamefx-winner hidden"><img id="randomWinnerImg" src="/ui/v562/hitblow.webp" alt=""><strong id="randomWinnerLabel">HIT &amp; BLOW</strong><small>GAME DECIDED</small></div></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core gamefx-confirm"><div class="gamefx-confirm-art"><img class="random-confirm-art" src="/random-confirm-art.webp?v=660" alt="BATTLE CONFIRMED"><img id="randomConfirmGameLogo" class="gamefx-confirm-game-logo" src="/ui/v562/hitblow.webp" alt=""><div class="gamefx-confirm-inside"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><span id="randomConfirmWager">10 PT</span></div></div><div class="gamefx-start-pulse">READY</div></div></div>
+        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core gamefx-draw"><span>GAME DRAW</span><div class="gamefx-picks"><div class="gamefx-pick" data-side="my"><small>YOUR PICK</small><img id="randomMyPickImg" src="/ui/v562/hitblow.webp" alt=""><em id="randomMyPick">---</em></div><i>OR</i><div class="gamefx-pick" data-side="rival"><small>RIVAL PICK</small><img id="randomRivalPickImg" src="/ui/v562/janken.webp" alt=""><em id="randomRivalPick">---</em></div></div><div id="randomDrawResult" class="gamefx-result">DRAWING</div><div id="randomWinnerHero" class="gamefx-winner hidden"><img id="randomWinnerImg" src="/ui/v562/hitblow.webp" alt=""><strong id="randomWinnerLabel">HIT &amp; BLOW</strong><small>GAME DECIDED</small></div></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core gamefx-confirm"><div class="random-confirm-stage"><img class="random-confirm-stage-art" src="/random-confirm-art.webp?v=684" alt="BATTLE CONFIRMED"><div class="random-confirm-stage-labels"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><span id="randomConfirmWager">10 PT</span></div></div><div class="gamefx-start-pulse">READY</div></div></div>
       </div>
     </div>
 
