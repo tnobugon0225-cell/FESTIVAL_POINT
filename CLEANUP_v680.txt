@@ -1,0 +1,7 @@
+NEXUS:ZERO v6.80 cleanup
+- RANDOM MATCH late-stage CSS overrides v675/v676/v679 were consolidated into one v680 block.
+- Point-slot digits were reduced again.
+- BATTLE CONFIRMED game label and wager now share one artwork-relative coordinate system.
+- Wager was moved down into the lower BATTLE POINTS frame.
+- Browser stylesheet version bumped to v6.80.
+- Removed only obvious numbered/versioned backup files; runtime/current pages, assets, DB files and BGM were preserved.
