@@ -300,6 +300,45 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
 }
 #randomConfirmOverlay #randomConfirmGame::before,#randomConfirmOverlay #randomConfirmGame::after{display:none!important;content:none!important}
 </style>
+
+<style id="v686-random-art-fit">
+/* v6.86 — lock RANDOM MATCH artwork to its own aspect ratio so no side is clipped on mobile. */
+#randomWagerSlot{
+  position:relative!important;
+  display:block!important;
+  width:min(560px,calc(100vw - 48px))!important;
+  max-width:100%!important;
+  height:auto!important;min-height:0!important;
+  aspect-ratio:3/1!important;
+  margin:8px auto 12px!important;
+  overflow:visible!important;
+  border:0!important;background:transparent!important;box-shadow:none!important;clip-path:none!important;
+}
+#randomWagerSlot>.random-slot-art{
+  display:block!important;position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+  object-fit:contain!important;object-position:center!important;transform:none!important;margin:0!important;
+}
+#randomWagerSlot>span{
+  position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;
+  width:auto!important;min-width:2ch!important;margin:0!important;z-index:2!important;
+  font-size:clamp(28px,7.5vw,44px)!important;line-height:1!important;text-align:center!important;
+}
+#randomWagerSlot>small{
+  position:absolute!important;left:61.5%!important;top:51%!important;right:auto!important;bottom:auto!important;
+  transform:translate(-50%,-50%)!important;margin:0!important;z-index:2!important;
+  font-size:clamp(9px,2.4vw,13px)!important;line-height:1!important;
+}
+#randomConfirmOverlay .random-confirm-stage{
+  width:min(620px,calc(100vw - 40px))!important;max-width:calc(100vw - 40px)!important;
+  aspect-ratio:900/507!important;overflow:visible!important;
+}
+#randomConfirmOverlay .random-confirm-stage-art{object-fit:contain!important;object-position:center!important;}
+@media(max-width:390px){
+  #randomWagerSlot{width:calc(100vw - 36px)!important;}
+  #randomConfirmOverlay .random-confirm-stage{width:calc(100vw - 28px)!important;max-width:calc(100vw - 28px)!important;}
+}
+</style>
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -419,13 +458,13 @@ body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,
         <div id="randomIdleArea"><p class="random-note">相手を自動検索します。必要ポイント 10pt〜</p><button id="randomJoinBtn" class="random-main-btn random-image-btn" aria-label="START MATCHING" style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:72px!important;min-height:72px!important;max-height:72px!important;padding:0!important;margin:12px 0 0!important;overflow:hidden!important;border:0!important;background:transparent!important;box-shadow:none!important"><img src="/random-start-art.webp?v=665" alt="START MATCHING" width="900" height="640" style="display:block!important;width:280px!important;height:64px!important;min-width:280px!important;min-height:64px!important;max-width:none!important;max-height:none!important;object-fit:contain!important;margin:0 auto!important;transform:scale(1.75)!important;transform-origin:center center!important"></button></div>
         <div id="randomQueueArea" class="hidden"><div class="random-searching">SEARCHING<span>...</span></div><button id="randomCancelBtn" class="random-cancel-btn random-image-btn" aria-label="CANCEL" style="display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;height:72px!important;min-height:72px!important;max-height:72px!important;padding:0!important;margin:12px 0 0!important;overflow:hidden!important;border:0!important;background:transparent!important;box-shadow:none!important"><img src="/random-cancel-art.webp?v=664" alt="CANCEL" width="900" height="640" style="display:block!important;width:280px!important;height:64px!important;max-width:86vw!important;max-height:64px!important;object-fit:contain!important;margin:0 auto!important"></button></div>
         <div id="randomMatchedArea" class="hidden">
-          <div class="random-found">MATCH FOUND</div><div class="random-slot-label">BATTLE POINT SLOT</div><div id="randomWagerSlot" class="random-wager-slot"><img class="random-slot-art" src="/random-point-slot-art.webp?v=660" alt=""><span>10</span><small>pt</small></div>
+          <div class="random-found">MATCH FOUND</div><div class="random-slot-label">BATTLE POINT SLOT</div><div id="randomWagerSlot" class="random-wager-slot"><img class="random-slot-art" src="/random-point-slot-art.webp?v=686" alt=""><span>10</span><small>pt</small></div>
           <div class="random-game-title">SELECT YOUR GAME <strong id="randomCountdown">15</strong><small>SEC</small></div>
           <div class="random-game-select">
             <button data-random-game="hitblow"><img src="/ui/v562/hitblow.webp" alt="HIT & BLOW"></button><button data-random-game="janken"><img src="/ui/v562/janken.webp" alt="ジャンケン"></button><button data-random-game="chinchiro"><img src="/ui/v562/chinchiro.webp" alt="チンチロ"></button>
           </div><div id="randomChoiceState" class="random-choice-state">SELECT ONE GAME</div>
         </div>
-        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core gamefx-draw"><span>GAME DRAW</span><div class="gamefx-picks"><div class="gamefx-pick" data-side="my"><small>YOUR PICK</small><img id="randomMyPickImg" src="/ui/v562/hitblow.webp" alt=""><em id="randomMyPick">---</em></div><i>OR</i><div class="gamefx-pick" data-side="rival"><small>RIVAL PICK</small><img id="randomRivalPickImg" src="/ui/v562/janken.webp" alt=""><em id="randomRivalPick">---</em></div></div><div id="randomDrawResult" class="gamefx-result">DRAWING</div><div id="randomWinnerHero" class="gamefx-winner hidden"><img id="randomWinnerImg" src="/ui/v562/hitblow.webp" alt=""><strong id="randomWinnerLabel">HIT &amp; BLOW</strong><small>GAME DECIDED</small></div></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core gamefx-confirm"><div class="random-confirm-stage"><img class="random-confirm-stage-art" src="/random-confirm-art.webp?v=684" alt="BATTLE CONFIRMED"><div class="random-confirm-stage-labels"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><span id="randomConfirmWager">10 PT</span></div></div><div class="gamefx-start-pulse">READY</div></div></div>
+        <div id="randomDrawOverlay" class="random-draw-overlay hidden"><div class="random-draw-core gamefx-draw"><span>GAME DRAW</span><div class="gamefx-picks"><div class="gamefx-pick" data-side="my"><small>YOUR PICK</small><img id="randomMyPickImg" src="/ui/v562/hitblow.webp" alt=""><em id="randomMyPick">---</em></div><i>OR</i><div class="gamefx-pick" data-side="rival"><small>RIVAL PICK</small><img id="randomRivalPickImg" src="/ui/v562/janken.webp" alt=""><em id="randomRivalPick">---</em></div></div><div id="randomDrawResult" class="gamefx-result">DRAWING</div><div id="randomWinnerHero" class="gamefx-winner hidden"><img id="randomWinnerImg" src="/ui/v562/hitblow.webp" alt=""><strong id="randomWinnerLabel">HIT &amp; BLOW</strong><small>GAME DECIDED</small></div></div></div><div id="randomConfirmOverlay" class="random-confirm-overlay hidden"><div class="random-confirm-core gamefx-confirm"><div class="random-confirm-stage"><img class="random-confirm-stage-art" src="/random-confirm-art.webp?v=686" alt="BATTLE CONFIRMED"><div class="random-confirm-stage-labels"><strong id="randomConfirmGame">HIT &amp; BLOW</strong><span id="randomConfirmWager">10 PT</span></div></div><div class="gamefx-start-pulse">READY</div></div></div>
       </div>
     </div>
 
