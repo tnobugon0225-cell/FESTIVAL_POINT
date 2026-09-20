@@ -39,7 +39,8 @@
   <script src="/bgm.js" defer></script>
   <script src="/ui-fx.js" defer></script>
 
-<style id="v656-random-match-layout-lock">
+<style id="random-match-canonical-v688">
+/* Consolidated from the approved v6.56-v6.86 RANDOM MATCH fixes. Declaration order preserved. */
 /* v6.56: self-contained RANDOM MATCH art + final mobile sizing. */
 #battleStepModes .random-mode-grid{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;width:100%!important;max-width:680px!important;margin:0 auto!important;align-items:center!important}
 #battleStepModes .random-mode-grid>.art-choice{display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;height:auto!important;aspect-ratio:1/1!important;padding:2px!important;margin:0!important;border:0!important;background:transparent!important;overflow:visible!important;clip-path:none!important}
@@ -55,14 +56,11 @@
  #randomBattlePanel .random-game-select{max-width:100%!important;gap:3px!important}
  #randomBattlePanel .random-game-select>button{padding:1px!important}
 }
-</style>
-<style id="v663-random-button-inline-lock">
+
 #randomBattlePanel{contain:inline-size!important;max-width:100%!important;overflow-x:hidden!important}
 #randomBattlePanel #randomIdleArea,#randomBattlePanel #randomQueueArea{width:100%!important;max-width:100%!important;min-width:0!important;overflow:hidden!important}
 @media(max-width:520px){#randomBattlePanel #randomJoinBtn{height:82px!important;min-height:82px!important;max-height:82px!important}#randomBattlePanel #randomJoinBtn>img{width:330px!important;height:74px!important;max-width:92vw!important;max-height:74px!important}#randomBattlePanel #randomCancelBtn{height:62px!important;min-height:62px!important;max-height:62px!important}#randomBattlePanel #randomCancelBtn>img{width:250px!important;height:56px!important;max-width:82vw!important;max-height:56px!important}}
-</style>
 
-<style id="v670-random-cinematic-flow">
 /* RANDOM MATCH is a cinematic, one-phase-at-a-time fullscreen flow on mobile. */
 body.random-cinematic-open{overflow:hidden!important}
 #randomBattlePanel .random-match-console.random-cinematic{position:fixed!important;inset:0!important;z-index:2147483000!important;width:100vw!important;height:100dvh!important;max-width:none!important;margin:0!important;padding:max(18px,env(safe-area-inset-top)) 16px max(18px,env(safe-area-inset-bottom))!important;box-sizing:border-box!important;background:radial-gradient(circle at 50% 38%,rgba(0,115,190,.18),transparent 38%),rgba(1,7,15,.985)!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
@@ -91,10 +89,7 @@ body.random-cinematic-open{overflow:hidden!important}
 .random-cinematic .random-confirm-art{display:block!important;width:min(460px,90vw)!important;max-height:42dvh!important;object-fit:contain!important;margin:0 auto 14px!important}
 .random-cinematic .random-confirm-copy strong{font-size:clamp(30px,9vw,54px)!important}.random-cinematic .random-confirm-copy div{font-size:clamp(18px,5vw,28px)!important;color:#7cecff!important;margin-top:8px!important}
 @media(max-height:680px){.random-cinematic .random-found{font-size:25px!important}.random-cinematic .random-wager-slot{height:145px!important;min-height:145px!important}.random-cinematic .random-game-select{width:min(450px,92%)!important}.random-cinematic .random-game-title{font-size:17px!important}}
-</style>
 
-
-<style id="v672-random-stage-rebuild">
 /* Isolated RANDOM MATCH stage: no inherited HOME layout, one phase at a time. */
 body.random-cinematic-open{overflow:hidden!important}
 body.random-cinematic-open>header,body.random-cinematic-open>main,body.random-cinematic-open>.cyber-bg{visibility:hidden!important}
@@ -126,9 +121,7 @@ body>.random-match-console.random-cinematic .random-confirm-copy{width:100%!impo
 body>.random-match-console.random-cinematic .random-confirm-copy strong{display:block!important;font-size:clamp(30px,9vw,52px)!important;line-height:1.05!important;overflow-wrap:anywhere!important}
 body>.random-match-console.random-cinematic .random-confirm-copy div{font-size:clamp(18px,5.5vw,28px)!important;margin-top:12px!important}
 @media(max-width:390px){body>.random-match-console.random-cinematic .random-draw-picks{grid-template-columns:minmax(0,1fr) 28px minmax(0,1fr)!important;gap:5px!important}body>.random-match-console.random-cinematic .random-draw-picks>b{padding:12px 4px!important}body>.random-match-console.random-cinematic .random-draw-picks em{font-size:16px!important}}
-</style>
 
-<style id="v673-random-effects-polish">
 /* RANDOM MATCH polish: visible point machine + readable lock/draw animation. */
 body>.random-match-console.random-cinematic .random-wager-slot{
   width:min(390px,88vw)!important;height:min(230px,52vw)!important;min-height:175px!important;
@@ -165,9 +158,7 @@ body>.random-match-console.random-cinematic .random-draw-picks>b.draw-winner{
 }
 body>.random-match-console.random-cinematic #randomDrawResult.draw-decided{animation:randomResultPop .7s ease-out both!important}
 @keyframes randomResultPop{0%{transform:scale(.72);opacity:.25}55%{transform:scale(1.16)}100%{transform:scale(1);opacity:1}}
-</style>
 
-<style id="v674-random-gamefx">
 /* Image-led RANDOM MATCH presentation. */
 body>.random-match-console.random-cinematic .random-wager-slot{height:min(205px,46vw)!important}
 body>.random-match-console.random-cinematic .random-wager-slot span{position:absolute!important;left:50%!important;top:48%!important;transform:translate(-50%,-50%)!important;width:34%!important;min-width:0!important;font-size:clamp(48px,15vw,78px)!important}
@@ -212,12 +203,7 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside strong{displa
 body>.random-match-console.random-cinematic .gamefx-confirm-inside span{transform:translateY(20px)!important;font-size:clamp(14px,4vw,20px)!important}
 body>.random-match-console.random-cinematic .gamefx-confirm-game-logo{position:absolute!important;left:50%!important;top:44%!important;transform:translate(-50%,-50%)!important;width:min(180px,34vw)!important;height:min(92px,17vw)!important;object-fit:contain!important;filter:drop-shadow(0 0 14px rgba(64,220,255,.7))!important;z-index:3!important}
 @media(max-width:390px){body>.random-match-console.random-cinematic .gamefx-picks{grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr)!important}body>.random-match-console.random-cinematic .gamefx-pick img{max-width:165px!important}}
-</style>
 
-
-
-
-<style id="v680-random-final-layout">
 /* v6.80 — single source of truth for RANDOM MATCH mobile alignment. */
 body>.random-match-console.random-cinematic .random-wager-slot span{
   position:absolute!important;left:50%!important;top:49.5%!important;
@@ -256,10 +242,7 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
   font-weight:1000!important;letter-spacing:.06em!important;white-space:nowrap!important;
   text-shadow:0 0 5px #22dfff,0 0 10px rgba(70,126,255,.9)!important;
 }
-</style>
 
-
-<style id="v684-confirm-stage-lock">
 /* v684 — confirmation artwork and labels share one immutable 900x507 coordinate plane. */
 #randomConfirmOverlay .random-confirm-stage{
   position:relative!important;
@@ -299,9 +282,7 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
   text-shadow:0 0 5px #22dfff,0 0 10px rgba(70,126,255,.9)!important;
 }
 #randomConfirmOverlay #randomConfirmGame::before,#randomConfirmOverlay #randomConfirmGame::after{display:none!important;content:none!important}
-</style>
 
-<style id="v686-random-art-fit">
 /* v6.86 — lock RANDOM MATCH artwork to its own aspect ratio so no side is clipped on mobile. */
 #randomWagerSlot{
   position:relative!important;
@@ -338,7 +319,33 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
   #randomWagerSlot{width:calc(100vw - 36px)!important;}
   #randomConfirmOverlay .random-confirm-stage{width:calc(100vw - 28px)!important;max-width:calc(100vw - 28px)!important;}
 }
+
+body.random-cinematic-open>header,body.random-cinematic-open>main,body.random-cinematic-open>.cyber-bg{visibility:hidden!important}
+body> .random-match-console.random-cinematic{visibility:visible!important;position:fixed!important;inset:0!important;z-index:2147483640!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-width:none!important;margin:0!important;transform:none!important;overflow:hidden!important}
+body> .random-match-console.random-cinematic *{visibility:visible}
+body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,100%)!important;max-height:100%!important;overflow:hidden!important}
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 </head>
 <body class="player-page v52-player">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -346,12 +353,7 @@ body>.random-match-console.random-cinematic .gamefx-confirm-inside span{
 
 <main class="app-shell arena-shell">
 
-<style id="v671-random-cinematic-ios-fix">
-body.random-cinematic-open>header,body.random-cinematic-open>main,body.random-cinematic-open>.cyber-bg{visibility:hidden!important}
-body> .random-match-console.random-cinematic{visibility:visible!important;position:fixed!important;inset:0!important;z-index:2147483640!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-width:none!important;margin:0!important;transform:none!important;overflow:hidden!important}
-body> .random-match-console.random-cinematic *{visibility:visible}
-body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,100%)!important;max-height:100%!important;overflow:hidden!important}
-</style>
+
 <section id="auth" class="system-panel auth-panel auth-v52">
   <div class="hero-lockup integrated-lockup">
     <img src="/nexus-zero-header-integrated.webp" alt="NEXUS:ZERO 奪え。守れ。生き残れ。" class="hero-logo integrated-header-logo">
