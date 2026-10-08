@@ -104,6 +104,16 @@ async function initDb() {
     ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS replied_at TIMESTAMPTZ;
     ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS replied_by VARCHAR(30);
     CREATE INDEX IF NOT EXISTS idx_support_messages_status ON support_messages(status,id DESC);
+    CREATE TABLE IF NOT EXISTS support_thread_entries (
+      id BIGSERIAL PRIMARY KEY,
+      message_id BIGINT NOT NULL REFERENCES support_messages(id) ON DELETE CASCADE,
+      sender_role VARCHAR(12) NOT NULL CHECK(sender_role IN ('player','staff')),
+      sender_name VARCHAR(30) NOT NULL,
+      body VARCHAR(1000) NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_support_thread_entries_message ON support_thread_entries(message_id,id);
+
     CREATE TABLE IF NOT EXISTS game_reset_log (
       id BIGSERIAL PRIMARY KEY,
       staff_id BIGINT REFERENCES staff(id) ON DELETE SET NULL,
@@ -533,10 +543,37 @@ app.post('/api/support/messages', requireUser, async (req,res,next)=>{
     res.json({ok:true});
   }catch(e){next(e)}
 });
+// Additional replies stay inside the original inquiry, never create a new inquiry.
+app.post('/api/support/messages/:id/reply',requireUser,async(req,res,next)=>{
+  try{
+    if(!/^\d+$/.test(req.params.id))return res.status(400).json({error:'問い合わせIDが不正です'});
+    const body=String(req.body.body||'').trim();
+    if(!body||Array.from(body).length>1000)return res.status(400).json({error:'返信を1〜1000文字で入力してください'});
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      const found=await client.query('SELECT id,status FROM support_messages WHERE id=$1 AND user_id=$2 FOR UPDATE',[req.params.id,req.userId]);
+      if(!found.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'問い合わせが見つかりません'})}
+      const recent=await client.query("SELECT COUNT(*)::int AS n FROM support_thread_entries WHERE message_id=$1 AND sender_role='player' AND created_at>NOW()-INTERVAL '10 minutes'",[req.params.id]);
+      if(recent.rows[0].n>=5){await client.query('ROLLBACK');return res.status(429).json({error:'送信が多すぎます。少し待ってから再送信してください'})}
+      const u=await client.query('SELECT username FROM users WHERE id=$1',[req.userId]);
+      if(!u.rowCount){await client.query('ROLLBACK');return res.status(401).json({error:'再ログインしてください'})}
+      await client.query("INSERT INTO support_thread_entries(message_id,sender_role,sender_name,body) VALUES($1,'player',$2,$3)",[req.params.id,u.rows[0].username,body]);
+      await client.query("UPDATE support_messages SET status='open',resolved_at=NULL,first_viewed_at=NULL WHERE id=$1",[req.params.id]);
+      await client.query('COMMIT');res.json({ok:true});
+    }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
+  }catch(e){next(e)}
+});
+async function attachSupportThread(rows){
+  if(!rows.length)return rows;
+  const r=await query('SELECT id,message_id,sender_role,sender_name,body,created_at FROM support_thread_entries WHERE message_id=ANY($1::bigint[]) ORDER BY id ASC',[rows.map(m=>m.id)]);
+  const grouped=new Map();for(const e of r.rows){const key=String(e.message_id);if(!grouped.has(key))grouped.set(key,[]);grouped.get(key).push(e)}
+  return rows.map(m=>({...m,thread:grouped.get(String(m.id))||[]}));
+}
 app.get('/api/support/messages',requireUser,async(req,res,next)=>{
   try {
     const r=await query('SELECT id,category,body,status,created_at,staff_reply,replied_at,replied_by FROM support_messages WHERE user_id=$1 ORDER BY id DESC LIMIT 100',[req.userId]);
-    res.set('Cache-Control','no-store');res.json(r.rows);
+    res.set('Cache-Control','no-store');res.json(await attachSupportThread(r.rows));
   }catch(e){next(e)}
 });
 app.get('/api/staff/support/notifications',requireStaff,async(req,res,next)=>{
@@ -558,17 +595,27 @@ app.post('/api/staff/support/messages/:id/reply',requireStaff,async(req,res,next
     if(!/^\d+$/.test(req.params.id))return res.status(400).json({error:'問い合わせIDが不正です'});
     const reply=String(req.body.reply||'').trim();
     if(!reply||Array.from(reply).length>1000)return res.status(400).json({error:'返信を1〜1000文字で入力してください'});
-    const r=await query('UPDATE support_messages SET staff_reply=$1,replied_at=NOW(),replied_by=$2,first_viewed_at=COALESCE(first_viewed_at,NOW()) WHERE id=$3 RETURNING id',[reply,req.staff.username,req.params.id]);
-    if(!r.rowCount)return res.status(404).json({error:'問い合わせが見つかりません'});
-    res.json({ok:true});
+    const client=await pool.connect();
+    try{
+      await client.query('BEGIN');
+      const r=await client.query('UPDATE support_messages SET first_viewed_at=COALESCE(first_viewed_at,NOW()) WHERE id=$1 RETURNING id',[req.params.id]);
+      if(!r.rowCount){await client.query('ROLLBACK');return res.status(404).json({error:'問い合わせが見つかりません'})}
+      await client.query("INSERT INTO support_thread_entries(message_id,sender_role,sender_name,body) VALUES($1,'staff',$2,$3)",[req.params.id,req.staff.username,reply]);
+      await client.query('COMMIT');res.json({ok:true});
+    }catch(e){await client.query('ROLLBACK').catch(()=>{});throw e}finally{client.release()}
   }catch(e){next(e)}
 });
 app.get('/api/staff/support/messages',requireStaff,async(req,res,next)=>{
-  try{const r=await query("SELECT id,sender_name,category,body,status,created_at,resolved_at,first_viewed_at,staff_reply,replied_at,replied_by FROM support_messages ORDER BY (status='open') DESC,id DESC LIMIT 200");res.json(r.rows)}catch(e){next(e)}
+  try{const r=await query("SELECT id,sender_name,category,body,status,created_at,resolved_at,first_viewed_at,staff_reply,replied_at,replied_by FROM support_messages ORDER BY (status='open') DESC,id DESC LIMIT 200");res.set('Cache-Control','no-store');res.json(await attachSupportThread(r.rows))}catch(e){next(e)}
 });
 app.post('/api/staff/support/messages/:id/status',requireStaff,async(req,res,next)=>{
-  try{const status=String(req.body.status||'');if(!['open','resolved'].includes(status))return res.status(400).json({error:'状態が不正です'});
-  const r=await query("UPDATE support_messages SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN NOW() ELSE NULL END WHERE id=$2 RETURNING id",[status,req.params.id]);if(!r.rowCount)return res.status(404).json({error:'問い合わせが見つかりません'});res.json({ok:true})}catch(e){next(e)}
+  try{
+    if(!/^\d+$/.test(req.params.id))return res.status(400).json({error:'問い合わせIDが不正です'});
+    const status=String(req.body.status||'');if(!['open','resolved'].includes(status))return res.status(400).json({error:'状態が不正です'});
+    const r=await query("UPDATE support_messages SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN NOW() ELSE NULL END,first_viewed_at=COALESCE(first_viewed_at,NOW()) WHERE id=$2 RETURNING id,status",[status,req.params.id]);
+    if(!r.rowCount)return res.status(404).json({error:'問い合わせが見つかりません'});
+    res.set('Cache-Control','no-store');res.json({ok:true,status:r.rows[0].status});
+  }catch(e){next(e)}
 });
 app.get('/api/staff/game-reset/preview',requireAdmin,async(req,res,next)=>{
   try{const r=await one('SELECT COUNT(*)::int AS count FROM users');res.json({count:r.count,startingPoints:STARTING_POINTS})}catch(e){next(e)}

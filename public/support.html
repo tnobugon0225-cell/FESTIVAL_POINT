@@ -3,11 +3,11 @@
 <style>
 .support-shell{max-width:640px;margin:35px auto;padding:clamp(16px,4vw,26px);background:#071225;border:1px solid #435080;border-radius:16px;color:#f1f6ff}
 .support-shell label{display:block;margin:16px 0 6px}.support-shell select,.support-shell textarea{box-sizing:border-box;width:100%;padding:12px;background:#101b32;color:white;border:1px solid #596990;border-radius:8px;font:inherit}
-.support-send{display:block;margin:18px auto 10px;padding:0;border:0;background:transparent;cursor:pointer;width:min(100%,340px);min-height:60px;filter:drop-shadow(0 0 8px rgba(92,195,255,.35))}
-.support-send img{display:block;width:100%;height:auto;max-height:110px;object-fit:contain}.support-send:disabled{opacity:.45;cursor:wait}.support-send:focus-visible{outline:2px solid #81d9ff;outline-offset:4px}
+.support-send{display:block;margin:18px auto 10px;padding:0;border:0;background:transparent;cursor:pointer;width:min(100%,340px);min-height:60px;filter:none!important;box-shadow:none!important;appearance:none;-webkit-appearance:none}
+.support-send:hover,.support-send:active,.support-send:focus{background:transparent!important;box-shadow:none!important;filter:none!important}.support-send img{box-shadow:none!important;filter:none!important}.support-send::before,.support-send::after{display:none!important;content:none!important}.support-send img{display:block;width:100%;height:auto;max-height:110px;object-fit:contain}.support-send:disabled{opacity:.45;cursor:wait}.support-send:focus-visible{outline:2px solid #81d9ff;outline-offset:4px}
 .support-item{padding:14px;margin:12px 0;border:1px solid #354b6c;border-radius:12px;background:#0c1931;overflow-wrap:anywhere}
 .support-item p{white-space:pre-wrap;margin:10px 0}.support-reply{margin-top:12px;padding:12px;border-left:3px solid #65dbff;background:#122642}
-.support-meta{color:#a5b9d5;font-size:12px}.support-status{color:#9be2ff;font-size:12px}.support-shell h2{margin-top:30px}.support-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.support-thread{margin:10px 0}.support-thread-entry{margin:8px 0;padding:10px 12px;border-radius:10px;background:#132943;border:1px solid #284564}.support-thread-entry.staff{border-left:3px solid #69dfff}.support-thread-entry.player{border-left:3px solid #b39cff}.support-thread-entry p{margin:6px 0;white-space:pre-wrap}.support-reply-form{margin-top:12px}.support-reply-form textarea{min-height:72px}.support-reply-form button{margin-top:8px}.support-meta{color:#a5b9d5;font-size:12px}.support-status{color:#9be2ff;font-size:12px}.support-shell h2{margin-top:30px}.support-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 </style></head>
 <body><nav class="topbar"><a href="/" class="brand-mini">NEXUS:ZERO</a></nav>
 <main class="support-shell"><div class="eyebrow">PLAYER SUPPORT</div><h1>運営への問い合わせ</h1><p>質問・不具合・改善点などを運営に送れます。</p>
@@ -22,7 +22,28 @@ const authHeaders=()=>({'Content-Type':'application/json',...(token?{'Authorizat
 const esc=s=>{const el=document.createElement('span');el.textContent=s??'';return el.innerHTML};
 const fmt=s=>s?new Date(s).toLocaleString('ja-JP'):'';
 const kinds={question:'質問・ルール確認',bug:'不具合報告',idea:'改善提案',other:'その他'};
-async function loadMyMessages(){const list=document.querySelector('#myMessages');try{const r=await fetch('/api/support/messages',{headers:authHeaders(),cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'取得できませんでした');list.innerHTML=d.length?d.map(m=>`<article class="support-item"><div class="support-meta">${esc(kinds[m.category]||m.category)} / ${fmt(m.created_at)}</div><p>${esc(m.body)}</p><div class="support-status">${m.status==='resolved'?'対応済み':'対応中'}</div>${m.staff_reply?`<div class="support-reply"><strong>運営からの返信</strong><div class="support-meta">${fmt(m.replied_at)}</div><p>${esc(m.staff_reply)}</p></div>`:''}</article>`).join(''):'<p>まだ問い合わせはありません。</p>'}catch(e){list.textContent=e.message}}
+async function loadMyMessages(){
+  const list=document.querySelector('#myMessages');
+  try{
+    const r=await fetch('/api/support/messages',{headers:authHeaders(),cache:'no-store'});
+    const d=await r.json();if(!r.ok)throw Error(d.error||'取得できませんでした');
+    list.innerHTML=d.length?d.map(m=>{
+      const legacy=m.staff_reply?`<div class="support-thread-entry staff"><strong>運営からの返信</strong><div class="support-meta">${fmt(m.replied_at)}</div><p>${esc(m.staff_reply)}</p></div>`:'';
+      const entries=(m.thread||[]).map(e=>`<div class="support-thread-entry ${e.sender_role==='staff'?'staff':'player'}"><strong>${e.sender_role==='staff'?'運営':'あなた'}</strong><div class="support-meta">${fmt(e.created_at)}</div><p>${esc(e.body)}</p></div>`).join('');
+      return `<article class="support-item"><div class="support-meta">${esc(kinds[m.category]||m.category)} / ${fmt(m.created_at)}</div><p>${esc(m.body)}</p><div class="support-status">${m.status==='resolved'?'対応済み':'対応中'}</div><div class="support-thread">${legacy}${entries}</div><form class="support-reply-form" data-id="${Number(m.id)}"><label for="reply-${Number(m.id)}">この問い合わせに返信する</label><textarea id="reply-${Number(m.id)}" maxlength="1000" placeholder="返信を入力してください" required></textarea><button class="secondary compact" type="submit">返信を送信</button><span class="support-meta" role="status"></span></form></article>`;
+    }).join(''):'<p>まだ問い合わせはありません。</p>';
+  }catch(e){list.textContent=e.message}
+}
+document.querySelector('#myMessages').addEventListener('submit',async e=>{
+  const form=e.target.closest('.support-reply-form');if(!form)return;e.preventDefault();
+  const body=form.querySelector('textarea').value.trim(),btn=form.querySelector('button'),msg=form.querySelector('[role="status"]');
+  if(!body)return;btn.disabled=true;msg.textContent='送信中...';
+  try{
+    const r=await fetch(`/api/support/messages/${form.dataset.id}/reply`,{method:'POST',headers:authHeaders(),body:JSON.stringify({body})});
+    const d=await r.json();if(!r.ok)throw Error(d.error||'送信できませんでした');
+    await loadMyMessages();
+  }catch(err){msg.textContent=err.message;btn.disabled=false}
+});
 document.querySelector('#send').onclick=async()=>{const btn=document.querySelector('#send'),msg=document.querySelector('#msg'),body=document.querySelector('#body').value.trim();if(!body){msg.textContent='内容を入力してください';return}btn.disabled=true;msg.textContent='送信中...';try{const r=await fetch('/api/support/messages',{method:'POST',headers:authHeaders(),body:JSON.stringify({category:document.querySelector('#category').value,body})});const d=await r.json();if(!r.ok)throw Error(d.error||'送信できませんでした');msg.textContent='送信しました。返信はこのページで確認できます。';document.querySelector('#body').value='';await loadMyMessages()}catch(e){msg.textContent=e.message}finally{btn.disabled=false}};
 document.querySelector('#refresh').onclick=loadMyMessages;
 loadMyMessages();
