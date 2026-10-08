@@ -99,6 +99,10 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       resolved_at TIMESTAMPTZ
     );
+    ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS first_viewed_at TIMESTAMPTZ;
+    ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS staff_reply VARCHAR(1000);
+    ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS replied_at TIMESTAMPTZ;
+    ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS replied_by VARCHAR(30);
     CREATE INDEX IF NOT EXISTS idx_support_messages_status ON support_messages(status,id DESC);
     CREATE TABLE IF NOT EXISTS game_reset_log (
       id BIGSERIAL PRIMARY KEY,
@@ -529,8 +533,38 @@ app.post('/api/support/messages', requireUser, async (req,res,next)=>{
     res.json({ok:true});
   }catch(e){next(e)}
 });
+app.get('/api/support/messages',requireUser,async(req,res,next)=>{
+  try {
+    const r=await query('SELECT id,category,body,status,created_at,staff_reply,replied_at,replied_by FROM support_messages WHERE user_id=$1 ORDER BY id DESC LIMIT 100',[req.userId]);
+    res.set('Cache-Control','no-store');res.json(r.rows);
+  }catch(e){next(e)}
+});
+app.get('/api/staff/support/notifications',requireStaff,async(req,res,next)=>{
+  try {
+    const r=await one("SELECT COUNT(*) FILTER (WHERE first_viewed_at IS NULL)::int AS new_count, COUNT(*) FILTER (WHERE status='open')::int AS open_count FROM support_messages");
+    res.set('Cache-Control','no-store');res.json({newCount:r.new_count,openCount:r.open_count});
+  }catch(e){next(e)}
+});
+app.post('/api/staff/support/messages/:id/read',requireStaff,async(req,res,next)=>{
+  try {
+    if(!/^\d+$/.test(req.params.id))return res.status(400).json({error:'問い合わせIDが不正です'});
+    const r=await query('UPDATE support_messages SET first_viewed_at=COALESCE(first_viewed_at,NOW()) WHERE id=$1 RETURNING id',[req.params.id]);
+    if(!r.rowCount)return res.status(404).json({error:'問い合わせが見つかりません'});
+    res.json({ok:true});
+  }catch(e){next(e)}
+});
+app.post('/api/staff/support/messages/:id/reply',requireStaff,async(req,res,next)=>{
+  try {
+    if(!/^\d+$/.test(req.params.id))return res.status(400).json({error:'問い合わせIDが不正です'});
+    const reply=String(req.body.reply||'').trim();
+    if(!reply||Array.from(reply).length>1000)return res.status(400).json({error:'返信を1〜1000文字で入力してください'});
+    const r=await query('UPDATE support_messages SET staff_reply=$1,replied_at=NOW(),replied_by=$2,first_viewed_at=COALESCE(first_viewed_at,NOW()) WHERE id=$3 RETURNING id',[reply,req.staff.username,req.params.id]);
+    if(!r.rowCount)return res.status(404).json({error:'問い合わせが見つかりません'});
+    res.json({ok:true});
+  }catch(e){next(e)}
+});
 app.get('/api/staff/support/messages',requireStaff,async(req,res,next)=>{
-  try{const r=await query("SELECT id,sender_name,category,body,status,created_at,resolved_at FROM support_messages ORDER BY (status='open') DESC,id DESC LIMIT 200");res.json(r.rows)}catch(e){next(e)}
+  try{const r=await query("SELECT id,sender_name,category,body,status,created_at,resolved_at,first_viewed_at,staff_reply,replied_at,replied_by FROM support_messages ORDER BY (status='open') DESC,id DESC LIMIT 200");res.json(r.rows)}catch(e){next(e)}
 });
 app.post('/api/staff/support/messages/:id/status',requireStaff,async(req,res,next)=>{
   try{const status=String(req.body.status||'');if(!['open','resolved'].includes(status))return res.status(400).json({error:'状態が不正です'});
