@@ -612,7 +612,7 @@ app.post('/api/staff/support/messages/:id/status',requireStaff,async(req,res,nex
   try{
     if(!/^\d+$/.test(req.params.id))return res.status(400).json({error:'問い合わせIDが不正です'});
     const status=String(req.body.status||'');if(!['open','resolved'].includes(status))return res.status(400).json({error:'状態が不正です'});
-    const r=await query("UPDATE support_messages SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN NOW() ELSE NULL END,first_viewed_at=COALESCE(first_viewed_at,NOW()) WHERE id=$2 RETURNING id,status",[status,req.params.id]);
+    const r=await query("UPDATE support_messages SET status=$1::varchar(12),resolved_at=CASE WHEN $1::varchar(12)='resolved' THEN NOW() ELSE NULL END,first_viewed_at=COALESCE(first_viewed_at,NOW()) WHERE id=$2::bigint RETURNING id,status",[status,req.params.id]);
     if(!r.rowCount)return res.status(404).json({error:'問い合わせが見つかりません'});
     res.set('Cache-Control','no-store');res.json({ok:true,status:r.rows[0].status});
   }catch(e){next(e)}
