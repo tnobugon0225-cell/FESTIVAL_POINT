@@ -22,7 +22,7 @@
     <section id="announcementCard" class="admin-module admin-module-mail"><div class="module-no">05</div><div class="admin-kicker">NEXUS MAIL</div><h2>運営からのお知らせ</h2><div id="announcementComposer"><label>TITLE</label><input id="announcementTitle" maxlength="60" placeholder="お知らせタイトル"><label>MESSAGE</label><textarea id="announcementBody" maxlength="1000" rows="5" placeholder="全プレイヤーへ送る内容"></textarea><button id="sendAnnouncementBtn" class="primary-action admin-wide" type="button">SEND TO ALL PLAYERS</button><p id="announcementMsg"></p></div><div id="announcementList" class="announcement-admin-list"></div></section>
     <section id="registrationCard" class="admin-module admin-module-registration hidden"><div class="module-no">06</div><div class="admin-kicker">REGISTRATION GATE</div><h2>公開セルフ登録</h2><p class="muted">ONの間は、/register から誰でも自分でPLAYERアカウントを作成できます。</p><div class="registration-switch-row"><div><strong id="registrationState">CHECKING...</strong><div class="muted small">短時間の大量登録はサーバー側で制限されます。</div></div><button id="registrationToggle" class="secondary" type="button">CHANGE</button></div><p id="registrationMsg"></p></section>
     <section id="staffAccountsCard" class="admin-module admin-module-accounts hidden"><div class="module-no">07</div><div class="admin-kicker">ADMIN ONLY</div><h2>運営アカウント管理</h2><div class="split"><div><label>OPERATOR ID</label><input id="newStaffUser" maxlength="30" placeholder="新規ID"></div><div><label>ROLE</label><select id="newStaffRole"><option value="staff">STAFF</option><option value="admin">ADMIN</option></select></div></div><label>INITIAL PASSWORD</label><input id="newStaffPassword" type="password" maxlength="72" placeholder="8文字以上"><button id="createStaffBtn" class="success admin-wide">CREATE OPERATOR</button><p id="staffAccountMsg"></p><div id="staffList" class="operator-list"></div></section>
-    <section class="admin-module" id="supportCard"><div class="admin-kicker">PLAYER SUPPORT</div><h2>参加者からの問い合わせ <span id="supportNewBadge" class="badge hidden" aria-live="polite"></span></h2><p id="supportCounts" class="muted small">問い合わせを確認中...</p><button id="supportRefresh" class="secondary compact" type="button">更新</button><div id="supportInbox"></div></section>
+    <section class="admin-module" id="supportCard"><div class="admin-kicker">PLAYER SUPPORT</div><h2>参加者からの問い合わせ <span id="supportNewBadge" class="badge hidden" aria-live="polite"></span></h2><p id="supportCounts" class="muted small">問い合わせを確認中...</p><button id="supportRefresh" class="secondary compact" type="button">更新</button><div class="support-tabs" role="group" aria-label="問い合わせの表示切り替え"><button id="staffSupportOpen" class="secondary compact" type="button" aria-pressed="true">未対応</button><button id="staffSupportResolved" class="secondary compact" type="button" aria-pressed="false">対応済み</button></div><div id="supportInbox"></div></section>
     <section id="resetCard" class="admin-module hidden"><div class="admin-kicker">ADMIN ONLY / DANGER ZONE</div><h2>全員のゲーム状態を初期化</h2><p class="muted">アカウント・名前・パスワード・問い合わせは維持。ポイント・対戦・履歴・称号を初期化します。元に戻せません。実行前にDBバックアップを取ってください。</p><p id="resetPreview"></p><button id="resetAllBtn" class="danger admin-wide" type="button">全員初期化（管理者限定）</button><p id="resetResult"></p></section>
   </div>
 </section></main>
@@ -62,12 +62,25 @@ $('#staffRefreshBtn').onclick=()=>refreshAll(true).catch(e=>setMsg(e.message,tru
   document.title=d.newCount?`(${d.newCount}) ADMIN CORE | NEXUS:ZERO`:'ADMIN CORE | NEXUS:ZERO';
 }
 let supportRequestVersion=0;
+let staffSupportTab='open';
+function setStaffSupportTab(tab){
+  staffSupportTab=tab;
+  for(const [id,value] of [['staffSupportOpen','open'],['staffSupportResolved','resolved']]){
+    const b=$('#'+id);b.setAttribute('aria-pressed',String(tab===value));b.classList.toggle('active',tab===value);
+  }
+  loadSupport().catch(e=>setMsg(e.message,true));
+}
+$('#staffSupportOpen').onclick=()=>setStaffSupportTab('open');
+$('#staffSupportResolved').onclick=()=>setStaffSupportTab('resolved');
 async function loadSupport(){
   if(supportBusy)return;
   const version=++supportRequestVersion;
   const rows=await api('/api/staff/support/messages');
   if(supportBusy||version!==supportRequestVersion)return;
-  $('#supportInbox').innerHTML=rows.length?rows.map(m=>{
+  const filtered=rows.filter(m=>m.status===staffSupportTab);
+  $('#staffSupportOpen').textContent=`未対応 (${rows.filter(m=>m.status==='open').length})`;
+  $('#staffSupportResolved').textContent=`対応済み (${rows.filter(m=>m.status==='resolved').length})`;
+  $('#supportInbox').innerHTML=filtered.length?filtered.map(m=>{
     const entries=(m.thread||[]).map(e=>`<div style="margin:8px 0;padding:10px;border-left:3px solid ${e.sender_role==='staff'?'#66dfff':'#ad95ff'};background:#11233e;border-radius:7px"><strong>${e.sender_role==='staff'?'運営':'参加者'}</strong> <span class="muted small">${fmt(e.created_at)}</span><p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(e.body)}</p></div>`).join('');
     return `<div class="user" style="margin:12px 0;padding:14px;border:1px solid ${m.first_viewed_at?'#354060':'#67d8ff'};border-radius:12px">
     <strong>${esc(m.sender_name)}</strong> <span class="badge">${esc(({question:'質問',bug:'不具合',idea:'改善案',other:'その他'})[m.category]||m.category)}</span>
@@ -84,7 +97,7 @@ async function loadSupport(){
       ${!m.first_viewed_at?`<button class="secondary compact" type="button" data-support-action="read" data-id="${Number(m.id)}">確認済みにする</button>`:''}
       <button class="secondary compact" type="button" data-support-action="status" data-id="${Number(m.id)}" data-status="${m.status==='open'?'resolved':'open'}">${m.status==='open'?'対応済みにする':'未対応に戻す'}</button>
     </div></div>`;
-  }).join(''):'<p class="muted">問い合わせはありません。</p>';
+  }).join(''):`<p class="muted">${staffSupportTab==='open'?'未対応の問い合わせはありません。':'対応済みの問い合わせはありません。'}</p>`;
   await loadSupportNotifications();
 }
 let supportBusy=false;
@@ -138,4 +151,7 @@ $('#supportRefresh').onclick=()=>loadSupport().catch(e=>setMsg(e.message,true));
 async function loadResetPreview(){const d=await api('/api/staff/game-reset/preview');$('#resetPreview').textContent=`対象 ${d.count} 人 / 初期ポイント ${d.startingPoints} pt`}
 $('#resetAllBtn').onclick=async()=>{try{const d=await api('/api/staff/game-reset/preview');if(!confirm(`全${d.count}人のゲーム状態を初期化します。対戦履歴なども削除されます。バックアップを取得しましたか？`))return;const typed=prompt('最終確認：RESET と入力してください');if(typed!=='RESET')return;const r=await api('/api/staff/game-reset',{method:'POST',body:JSON.stringify({confirm:'RESET ALL PLAYERS',startingPoints:d.startingPoints})});$('#resetResult').textContent=`${r.count}人を${r.startingPoints}ptに初期化しました`;await refreshAll(false)}catch(e){$('#resetResult').textContent=e.message}};
 check();
-</script></body></html>
+</script><style>
+.support-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.support-tabs button[aria-pressed="true"]{border:1px solid #79dfff!important;box-shadow:inset 0 0 0 1px #79dfff;color:#d7faff}
+</style></body></html>
