@@ -99,6 +99,7 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       resolved_at TIMESTAMPTZ
     );
+    ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS title VARCHAR(40);
     ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS first_viewed_at TIMESTAMPTZ;
     ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS staff_reply VARCHAR(1000);
     ALTER TABLE support_messages ADD COLUMN IF NOT EXISTS replied_at TIMESTAMPTZ;
@@ -533,13 +534,14 @@ async function publicRegistrationEnabled(){const r=await one(`SELECT setting_val
 // v6.90: support inbox and admin-only game-state reset.
 app.post('/api/support/messages', requireUser, async (req,res,next)=>{
   try {
-    const category=String(req.body.category||''),body=String(req.body.body||'').trim();
+    const category=String(req.body.category||''),body=String(req.body.body||'').trim(),title=String(req.body.title||'').trim();
+    if(!title||Array.from(title).length>40)return res.status(400).json({error:'タイトルを1〜40文字で入力してください'});
     if(!['question','bug','idea','other'].includes(category)||!body||Array.from(body).length>1000)return res.status(400).json({error:'種類と1〜1000文字の本文を入力してください'});
     const u=await one('SELECT username FROM users WHERE id=$1',[req.userId]);
     if(!u)return res.status(401).json({error:'再ログインしてください'});
     const recent=await one("SELECT COUNT(*)::int AS n FROM support_messages WHERE user_id=$1 AND created_at>NOW()-INTERVAL '10 minutes'",[req.userId]);
     if(recent.n>=5)return res.status(429).json({error:'送信が多すぎます。10分ほど待ってください'});
-    await query('INSERT INTO support_messages(user_id,sender_name,category,body) VALUES($1,$2,$3,$4)',[req.userId,u.username,category,body]);
+    await query('INSERT INTO support_messages(user_id,sender_name,category,body,title) VALUES($1,$2,$3,$4,$5)',[req.userId,u.username,category,body,title]);
     res.json({ok:true});
   }catch(e){next(e)}
 });
@@ -572,7 +574,7 @@ async function attachSupportThread(rows){
 }
 app.get('/api/support/messages',requireUser,async(req,res,next)=>{
   try {
-    const r=await query('SELECT id,category,body,status,created_at,staff_reply,replied_at,replied_by FROM support_messages WHERE user_id=$1 ORDER BY id DESC LIMIT 100',[req.userId]);
+    const r=await query('SELECT id,title,category,body,status,created_at,staff_reply,replied_at,replied_by FROM support_messages WHERE user_id=$1 ORDER BY id DESC LIMIT 100',[req.userId]);
     res.set('Cache-Control','no-store');res.json(await attachSupportThread(r.rows));
   }catch(e){next(e)}
 });
@@ -606,7 +608,7 @@ app.post('/api/staff/support/messages/:id/reply',requireStaff,async(req,res,next
   }catch(e){next(e)}
 });
 app.get('/api/staff/support/messages',requireStaff,async(req,res,next)=>{
-  try{const r=await query("SELECT id,sender_name,category,body,status,created_at,resolved_at,first_viewed_at,staff_reply,replied_at,replied_by FROM support_messages ORDER BY (status='open') DESC,id DESC LIMIT 200");res.set('Cache-Control','no-store');res.json(await attachSupportThread(r.rows))}catch(e){next(e)}
+  try{const r=await query("SELECT id,title,sender_name,category,body,status,created_at,resolved_at,first_viewed_at,staff_reply,replied_at,replied_by FROM support_messages ORDER BY (status='open') DESC,id DESC LIMIT 200");res.set('Cache-Control','no-store');res.json(await attachSupportThread(r.rows))}catch(e){next(e)}
 });
 app.post('/api/staff/support/messages/:id/status',requireStaff,async(req,res,next)=>{
   try{
