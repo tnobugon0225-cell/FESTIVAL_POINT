@@ -61,8 +61,12 @@ $('#staffRefreshBtn').onclick=()=>refreshAll(true).catch(e=>setMsg(e.message,tru
   $('#supportCounts').textContent=`新着 ${d.newCount} 件 / 未対応 ${d.openCount} 件`;
   document.title=d.newCount?`(${d.newCount}) ADMIN CORE | NEXUS:ZERO`:'ADMIN CORE | NEXUS:ZERO';
 }
+let supportRequestVersion=0;
 async function loadSupport(){
+  if(supportBusy)return;
+  const version=++supportRequestVersion;
   const rows=await api('/api/staff/support/messages');
+  if(supportBusy||version!==supportRequestVersion)return;
   $('#supportInbox').innerHTML=rows.length?rows.map(m=>{
     const entries=(m.thread||[]).map(e=>`<div style="margin:8px 0;padding:10px;border-left:3px solid ${e.sender_role==='staff'?'#66dfff':'#ad95ff'};background:#11233e;border-radius:7px"><strong>${e.sender_role==='staff'?'運営':'参加者'}</strong> <span class="muted small">${fmt(e.created_at)}</span><p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(e.body)}</p></div>`).join('');
     return `<div class="user" style="margin:12px 0;padding:14px;border:1px solid ${m.first_viewed_at?'#354060':'#67d8ff'};border-radius:12px">
@@ -85,25 +89,50 @@ async function loadSupport(){
 }
 let supportBusy=false;
 $('#supportInbox').addEventListener('click',async event=>{
-  const btn=event.target.closest('button[data-support-action]');if(!btn||supportBusy)return;
+  const btn=event.target.closest('button[data-support-action]');
+  if(!btn||supportBusy)return;
   const id=Number(btn.dataset.id),action=btn.dataset.supportAction;
-  supportBusy=true;btn.disabled=true;
+  if(!Number.isSafeInteger(id)||id<=0)return setMsg('問い合わせIDが不正です',true);
+  // Do not disable the status button: the disabled cursor was confusing,
+  // and auto-refresh could replace the button during an in-flight request.
+  let reply='',status='';
+  if(action==='reply'){
+    reply=$(`#supportReply-${id}`)?.value.trim()||'';
+    if(!reply)return setMsg('返信を入力してください',true);
+    if(!confirm('この返信を参加者に送信しますか？'))return;
+  }else if(action==='status'){
+    status=btn.dataset.status;
+    if(!['open','resolved'].includes(status))return setMsg('変更先の状態が不正です',true);
+  }else if(action!=='read')return;
+  supportBusy=true;
+  ++supportRequestVersion; // invalidate pending background loads
+  const originalLabel=btn.textContent;
+  btn.setAttribute('aria-busy','true');
+  btn.textContent='処理中...';
   try{
     if(action==='reply'){
-      const el=$(`#supportReply-${id}`),reply=el.value.trim();if(!reply)throw Error('返信を入力してください');
-      if(!confirm('この返信を参加者に送信しますか？'))return;
       await api(`/api/staff/support/messages/${id}/reply`,{method:'POST',body:JSON.stringify({reply})});
       setMsg('返信を送信しました');
     }else if(action==='read'){
-      await api(`/api/staff/support/messages/${id}/read`,{method:'POST'});setMsg('確認済みにしました');
-    }else if(action==='status'){
-      const status=btn.dataset.status;
-      const result=await api(`/api/staff/support/messages/${id}/status`,{method:'POST',body:JSON.stringify({status})});
-      if(result.status!==status)throw Error('状態の更新を確認できませんでした');
+      await api(`/api/staff/support/messages/${id}/read`,{method:'POST'});
+      setMsg('確認済みにしました');
+    }else{
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),15000);
+      try{
+        const result=await api(`/api/staff/support/messages/${id}/status`,{method:'POST',body:JSON.stringify({status}),signal:controller.signal});
+        if(result.status!==status)throw Error('状態の更新を確認できませんでした');
+      }finally{clearTimeout(timeout)}
       setMsg(status==='resolved'?'対応済みに変更しました':'未対応に戻しました');
     }
-    await loadSupport();
-  }catch(e){setMsg(e.message,true)}finally{supportBusy=false;btn.disabled=false}
+  }catch(e){
+    setMsg(e.name==='AbortError'?'通信がタイムアウトしました。更新ボタンで状態を確認してください':e.message,true);
+  }finally{
+    supportBusy=false;
+    btn.removeAttribute('aria-busy');
+    btn.textContent=originalLabel;
+    await loadSupport().catch(e=>setMsg(e.message,true));
+  }
 });
 $('#supportRefresh').onclick=()=>loadSupport().catch(e=>setMsg(e.message,true));
 async function loadResetPreview(){const d=await api('/api/staff/game-reset/preview');$('#resetPreview').textContent=`対象 ${d.count} 人 / 初期ポイント ${d.startingPoints} pt`}
