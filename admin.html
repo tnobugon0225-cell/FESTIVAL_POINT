@@ -90,7 +90,7 @@ async function loadSupport(){
     ${!m.first_viewed_at?'<span class="badge" style="color:#7fe9ff">NEW</span>':''}
     <span class="badge" style="color:${m.status==='resolved'?'#9ae6b4':'#ffdc86'}">${m.status==='resolved'?'対応済み':'未対応'}</span>
     </span></summary><div class="support-ticket-body">
-    <p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(m.body)}</p>
+    <div style="margin:8px 0;padding:10px;border-left:3px solid #ad95ff;background:#11233e;border-radius:7px"><strong>参加者</strong> <span class="muted small">${fmt(m.created_at)}</span><p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(m.body)}</p></div>
     ${m.staff_reply?`<div style="margin:10px 0;padding:10px;border-left:3px solid #66dfff;background:#11233e"><strong>運営からの返信</strong> <span class="muted small">${fmt(m.replied_at)}</span><p style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(m.staff_reply)}</p></div>`:''}
     ${entries}
     <label for="supportReply-${Number(m.id)}">この問い合わせに返信する（1000文字以内）</label>
