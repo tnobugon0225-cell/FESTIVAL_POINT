@@ -89,6 +89,26 @@ async function initDb() {
     );
     INSERT INTO app_settings(setting_key,setting_value) VALUES('public_registration','off') ON CONFLICT DO NOTHING;
 
+    CREATE TABLE IF NOT EXISTS support_messages (
+      id BIGSERIAL PRIMARY KEY,
+      user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+      sender_name VARCHAR(20) NOT NULL,
+      category VARCHAR(16) NOT NULL CHECK(category IN ('question','bug','idea','other')),
+      body VARCHAR(1000) NOT NULL,
+      status VARCHAR(12) NOT NULL DEFAULT 'open' CHECK(status IN ('open','resolved')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      resolved_at TIMESTAMPTZ
+    );
+    CREATE INDEX IF NOT EXISTS idx_support_messages_status ON support_messages(status,id DESC);
+    CREATE TABLE IF NOT EXISTS game_reset_log (
+      id BIGSERIAL PRIMARY KEY,
+      staff_id BIGINT REFERENCES staff(id) ON DELETE SET NULL,
+      staff_name VARCHAR(30) NOT NULL,
+      player_count INTEGER NOT NULL,
+      starting_points INTEGER NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
     CREATE TABLE IF NOT EXISTS point_history (
       id BIGSERIAL PRIMARY KEY,
       user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -496,6 +516,52 @@ function publicRegisterAllowed(req){
   recent.push(now);publicRegisterAttempts.set(key,recent);return true;
 }
 async function publicRegistrationEnabled(){const r=await one(`SELECT setting_value FROM app_settings WHERE setting_key='public_registration'`);return r?.setting_value==='on'}
+// v6.90: support inbox and admin-only game-state reset.
+app.post('/api/support/messages', requireUser, async (req,res,next)=>{
+  try {
+    const category=String(req.body.category||''),body=String(req.body.body||'').trim();
+    if(!['question','bug','idea','other'].includes(category)||!body||Array.from(body).length>1000)return res.status(400).json({error:'種類と1〜1000文字の本文を入力してください'});
+    const u=await one('SELECT username FROM users WHERE id=$1',[req.userId]);
+    if(!u)return res.status(401).json({error:'再ログインしてください'});
+    const recent=await one("SELECT COUNT(*)::int AS n FROM support_messages WHERE user_id=$1 AND created_at>NOW()-INTERVAL '10 minutes'",[req.userId]);
+    if(recent.n>=5)return res.status(429).json({error:'送信が多すぎます。10分ほど待ってください'});
+    await query('INSERT INTO support_messages(user_id,sender_name,category,body) VALUES($1,$2,$3,$4)',[req.userId,u.username,category,body]);
+    res.json({ok:true});
+  }catch(e){next(e)}
+});
+app.get('/api/staff/support/messages',requireStaff,async(req,res,next)=>{
+  try{const r=await query("SELECT id,sender_name,category,body,status,created_at,resolved_at FROM support_messages ORDER BY (status='open') DESC,id DESC LIMIT 200");res.json(r.rows)}catch(e){next(e)}
+});
+app.post('/api/staff/support/messages/:id/status',requireStaff,async(req,res,next)=>{
+  try{const status=String(req.body.status||'');if(!['open','resolved'].includes(status))return res.status(400).json({error:'状態が不正です'});
+  const r=await query("UPDATE support_messages SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN NOW() ELSE NULL END WHERE id=$2 RETURNING id",[status,req.params.id]);if(!r.rowCount)return res.status(404).json({error:'問い合わせが見つかりません'});res.json({ok:true})}catch(e){next(e)}
+});
+app.get('/api/staff/game-reset/preview',requireAdmin,async(req,res,next)=>{
+  try{const r=await one('SELECT COUNT(*)::int AS count FROM users');res.json({count:r.count,startingPoints:STARTING_POINTS})}catch(e){next(e)}
+});
+app.post('/api/staff/game-reset',requireAdmin,async(req,res,next)=>{
+  if(req.body.confirm!=='RESET ALL PLAYERS'||req.body.startingPoints!==STARTING_POINTS)return res.status(400).json({error:'確認内容が一致しません'});
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    // Serialize concurrent reset attempts, and hold row locks on players during reset.
+    await client.query('SELECT pg_advisory_xact_lock(60490)');
+    const locked=await client.query('SELECT id FROM users ORDER BY id FOR UPDATE');
+    const count=locked.rowCount;
+    // Clear game sessions, results and dependent records in FK-safe order.
+    for(const table of ['hit_blow_guesses','janken_rounds','chinchiro_rolls','random_match_queue','random_matches','quick_matches','matches','point_history','user_titles']){
+      await client.query('DELETE FROM '+table);
+    }
+    await client.query('UPDATE users SET points=$1,selected_title_key=$2',[STARTING_POINTS,'rookie']);
+    await client.query('INSERT INTO user_titles(user_id,title_key) SELECT id,$1 FROM users ON CONFLICT DO NOTHING',['rookie']);
+    await client.query('INSERT INTO game_reset_log(staff_id,staff_name,player_count,starting_points) VALUES($1,$2,$3,$4)',[req.staff.id,req.staff.username,count,STARTING_POINTS]);
+    await client.query('COMMIT');
+    for(const timer of eliminationTimers.values())clearTimeout(timer);
+    eliminationTimers.clear();
+    res.json({ok:true,count,startingPoints:STARTING_POINTS});
+  }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
+});
+
 app.get('/api/registration/status',async(req,res,next)=>{try{res.json({enabled:await publicRegistrationEnabled()})}catch(e){next(e)}});
 app.post('/api/register', async (req,res,next)=>{
   try{
