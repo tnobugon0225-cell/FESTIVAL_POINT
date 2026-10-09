@@ -6,6 +6,8 @@
 const $=s=>document.querySelector(s),authToken=localStorage.getItem('nexusParticipantToken')||'';
 let matchId=null,poll=null,lastView='',lastRoundCount=null,revealBusy=false,returnTimer=null,playerHeaderKey='';
 let roundClockKey='',roundDeadlinePerf=0,roundTimer=null,currentChoice=null,choiceSending=false;
+// v7.04: keep locally confirmed selection from being overwritten by an older poll.
+let choiceEpoch=0,choiceRoundKey='',pendingChoice=null;
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken}const r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers});const d=await r.json().catch(()=>({}));if(!r.ok){const e=new Error(d.error||'通信に失敗しました');e.status=r.status;throw e}return d}
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(k){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(k||''))?k:'avatar-01'}.webp`}
@@ -19,7 +21,23 @@ Object.values(hands).forEach(h=>{const i=new Image();i.src=h.img});
 function scoreNodes(n){return [0,1,2].map((_,i)=>`<i class="jk-win-node ${i<n?'on':''}" aria-hidden="true"><span></span></i>`).join('')}
 function scoreBoard(m){return `<div class="jk-score jk-score-nodes"><div class="jk-score-side"><span>${esc(m.challenger.name)}</span><em>${scoreNodes(m.challengerJankenWins)}</em></div><strong><small>ROUND</small>${String(m.jankenRound).padStart(2,'0')}</strong><div class="jk-score-side jk-score-side-rival"><span>${esc(m.opponent.name)}</span><em>${scoreNodes(m.opponentJankenWins)}</em></div></div>`}
 function choiceButtons(){return `<div class="jk-choice-grid">${Object.entries(hands).map(([k,v])=>`<button type="button" class="jk-choice" data-hand="${k}" onclick="choose('${k}')"><img src="${v.img}" alt="${v.jp}" draggable="false"><div><b>${v.code}</b><small>${v.jp}</small></div></button>`).join('')}</div>`}
-function syncChoiceUI(m){currentChoice=m.myJankenChoice||currentChoice||null;document.querySelectorAll('.jk-choice').forEach(b=>{const selected=b.dataset.hand===currentChoice;b.classList.toggle('selected',selected);b.setAttribute('aria-pressed',selected?'true':'false')});const my=$('#mySignal');if(my)my.textContent=currentChoice?`${hands[currentChoice].code} / ${hands[currentChoice].jp}`:'NOT SELECTED';const rival=$('#rivalSignal');if(rival)rival.textContent=m.rivalJankenLocked?'READY':'SELECTING'}
+function syncChoiceUI(m){
+  // A delayed GET can contain the previous hand even after the user selected a new one.
+  if(pendingChoice!==null){
+    if(m.myJankenChoice===pendingChoice)pendingChoice=null;
+    else currentChoice=pendingChoice;
+  }
+  if(pendingChoice===null)currentChoice=m.myJankenChoice||null;
+  document.querySelectorAll('.jk-choice').forEach(b=>{
+    const selected=b.dataset.hand===currentChoice;
+    b.classList.toggle('selected',selected);
+    b.setAttribute('aria-pressed',selected?'true':'false');
+  });
+  const my=$('#mySignal');
+  if(my)my.textContent=currentChoice?`${hands[currentChoice].code} / ${hands[currentChoice].jp}`:'NOT SELECTED';
+  const rival=$('#rivalSignal');
+  if(rival)rival.textContent=m.rivalJankenLocked?'READY':'SELECTING';
+}
 
 function cutinArtSrc(p,side){const k=String(p?.avatarKey||'');if(k==='avatar-01'||k==='avatar-02')return `/ui/cutins/${k}-${side}.webp`;return ''}
 function cutinPlayer(p,side){const art=cutinArtSrc(p,side);const cls=side==='top'?'prebattle-a':'prebattle-b';if(art)return `<div class="prebattle-player ${cls} prebattle-art-player"><img class="prebattle-cutart" src="${art}" alt=""><div class="prebattle-meta"><img class="prebattle-title-img" src="${titleImage(p)}" alt="${esc(titleName(p))}"><strong>${esc(p.name)}</strong></div></div>`;return `<div class="prebattle-player ${cls}"><img src="${avatarSrc(p.avatarKey)}"><img class="prebattle-title-img" src="${titleImage(p)}" alt="${esc(titleName(p))}"><strong>${esc(p.name)}</strong></div>`}
@@ -28,15 +46,46 @@ function reveal(round,m){if(revealBusy||!round)return;revealBusy=true;const c=ha
 setTimeout(()=>{ov.classList.remove('jk-locking');const resultClass=draw?'draw':mineWon?'win':'lose';ov.innerHTML=`<div class="jk-reveal-core jk-round-result ${resultClass}"><div class="eyebrow">ROUND ${String(round.roundNo).padStart(2,'0')} // RESULT</div><div class="jk-reveal-hands image-mode"><div><img src="${c.img}" alt="${c.jp}"><b>${c.code}</b><small>${esc(m.challenger.name)}</small></div><strong>VS</strong><div><img src="${o.img}" alt="${o.jp}"><b>${o.code}</b><small>${esc(m.opponent.name)}</small></div></div><div class="jk-result-banner">${draw?'DRAW':mineWon?'ROUND WIN':'ROUND LOSE'}</div><p>${draw?'あいこ / スコアは変わりません':mineWon?'このラウンドを獲得':'相手がこのラウンドを獲得'}</p></div>`;setTimeout(()=>{ov.classList.remove('show');setTimeout(()=>{ov.remove();revealBusy=false;lastView='';load()},280)},5200)},1500)}
 function syncRoundClock(m){const key=`${m.id}:${m.jankenRound}:${m.jankenRoundStartedAt||''}`;if(roundClockKey!==key){roundClockKey=key;const start=m.jankenRoundStartedAt?new Date(m.jankenRoundStartedAt).getTime():Date.now();const end=m.jankenRoundDeadlineAt?new Date(m.jankenRoundDeadlineAt).getTime():start+15000;const now=Date.now();if(now<start){roundDeadlinePerf=performance.now()+15000;document.querySelectorAll('.jk-choice').forEach(b=>b.disabled=true);const el=$('#jkTimer');if(el)el.textContent='15';setTimeout(()=>{lastView='';load()},Math.max(50,start-now+30));}else{roundDeadlinePerf=performance.now()+Math.max(0,Math.min(15000,end-now));document.querySelectorAll('.jk-choice').forEach(b=>b.disabled=false)}if(!roundTimer)roundTimer=setInterval(updateRoundClock,100)}updateRoundClock()}
 function updateRoundClock(){const el=$('#jkTimer');if(!el||!roundDeadlinePerf)return;const ms=Math.max(0,roundDeadlinePerf-performance.now());const sec=Math.ceil(ms/1000);el.textContent=sec;el.closest('.jk-round-timer')?.classList.toggle('danger',sec<=5);if(sec<=0){document.querySelectorAll('.jk-choice').forEach(b=>b.disabled=true)}}
-async function choose(choice){if(choiceSending||revealBusy)return;currentChoice=choice;syncChoiceUI({myJankenChoice:choice,rivalJankenLocked:$('#rivalSignal')?.textContent==='READY'});choiceSending=true;try{await api(`/api/quick-matches/${matchId}/janken-choice`,{method:'POST',body:JSON.stringify({choice})});$('#jkMsg').className='match-action-msg';$('#jkMsg').textContent='';}catch(e){$('#jkMsg').className='match-action-msg error';$('#jkMsg').textContent=e.message;lastView='';await load()}finally{choiceSending=false}}
+async function choose(choice){
+  if(choiceSending||revealBusy||!matchId||!choiceRoundKey)return;
+  const requestRound=choiceRoundKey;
+  const epoch=++choiceEpoch;
+  currentChoice=choice;
+  pendingChoice=choice;
+  syncChoiceUI({myJankenChoice:choice,rivalJankenLocked:$('#rivalSignal')?.textContent==='READY'});
+  choiceSending=true;
+  try{
+    await api(`/api/quick-matches/${matchId}/janken-choice`,{method:'POST',body:JSON.stringify({choice})});
+    if(epoch===choiceEpoch&&requestRound===choiceRoundKey){
+      $('#jkMsg').className='match-action-msg';
+      $('#jkMsg').textContent='';
+    }
+  }catch(e){
+    if(epoch===choiceEpoch&&requestRound===choiceRoundKey){
+      pendingChoice=null;
+      currentChoice=null;
+      $('#jkMsg').className='match-action-msg error';
+      $('#jkMsg').textContent=e.message;
+      lastView='';
+      await load();
+    }
+  }finally{choiceSending=false}
+}
 function resultReturn(m){if(returnTimer)return;const end=Date.now()+10000;const tick=()=>{const n=Math.max(0,Math.ceil((end-Date.now())/1000));const el=$('#jkReturn');if(el&&el.textContent!==String(n))el.textContent=n;if(n<=0){clearInterval(returnTimer);returnTimer=null;location.href='/'}};tick();returnTimer=setInterval(tick,250)}
 async function approveMatch(){try{await api(`/api/quick-matches/${matchId}/approve`,{method:'POST'});lastView='';await load()}catch(e){$('#jkMsg').textContent=e.message}}
 async function cancelMatch(){if(!confirm('この対戦申請を取り消しますか？'))return;try{await api(`/api/quick-matches/${matchId}/reject`,{method:'POST'});location.href='/'}catch(e){$('#jkMsg').textContent=e.message}}
-async function loadOnce(){if(revealBusy)return;try{const r=await api('/api/quick-matches/me');const m=r.match;if(!m){window.NexusBGM?.setTrack('home');$('#jkBody').innerHTML='<div class="battle-wait-large">NO ACTIVE JANKEN<span>HOMEへ戻って対戦を申し込んでください</span></div>';return}if(m.gameType!=='janken'){location.href='/hit-blow';return}matchId=m.id;const st=await api(`/api/quick-matches/${m.id}/janken-state`);Object.assign(m,st.match);const rounds=st.rounds||[];
+async function loadOnce(){if(revealBusy)return;const requestedChoiceEpoch=choiceEpoch;try{const r=await api('/api/quick-matches/me');const m=r.match;if(!m){window.NexusBGM?.setTrack('home');$('#jkBody').innerHTML='<div class="battle-wait-large">NO ACTIVE JANKEN<span>HOMEへ戻って対戦を申し込んでください</span></div>';return}if(m.gameType!=='janken'){location.href='/hit-blow';return}matchId=m.id;const st=await api(`/api/quick-matches/${m.id}/janken-state`);Object.assign(m,st.match);if(requestedChoiceEpoch!==choiceEpoch)return;const rounds=st.rounds||[];
 const hk=`${m.id}:${m.challenger.avatarKey}:${m.challenger.name}:${m.opponent.avatarKey}:${m.opponent.name}`;if(playerHeaderKey!==hk){$('#jkPlayers').innerHTML=`${person(m.challenger,'PLAYER A')}<div class="battle-vs">VS</div>${person(m.opponent,'RIVAL')}`;$('#jkPoints').innerHTML=`<span>BATTLE POINTS</span><strong>${Number(m.wager).toLocaleString()} pt</strong>`;playerHeaderKey=hk}
 if(lastRoundCount===null)lastRoundCount=rounds.length;else if(rounds.length>lastRoundCount){const latest=rounds[rounds.length-1];lastRoundCount=rounds.length;reveal(latest,m);return}
 if(m.status==='pending'){window.NexusBGM?.setTrack('matching');$('#jkStatus').textContent='MATCHING';const k=`pending:${m.role}`;if(lastView!==k){$('#jkBody').innerHTML=m.role==='challenger'?'<div class="battle-wait-large">RIVAL APPROVAL WAITING<span>対戦相手の承認を待っています</span><button class="ghost" onclick="cancelMatch()">申請を取り消す</button></div>':'<div class="battle-wait-large">BATTLE REQUEST<span>JANKEN BO5 の申請を受信しました</span><div class="match-actions"><button class="success" onclick="approveMatch()">承認する</button><button class="danger" onclick="cancelMatch()">拒否する</button></div></div>';lastView=k}return}
-if(m.status==='in_progress'){window.NexusBGM?.setTrack('battle');$('#jkStatus').textContent='BATTLE LIVE';showVsIntro(m);const roundStart=m.jankenRoundStartedAt?new Date(m.jankenRoundStartedAt).getTime():0;const waitingStart=roundStart&&Date.now()<roundStart;const k=`live:${m.id}:${m.jankenRound}:${m.challengerJankenWins}:${m.opponentJankenWins}:${waitingStart}`;if(lastView!==k){currentChoice=m.myJankenChoice||null;$('#jkBody').innerHTML=`${scoreBoard(m)}<div class="jk-command stable ${waitingStart?'jk-prestart':''}"><div class="jk-command-head"><div><div class="eyebrow">SELECT YOUR SIGNAL</div><h2>15秒以内なら何度でも変更可能</h2></div><div class="jk-round-timer"><span>TIME LEFT</span><b id="jkTimer">15</b><i>SEC</i></div></div>${choiceButtons()}<div class="jk-wait-state"><span>YOUR SIGNAL : <b id="mySignal">NOT SELECTED</b></span><span>RIVAL SIGNAL : <b id="rivalSignal">SELECTING</b></span></div><p>時間終了時に選択中の手で判定します。未選択の場合はシステムがランダム選択します。</p></div>`;lastView=k}syncChoiceUI(m);syncRoundClock(m);return}
+if(m.status==='in_progress'){window.NexusBGM?.setTrack('battle');$('#jkStatus').textContent='BATTLE LIVE';showVsIntro(m);const roundStart=m.jankenRoundStartedAt?new Date(m.jankenRoundStartedAt).getTime():0;const waitingStart=roundStart&&Date.now()<roundStart;const k=`live:${m.id}:${m.jankenRound}:${m.challengerJankenWins}:${m.opponentJankenWins}:${waitingStart}`;const nextChoiceRoundKey=`${m.id}:${m.jankenRound}`;
+if(choiceRoundKey!==nextChoiceRoundKey){
+  choiceRoundKey=nextChoiceRoundKey;
+  pendingChoice=null;
+  currentChoice=m.myJankenChoice||null;
+  choiceEpoch++;
+}
+if(lastView!==k){$('#jkBody').innerHTML=`${scoreBoard(m)}<div class="jk-command stable ${waitingStart?'jk-prestart':''}"><div class="jk-command-head"><div><div class="eyebrow">SELECT YOUR SIGNAL</div><h2>15秒以内なら何度でも変更可能</h2></div><div class="jk-round-timer"><span>TIME LEFT</span><b id="jkTimer">15</b><i>SEC</i></div></div>${choiceButtons()}<div class="jk-wait-state"><span>YOUR SIGNAL : <b id="mySignal">NOT SELECTED</b></span><span>RIVAL SIGNAL : <b id="rivalSignal">SELECTING</b></span></div><p>時間終了時に選択中の手で判定します。未選択の場合はシステムがランダム選択します。</p></div>`;lastView=k}syncChoiceUI(m);syncRoundClock(m);return}
 if(m.status==='completed'){window.NexusBGM?.setTrack('victory');stopPolling();const mine=m.role==='challenger'?m.challenger:m.opponent,won=Number(m.winnerUserId)===Number(mine.id),cWin=Number(m.winnerUserId)===Number(m.challenger.id);const rhk=`result:${m.id}:${m.winnerUserId}`;if(playerHeaderKey!==rhk){$('#jkPlayers').innerHTML=`${person(m.challenger,'PLAYER A',cWin?'winner':'loser')}<div class="battle-vs">VS</div>${person(m.opponent,'RIVAL',cWin?'loser':'winner')}`;playerHeaderKey=rhk}$('#jkStatus').textContent='COMPLETE';$('#jkBody').innerHTML=`${scoreBoard(m)}<div class="hb-result ${won?'win':'lose'}"><div class="eyebrow">JANKEN BO5 COMPLETE</div><h2>${won?'VICTORY':'DEFEAT'}</h2><strong>${won?'+':'-'}${Number(m.wager).toLocaleString()} pt</strong><p>WINNER : ${esc(m.winnerName)}</p><div>HOMEへ戻るまで <b id="jkReturn">10</b> 秒</div><button class="battle-home-btn" onclick="location.href='/'">HOMEへ戻る</button></div>`;resultReturn(m)}}catch(e){if(e.status===401||e.status===403){location.href='/';return}$('#jkMsg').textContent=e.message}}
 // v7.03: serialize state requests; background tabs poll less often.
 let pollBusy=false,pollStopped=false,pollLast=0;
