@@ -5212,3 +5212,15 @@ body.dm-open{overflow:hidden!important}
  #missionsPicker .mission-info p, #missionsPicker .mission-info small { font-size:10px; }
  #missionsPicker .mission-action button { padding:7px 8px; font-size:11px; }
 }
+
+
+/* v7.01: side-by-side home actions, matching transparent artwork */
+.home-action-pair{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;align-items:center!important;gap:8px!important;width:100%!important;max-width:800px!important;margin:8px auto 14px!important;padding:0 10px!important;box-sizing:border-box!important;min-width:0!important}
+.home-action-pair #homeMailPanel,.home-action-pair .mission-home-row{display:block!important;width:100%!important;min-width:0!important;max-width:100%!important;margin:0!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;box-sizing:border-box!important}
+.home-action-pair #homeMailPanel.hidden{display:none!important}
+.home-action-pair #mailOpen,.home-action-pair #missionsOpen{position:relative!important;display:block!important;width:100%!important;height:auto!important;min-height:0!important;min-width:0!important;max-width:100%!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;appearance:none!important;-webkit-appearance:none!important;line-height:0!important;overflow:visible!important;cursor:pointer!important}
+.home-action-pair #mailOpen>img,.home-action-pair #missionsOpen>img{display:block!important;width:100%!important;height:auto!important;max-width:100%!important;max-height:none!important;object-fit:contain!important;opacity:1!important;visibility:visible!important}
+.home-action-pair #mailBadge,.home-action-pair #missionHomeCount{position:absolute!important;right:1%!important;top:0!important;z-index:5!important;min-width:22px!important;height:22px!important;padding:0 5px!important;border:2px solid white!important;border-radius:20px!important;background:#f03960!important;color:white!important;display:grid!important;place-items:center!important;font-size:11px!important;font-weight:900!important;line-height:1!important;letter-spacing:0!important;transform:none!important;box-sizing:border-box!important}
+.home-action-pair #mailBadge.hidden,.home-action-pair #missionHomeCount.hidden{display:none!important}
+@media(max-width:430px){.home-action-pair{gap:5px!important;padding:0 5px!important;margin:6px auto 10px!important}.home-action-pair #mailBadge,.home-action-pair #missionHomeCount{min-width:18px!important;height:18px!important;font-size:9px!important;border-width:1px!important}}
+
