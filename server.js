@@ -1441,6 +1441,14 @@ app.get(['/register','/register.html'],(req,res,next)=>{
 });
 // v6.55: canonical RANDOM MATCH art; avoid stale cached 404s from earlier builds.
 app.get('/ui/random-match.webp',(req,res,next)=>{res.set('Cache-Control','no-store, no-cache, must-revalidate');res.sendFile(path.join(__dirname,'public','ui','random-match.webp'),err=>{if(err)next(err)});});
+// v7.00: /style.css must use the canonical root stylesheet (not stale public/style.css).
+app.get('/style.css',(req,res,next)=>{
+  res.set('Cache-Control','no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.set('Pragma','no-cache');
+  res.set('Expires','0');
+  res.type('text/css');
+  res.sendFile(path.join(__dirname,'style.css'),err=>{if(err)next(err)});
+});
 app.use(express.static(path.join(__dirname,'public')));
 app.get('/ranking',(req,res)=>res.sendFile(path.join(__dirname,'public','ranking.html')));
 app.get('/history',(req,res)=>res.sendFile(path.join(__dirname,'public','history.html')));
