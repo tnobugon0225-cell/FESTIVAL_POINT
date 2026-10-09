@@ -87,6 +87,19 @@ if(choiceRoundKey!==nextChoiceRoundKey){
   choiceEpoch++;
 }
 if(lastView!==k){$('#jkBody').innerHTML=`${scoreBoard(m)}<div class="jk-command stable ${waitingStart?'jk-prestart':''}"><div class="jk-command-head"><div><div class="eyebrow">SELECT YOUR SIGNAL</div><h2>15秒以内なら何度でも変更可能</h2></div><div class="jk-round-timer"><span>TIME LEFT</span><b id="jkTimer">15</b><i>SEC</i></div></div>${choiceButtons()}<div class="jk-wait-state"><span>YOUR SIGNAL : <b id="mySignal">NOT SELECTED</b></span><span>RIVAL SIGNAL : <b id="rivalSignal">SELECTING</b></span></div><p>時間終了時に選択中の手で判定します。未選択の場合はシステムがランダム選択します。</p></div>`;lastView=k}syncChoiceUI(m);syncRoundClock(m);return}
-if(m.status==='completed'){window.NexusBGM?.setTrack('victory');clearInterval(poll);const mine=m.role==='challenger'?m.challenger:m.opponent,won=Number(m.winnerUserId)===Number(mine.id),cWin=Number(m.winnerUserId)===Number(m.challenger.id);const rhk=`result:${m.id}:${m.winnerUserId}`;if(playerHeaderKey!==rhk){$('#jkPlayers').innerHTML=`${person(m.challenger,'PLAYER A',cWin?'winner':'loser')}<div class="battle-vs">VS</div>${person(m.opponent,'RIVAL',cWin?'loser':'winner')}`;playerHeaderKey=rhk}$('#jkStatus').textContent='COMPLETE';$('#jkBody').innerHTML=`${scoreBoard(m)}<div class="hb-result ${won?'win':'lose'}"><div class="eyebrow">JANKEN BO5 COMPLETE</div><h2>${won?'VICTORY':'DEFEAT'}</h2><strong>${won?'+':'-'}${Number(m.wager).toLocaleString()} pt</strong><p>WINNER : ${esc(m.winnerName)}</p><div>HOMEへ戻るまで <b id="jkReturn">10</b> 秒</div><button class="battle-home-btn" onclick="goHome()">HOMEへ戻る</button></div>`;resultReturn(m)}}catch(e){if(e.status===401||e.status===403){goHome();return}$('#jkMsg').textContent=e.message}}
-load();poll=setInterval(load,500);
+if(m.status==='completed'){window.NexusBGM?.setTrack('victory');v706Stopped=true;clearTimeout(poll);const mine=m.role==='challenger'?m.challenger:m.opponent,won=Number(m.winnerUserId)===Number(mine.id),cWin=Number(m.winnerUserId)===Number(m.challenger.id);const rhk=`result:${m.id}:${m.winnerUserId}`;if(playerHeaderKey!==rhk){$('#jkPlayers').innerHTML=`${person(m.challenger,'PLAYER A',cWin?'winner':'loser')}<div class="battle-vs">VS</div>${person(m.opponent,'RIVAL',cWin?'loser':'winner')}`;playerHeaderKey=rhk}$('#jkStatus').textContent='COMPLETE';$('#jkBody').innerHTML=`${scoreBoard(m)}<div class="hb-result ${won?'win':'lose'}"><div class="eyebrow">JANKEN BO5 COMPLETE</div><h2>${won?'VICTORY':'DEFEAT'}</h2><strong>${won?'+':'-'}${Number(m.wager).toLocaleString()} pt</strong><p>WINNER : ${esc(m.winnerName)}</p><div>HOMEへ戻るまで <b id="jkReturn">10</b> 秒</div><button class="battle-home-btn" onclick="goHome()">HOMEへ戻る</button></div>`;resultReturn(m)}}catch(e){if(e.status===401||e.status===403){goHome();return}$('#jkMsg').textContent=e.message}}
+// v7.06: one outstanding state request per page, with a slower background refresh.
+let v706Busy=false,v706Stopped=false;
+async function v706Tick(){
+  if(v706Stopped)return;
+  if(!v706Busy){
+    v706Busy=true;
+    try{await load()}finally{v706Busy=false}
+  }
+  if(!v706Stopped)poll=setTimeout(v706Tick,document.hidden?3500:850);
+}
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&!v706Stopped){clearTimeout(poll);poll=setTimeout(v706Tick,0)}
+});
+v706Tick();
 </script></body></html>

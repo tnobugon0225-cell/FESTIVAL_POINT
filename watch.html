@@ -12,5 +12,14 @@ function diceVals(v){return String(v||'').split(/[-,]/).map(Number).filter(n=>n>
 function cc(d,m){const latest=d.rolls[d.rolls.length-1];const rows=d.rolls.slice().reverse().map(r=>`<div class="watch-row"><b>${esc(r.player_name)}</b><span>${diceHtml(r.dice)}</span><em class="watch-result">${esc(r.role).toUpperCase()}</em></div>`).join('');return `<div class="watch-game"><div class="watch-scoreboard"><div class="watch-score"><span>${esc(m.challenger.name)}</span><strong>${m.challengerChinchiroWins} WIN</strong></div><div class="watch-score"><span>${esc(m.opponent.name)}</span><strong>${m.opponentChinchiroWins} WIN</strong></div></div>${m.status==='in_progress'?`<div class="watch-section watch-current"><div class="watch-label">LIVE DICE // ROUND ${m.chinchiroRound}</div>${latest?`<b>${esc(latest.player_name)}</b>${diceHtml(latest.dice)}<div class="watch-role">${esc(latest.role).toUpperCase()}</div>`:'<div class="watch-empty">AWAITING ROLL</div>'}</div>`:''}<div class="watch-section"><div class="watch-label">ROLL HISTORY</div><div class="watch-history">${rows||'<div class="watch-empty">NO ROLL YET</div>'}</div></div></div>`}
 let lastRenderKey='',hasRendered=false;
 function render(d){const renderKey=JSON.stringify(d);if(renderKey===lastRenderKey)return;lastRenderKey=renderKey;const m=d.match;let body=m.gameType==='hitblow'?hb(d,m):m.gameType==='janken'?jk(d,m):cc(d,m);$('#watchStage').innerHTML=`<div class="watch-vs"><div><img src="${av(m.challenger.avatarKey)}"><img class="watch-title" src="/titles/${m.challenger.titleKey||'rookie'}.webp"><strong>${esc(m.challenger.name)}</strong></div><b>VS</b><div><img src="${av(m.opponent.avatarKey)}"><img class="watch-title" src="/titles/${m.opponent.titleKey||'rookie'}.webp"><strong>${esc(m.opponent.name)}</strong></div></div><div class="watch-meta"><strong>${m.gameType==='hitblow'?'HIT & BLOW':m.gameType.toUpperCase()}</strong><span>${m.wager} BATTLE POINTS</span><em>${m.status}</em></div>${body}`;hasRendered=true}
-async function load(){try{render(await api('/api/spectate/quick/'+id))}catch(e){if(!hasRendered)$('#watchStage').innerHTML=`<p class="error">${esc(e.message)}</p>`}}load();setInterval(load,500);
+let v706WatchBusy=false,v706WatchTimer=null;
+async function load(){
+  if(v706WatchBusy)return;
+  v706WatchBusy=true;
+  try{render(await api('/api/spectate/quick/'+id))}
+  catch(e){if(!hasRendered)$('#watchStage').textContent='接続中... 再試行しています'}
+  finally{v706WatchBusy=false;v706WatchTimer=setTimeout(load,document.hidden?5000:2500)}
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!v706WatchBusy){clearTimeout(v706WatchTimer);v706WatchTimer=setTimeout(load,0)}});
+load();
 </script></body></html>

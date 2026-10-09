@@ -691,7 +691,7 @@ $('#randomModeBtn').onclick=()=>pressRun($('#randomModeBtn'),()=>{randomFlowActi
 $('#quickModeBtn').onclick=()=>pressRun($('#quickModeBtn'),()=>showBattleWizard('games'));
 $('#customModeBtn').onclick=()=>pressRun($('#customModeBtn'),()=>showBattleWizard('custom'));
 document.querySelectorAll('[data-battle-back]').forEach(b=>b.onclick=()=>{const next=b.dataset.battleBack==='root'?'root':b.dataset.battleBack==='modes'?'modes':'games';pressRun(b,async()=>{if(!$('#randomBattlePanel')?.classList.contains('hidden')){try{await api('/api/random-match/leave',{method:'POST'})}catch(e){}randomLastMatchId=null;randomSlotDone=false;randomFlowActive=false}showBattleWizard(next)})});
-let randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null,randomSlotRevealUntil=0,randomReadyTimer=null;
+let randomStatusBusy=false,randomPollTimer=null,randomLastMatchId=null,randomSlotDone=false,randomCountdownTimer=null,randomReadyShownId=null,randomSlotRevealUntil=0,randomReadyTimer=null;
 function randomGameLabel(g){return g==='janken'?'JANKEN':g==='chinchiro'?'CHINCHIRO':'HIT & BLOW'}
 function randomGameArt(g){const k=g==='janken'?'janken':g==='chinchiro'?'chinchiro':'hitblow';return `/ui/v562/${k}.webp`}
 let randomCinematicHome=null;
@@ -777,7 +777,7 @@ function runRandomWagerSlot(finalWager,done){
   };
   spin();
 }
-async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden'))return;try{randomSetView(await api('/api/random-match/status'))}catch(e){}},700)}}catch(e){}}
+async function randomPoll(force=false){if(!authToken)return;try{const d=await api('/api/random-match/status');randomSetView(d);if(force||!randomPollTimer){clearInterval(randomPollTimer);randomPollTimer=setInterval(async()=>{if($('#randomBattlePanel')?.classList.contains('hidden')||document.hidden||randomStatusBusy)return;randomStatusBusy=true;try{randomSetView(await api('/api/random-match/status'))}catch(e){}finally{randomStatusBusy=false}},700)}}catch(e){}}
 $('#randomJoinBtn').onclick=async()=>{randomFlowActive=true;const b=$('#randomJoinBtn');b.disabled=true;try{randomSetView(await api('/api/random-match/join',{method:'POST'}));await randomPoll()}catch(e){alert(e.message)}finally{b.disabled=false}};
 $('#randomCancelBtn').onclick=async()=>{await api('/api/random-match/cancel',{method:'POST'});setRandomCinematic(false);randomFlowActive=false;randomLastMatchId=null;clearInterval(randomCountdownTimer);clearTimeout(randomReadyTimer);randomSlotRevealUntil=0;randomSetView(await api('/api/random-match/status'))};
 document.querySelectorAll('[data-random-game]').forEach(b=>b.onclick=async()=>{if(b.disabled)return;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=true);b.classList.add('selected');$('#randomChoiceState').textContent='CHOICE LOCKED';try{const r=await api('/api/random-match/choice',{method:'POST',body:JSON.stringify({gameType:b.dataset.randomGame})});randomSetView({waiting:Number($('#randomWaitingCount').textContent)||0,queued:false,match:r.match})}catch(e){$('#randomChoiceState').textContent=e.message;document.querySelectorAll('[data-random-game]').forEach(x=>x.disabled=false)}});
