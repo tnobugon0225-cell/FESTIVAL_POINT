@@ -518,8 +518,25 @@ const TITLE_DEFS={
 function titleMeta(key){const k=TITLE_DEFS[key]?key:'rookie';return {key:k,...TITLE_DEFS[k]}}
 async function unlockTitle(userId,key,client=pool){if(!TITLE_DEFS[key])return;await client.query(`INSERT INTO user_titles(user_id,title_key) VALUES($1,$2) ON CONFLICT DO NOTHING`,[userId,key]);}
 async function ensureBaseTitle(userId,client=pool){await unlockTitle(userId,'rookie',client);}
-async function awardPodiumTitles(client=pool){const r=await client.query(`SELECT id FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 3`);for(let i=0;i<r.rows.length;i++)await unlockTitle(Number(r.rows[i].id),`rank${i+1}`,client);}
-async function awardQuickBattleTitles(userId,gameType,client=pool){const r=await client.query(`SELECT COUNT(*)::int AS n FROM quick_matches WHERE status='completed' AND game_type=$1 AND (challenger_id=$2 OR opponent_id=$2)`,[gameType,userId]);const n=Number(r.rows[0]?.n||0);for(const t of [5,10,15])if(n>=t)await unlockTitle(userId,`${gameType}${t}`,client);}
+// Missions v6.98: titles are claimed explicitly. Historical unlocks are preserved.
+async function awardPodiumTitles(){ /* claimed through /api/missions/claim */ }
+async function awardQuickBattleTitles(){ /* claimed through /api/missions/claim */ }
+async function missionSnapshot(userId,client=pool){
+  const counts=await client.query(`SELECT game_type,COUNT(*)::int AS n FROM quick_matches WHERE status='completed' AND (challenger_id=$1 OR opponent_id=$1) GROUP BY game_type`,[userId]);
+  const byGame=Object.fromEntries(counts.rows.map(r=>[r.game_type,Number(r.n)]));
+  const ranked=await client.query(`SELECT id FROM users WHERE points>0 ORDER BY points DESC,id ASC LIMIT 3`);
+  const position=ranked.rows.findIndex(r=>Number(r.id)===Number(userId))+1;
+  const owned=await client.query('SELECT title_key FROM user_titles WHERE user_id=$1',[userId]);
+  const ownedKeys=new Set(owned.rows.map(r=>r.title_key));
+  return Object.keys(TITLE_DEFS).filter(key=>key!=='rookie').map(key=>{
+    let progress=0,target=1,description='',hidden=false;
+    const battle=/^(hitblow|janken|chinchiro)(5|10|15)$/.exec(key);
+    if(battle){target=Number(battle[2]);progress=Math.min(target,byGame[battle[1]]||0);const game={hitblow:'HIT & BLOW',janken:'JANKEN',chinchiro:'CHINCHIRO'}[battle[1]];description=`${game}を${target}戦プレイする`}
+    else {const rank=Number(key.replace('rank',''));hidden=true;progress=position===rank?1:0;description=`ランキング${rank}位に到達する`}
+    const claimed=ownedKeys.has(key);
+    return {...titleMeta(key),description: hidden&&!claimed&&progress<target?'？？？':description,hidden:hidden&&!claimed&&progress<target,progress,target,remaining:Math.max(0,target-progress),claimable:!claimed&&progress>=target,claimed};
+  });
+}
 async function addAudit(category,summary,{userName=null,delta=null,counterpartName=null,staffName=null}={},client=pool){await client.query(`INSERT INTO admin_audit_log(category,summary,user_name,delta,counterpart_name,staff_name) VALUES($1,$2,$3,$4,$5,$6)`,[category,summary,userName,delta,counterpartName,staffName]);await client.query(`DELETE FROM admin_audit_log WHERE id NOT IN (SELECT id FROM admin_audit_log ORDER BY id DESC LIMIT 20)`);}
 
 const publicRegisterAttempts=new Map();
@@ -698,6 +715,18 @@ app.get('/api/announcements',requireUser,async(req,res,next)=>{try{await query('
 app.post('/api/announcements/:id/read',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const exists=await one('SELECT id FROM announcements WHERE id=$1',[id]);if(!exists)return res.status(404).json({error:'お知らせが見つかりません'});await query('INSERT INTO announcement_reads(announcement_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[id,req.userId]);res.json({ok:true})}catch(e){next(e)}});
 
 app.get('/api/titles',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);await awardQuickBattleTitles(req.userId,'hitblow');await awardQuickBattleTitles(req.userId,'janken');await awardQuickBattleTitles(req.userId,'chinchiro');await awardPodiumTitles();const u=await one('SELECT selected_title_key FROM users WHERE id=$1',[req.userId]);const r=await query('SELECT title_key,unlocked_at FROM user_titles WHERE user_id=$1',[req.userId]);const owned=new Map(r.rows.map(x=>[x.title_key,x.unlocked_at]));res.json({selectedKey:u?.selected_title_key||'rookie',titles:Object.keys(TITLE_DEFS).map(key=>({...titleMeta(key),owned:owned.has(key),unlockedAt:owned.get(key)||null}))});}catch(e){next(e)}});
+app.get('/api/missions',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);const missions=await missionSnapshot(req.userId);res.set('Cache-Control','no-store');res.json({missions,claimableCount:missions.filter(m=>m.claimable).length})}catch(e){next(e)}});
+app.post('/api/missions/claim',requireUser,async(req,res,next)=>{
+  const key=String(req.body?.key||'');if(!TITLE_DEFS[key]||key==='rookie')return res.status(400).json({error:'無効なミッションです'});
+  const client=await pool.connect();try{await client.query('BEGIN');
+    // Serialize claims per player and verify progress server-side.
+    const u=await client.query('SELECT id FROM users WHERE id=$1 FOR UPDATE',[req.userId]);if(!u.rows.length){await client.query('ROLLBACK');return res.status(404).json({error:'ユーザーが見つかりません'})}
+    const missions=await missionSnapshot(req.userId,client);const mission=missions.find(m=>m.key===key);
+    if(mission.claimed){await client.query('ROLLBACK');return res.status(409).json({error:'受取済みです'})}
+    if(!mission.claimable){await client.query('ROLLBACK');return res.status(403).json({error:'まだ条件を達成していません'})}
+    await unlockTitle(req.userId,key,client);await client.query('COMMIT');res.json({ok:true,title:titleMeta(key)});
+  }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
+});
 app.post('/api/titles/select',requireUser,async(req,res,next)=>{try{const key=String(req.body.key||'');const owned=await one('SELECT 1 FROM user_titles WHERE user_id=$1 AND title_key=$2',[req.userId,key]);if(!owned)return res.status(403).json({error:'未獲得の称号です'});await query('UPDATE users SET selected_title_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,title:titleMeta(key)});}catch(e){next(e)}});
 app.post('/api/me/avatar',requireUser,async(req,res,next)=>{try{const key=cleanAvatarKey(req.body.avatarKey);if(!key)return res.status(400).json({error:'アイコンを選択してください'});await query('UPDATE users SET avatar_key=$1 WHERE id=$2',[key,req.userId]);res.json({ok:true,avatarKey:key});}catch(e){next(e)}});
 app.post('/api/eliminate-me',requireUser,async(req,res,next)=>{try{const u=await one('SELECT id,points FROM users WHERE id=$1',[req.userId]);if(!u)return res.json({ok:true});if(Number(u.points)!==0)return res.status(409).json({error:'0ptではありません'});await deleteUserHard(req.userId);res.json({ok:true});}catch(e){next(e)}});
