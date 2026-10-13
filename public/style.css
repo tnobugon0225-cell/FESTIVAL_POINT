@@ -5224,3 +5224,18 @@ body.dm-open{overflow:hidden!important}
 .home-action-pair #mailBadge.hidden,.home-action-pair #missionHomeCount.hidden{display:none!important}
 @media(max-width:430px){.home-action-pair{gap:5px!important;padding:0 5px!important;margin:6px auto 10px!important}.home-action-pair #mailBadge,.home-action-pair #missionHomeCount{min-width:18px!important;height:18px!important;font-size:9px!important;border-width:1px!important}}
 
+
+/* Ranking individual / party switch */
+.ranking-switch{display:flex;justify-content:center;gap:8px;margin:18px auto 14px;max-width:360px}
+.ranking-switch-button{flex:1;min-height:46px;padding:10px 18px;border:1px solid rgba(75,190,255,.35);border-radius:9px;background:rgba(5,20,38,.8);color:#9ebbd1;font:inherit;font-weight:800;cursor:pointer}
+.ranking-switch-button.active{background:linear-gradient(120deg,rgba(0,151,226,.3),rgba(38,82,177,.35));color:#e5faff;border-color:#5fd8ff;box-shadow:inset 0 0 0 1px rgba(89,214,255,.25)}
+.party-rank-item{width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit;appearance:none;-webkit-appearance:none}
+.party-rank-item .rank-name{flex:1;min-width:0;overflow-wrap:anywhere}
+.party-rank-item:focus-visible{outline:2px solid #6edfff;outline-offset:3px}
+.party-ranking-detail[hidden]{display:none!important}
+.party-detail-heading{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.party-detail-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.party-detail-metrics>div{padding:13px 8px;background:rgba(35,82,125,.2);border:1px solid rgba(78,183,245,.22);border-radius:10px;text-align:center}
+.party-detail-metrics small{display:block;color:#91b6d1;font-size:11px}.party-detail-metrics strong{display:block;margin-top:6px;font-size:clamp(13px,3.3vw,19px)}
+.party-detail-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(75,173,224,.2)}.party-detail-row small{color:#9ebbd1;text-align:right}
+@media(max-width:500px){.party-detail-metrics{grid-template-columns:1fr 1fr}.party-detail-row{flex-wrap:wrap}}

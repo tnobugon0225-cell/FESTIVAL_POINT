@@ -11,24 +11,26 @@
 </head>
 <body class="player-page v52-player ranking-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
-<nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/" data-nexus-nav="HOME">HOME</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a class="active" href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/party">PARTY</a><a href="/history" data-nexus-nav="HISTORY">HISTORY</a></div></nav>
+<nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/" data-nexus-nav="HOME">HOME</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a class="active" href="/ranking" data-nexus-nav="RANKING">RANKING</a><a href="/party" data-nexus-nav="PARTY">PARTY</a><a href="/history" data-nexus-nav="HISTORY">HISTORY</a><a href="/support.html" data-nexus-nav="CONTACT">CONTACT</a></div></nav>
 <main class="app-shell arena-shell ranking-shell">
   <section class="ranking-hero system-panel">
     <div class="eyebrow">LIVE STANDINGS</div>
-    <h1>TOP 100 RANKING</h1>
-    <p class="muted">現在の上位100名を表示しています。</p>
-    <a href="/party" class="secondary compact link-button">PARTY RANKING</a> <button id="refreshRanking" class="secondary compact">今すぐ更新</button>
+    <h1 id="rankingTitle">TOP 100 RANKING</h1>
+    <p class="muted" id="rankingDescription">現在の上位100名を表示しています。</p>
+    <div class="ranking-switch" role="group" aria-label="ランキング種別"><button type="button" id="individualTab" class="ranking-switch-button active" aria-pressed="true">個人</button><button type="button" id="partyTab" class="ranking-switch-button" aria-pressed="false">パーティー</button></div>
+    <button id="refreshRanking" class="secondary compact">今すぐ更新</button>
   </section>
   <section class="system-panel top100-panel">
     <div id="fullRanking"><p class="muted">ランキングを読み込み中...</p></div>
   </section>
+  <section class="system-panel party-ranking-detail" id="partyDetail" hidden><div class="party-detail-heading"><h2 id="partyDetailName">パーティー詳細</h2><button type="button" id="closePartyDetail" class="secondary compact">閉じる</button></div><div id="partyDetailBody"></div></section>
 </main>
 <script>
 window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home'));
 const $=s=>document.querySelector(s);
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
-let rankingLoaded=false;
+let rankingLoaded=false;let currentTab=new URLSearchParams(location.search).get('tab')==='party'?'party':'individual';let partyRows=[];
 function renderRanking(rows){
   const root=$('#fullRanking');
   const list=rows.slice(0,100);
@@ -61,7 +63,43 @@ async function loadRanking(){
     renderRanking(rows);
   }catch(e){if(!rankingLoaded)root.innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
 }
-$('#refreshRanking').onclick=loadRanking;loadRanking();setInterval(loadRanking,12000);
+function renderPartyRanking(rows){
+  const root=$('#fullRanking');root.innerHTML='';
+  if(!rows.length){root.innerHTML='<p class="muted">まだパーティーがありません。</p>';return;}
+  rows.slice(0,100).forEach((p,i)=>{
+    const row=document.createElement('button');row.type='button';row.className=`rank-item full-rank-item party-rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}`;
+    row.innerHTML=`<span class="rank-num">${i+1}</span><span class="rank-name">${esc(p.name)}</span><strong><span class="rank-points">${Number(p.points).toLocaleString()}</span> <small>pt</small></strong>`;
+    row.addEventListener('click',()=>showPartyDetail(p.id));root.appendChild(row);
+  });
+}
+async function showPartyDetail(id){
+  const box=$('#partyDetail');box.hidden=false;$('#partyDetailName').textContent='パーティー詳細';$('#partyDetailBody').textContent='読み込み中...';
+  box.scrollIntoView({behavior:'smooth',block:'start'});
+  try{
+    const r=await fetch('/api/party/detail/'+encodeURIComponent(id),{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'取得に失敗しました');
+    const p=d.party;$('#partyDetailName').textContent=p.name;
+    const games=Number(p.wins)+Number(p.draws)+Number(p.losses),rate=games?Math.round(Number(p.wins)/games*100)+'%':'—';
+    $('#partyDetailBody').innerHTML=`<div class="party-detail-metrics"><div><small>POINTS</small><strong>${Number(p.points).toLocaleString()} pt</strong></div><div><small>WIN RATE</small><strong>${rate}</strong></div><div><small>RECORD</small><strong>${Number(p.wins)}勝 ${Number(p.draws)}分 ${Number(p.losses)}敗</strong></div></div><h3>所属メンバー</h3>${d.members.map(m=>`<p class="party-detail-row">${esc(m.username)} <small>#${esc(m.public_code)}</small></p>`).join('')||'<p class="muted">現在所属しているメンバーはいません。</p>'}<h3>貢献記録（過去メンバーを含む）</h3>${d.contributions.map(x=>`<p class="party-detail-row">${esc(x.name)} <small>${Number(x.points)} pt / ${Number(x.wins)}勝 ${Number(x.draws)}分 ${Number(x.losses)}敗</small></p>`).join('')||'<p class="muted">記録はまだありません。</p>'}`;
+  }catch(e){$('#partyDetailBody').innerHTML=`<p class="error">${esc(e.message)}</p>`}
+}
+async function loadPartyRanking(){
+  const root=$('#fullRanking');if(!partyRows.length)root.innerHTML='<p class="muted">ランキングを読み込み中...</p>';
+  try{const r=await fetch('/api/party/ranking',{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'取得に失敗しました');partyRows=d;renderPartyRanking(d)}
+  catch(e){root.innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
+}
+function setTab(tab){
+  currentTab=tab;history.replaceState(null,'',tab==='party'?'/ranking?tab=party':'/ranking');
+  $('#individualTab').classList.toggle('active',tab==='individual');$('#partyTab').classList.toggle('active',tab==='party');
+  $('#individualTab').setAttribute('aria-pressed',String(tab==='individual'));$('#partyTab').setAttribute('aria-pressed',String(tab==='party'));
+  $('#rankingTitle').textContent=tab==='party'?'PARTY RANKING':'TOP 100 RANKING';
+  $('#rankingDescription').textContent=tab==='party'?'パーティーの上位100組を表示しています。タップすると詳細を確認できます。':'現在の上位100名を表示しています。';
+  $('#partyDetail').hidden=true;
+  if(tab==='party')loadPartyRanking();else{rankingLoaded=false;$('#fullRanking').innerHTML='';loadRanking()}
+}
+$('#individualTab').onclick=()=>setTab('individual');$('#partyTab').onclick=()=>setTab('party');
+$('#closePartyDetail').onclick=()=>{$('#partyDetail').hidden=true};
+$('#refreshRanking').onclick=()=>currentTab==='party'?loadPartyRanking():loadRanking();
+setTab(currentTab);setInterval(()=>{if(currentTab==='party'){if($('#partyDetail').hidden)loadPartyRanking()}else loadRanking()},12000);
 </script>
 </body>
 </html>
