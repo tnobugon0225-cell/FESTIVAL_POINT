@@ -12,6 +12,7 @@ async function init(pool){
  CREATE TABLE IF NOT EXISTS party_application_votes(application_id BIGINT NOT NULL REFERENCES party_applications(id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,status VARCHAR(12) NOT NULL DEFAULT 'pending',responded_at TIMESTAMPTZ,PRIMARY KEY(application_id,user_id));
  CREATE TABLE IF NOT EXISTS party_invites(id BIGSERIAL PRIMARY KEY,party_id BIGINT NOT NULL REFERENCES parties(id) ON DELETE CASCADE,user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,status VARCHAR(12) NOT NULL DEFAULT 'pending',created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),UNIQUE(party_id,user_id));
  CREATE TABLE IF NOT EXISTS party_chat(id BIGSERIAL PRIMARY KEY,party_id BIGINT NOT NULL REFERENCES parties(id) ON DELETE CASCADE,sender_id BIGINT REFERENCES users(id) ON DELETE SET NULL,sender_name VARCHAR(20) NOT NULL,message VARCHAR(120) NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+ CREATE TABLE IF NOT EXISTS party_point_adjustments(id BIGSERIAL PRIMARY KEY,party_id BIGINT NOT NULL REFERENCES parties(id) ON DELETE CASCADE,delta INTEGER NOT NULL,reason VARCHAR(80) NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
  CREATE TABLE IF NOT EXISTS party_contributions(id BIGSERIAL PRIMARY KEY,party_id BIGINT NOT NULL REFERENCES parties(id) ON DELETE CASCADE,user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,player_name VARCHAR(20) NOT NULL,source VARCHAR(10) NOT NULL,match_id BIGINT NOT NULL,result VARCHAR(4) NOT NULL,points INTEGER NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),UNIQUE(source,match_id,party_id));
  UPDATE party_applications SET status='rejected',reviewed_at=NOW() WHERE status='pending' AND NOT EXISTS(SELECT 1 FROM party_application_votes v WHERE v.application_id=party_applications.id);
  INSERT INTO app_settings(setting_key,setting_value) VALUES('party_roster_locked','off') ON CONFLICT DO NOTHING;
@@ -145,6 +146,27 @@ function install(app,pool,requireUser,requireStaff){
  router.post('/disband',requireUser,wrap(async(req,res)=>{await transact(pool,async c=>{await c.query('SELECT pg_advisory_xact_lock(8742301)');await assertUnlocked(c);const p=await member(c,req.userId);assertLeader(p,req.userId);await c.query('DELETE FROM parties WHERE id=$1',[p.id]);});res.json({ok:true});}));
  router.get('/chat',requireUser,wrap(async(req,res)=>{const p=await me(req.userId);if(!p)throw err(403,'所属していません');const r=await pool.query('SELECT id,sender_name,message,created_at FROM party_chat WHERE party_id=$1 ORDER BY id DESC LIMIT 60',[p.id]);res.json(r.rows.reverse());}));
  router.post('/chat',requireUser,wrap(async(req,res)=>{const message=String(req.body.message||'').trim();if(!message||Array.from(message).length>120)throw err(400,'メッセージは1〜120文字です');await transact(pool,async c=>{const p=await member(c,req.userId);if(!p)throw err(403,'所属していません');const last=(await c.query('SELECT created_at FROM party_chat WHERE sender_id=$1 ORDER BY id DESC LIMIT 1',[req.userId])).rows[0];if(last&&Date.now()-new Date(last.created_at).getTime()<3000)throw err(429,'3秒あけて送信してください');const u=(await c.query('SELECT username FROM users WHERE id=$1',[req.userId])).rows[0];await c.query('INSERT INTO party_chat(party_id,sender_id,sender_name,message) VALUES($1,$2,$3,$4)',[p.id,req.userId,u.username,message]);});res.json({ok:true});}));
+ router.get('/staff/parties',requireStaff,wrap(async(req,res)=>{
+  const q=String(req.query.q||'').trim().slice(0,60);
+  const rows=await pool.query(`SELECT p.id,p.name,p.points,p.wins,p.draws,p.losses,
+   COALESCE(json_agg(json_build_object('name',u.username,'code',u.public_code,'leader',u.id=p.leader_id) ORDER BY pm.joined_at) FILTER (WHERE u.id IS NOT NULL),'[]'::json) members
+   FROM parties p LEFT JOIN party_members pm ON pm.party_id=p.id LEFT JOIN users u ON u.id=pm.user_id
+   WHERE ($1='' OR p.name ILIKE '%'||$1||'%' OR EXISTS (SELECT 1 FROM party_members pm2 JOIN users u2 ON u2.id=pm2.user_id WHERE pm2.party_id=p.id AND (u2.username ILIKE '%'||$1||'%' OR u2.public_code=$1)))
+   GROUP BY p.id ORDER BY p.points DESC,p.id LIMIT 100`,[q]);
+  res.json(rows.rows);
+ }));
+ router.get('/staff/parties/:id/history',requireStaff,wrap(async(req,res)=>{
+  const r=await pool.query('SELECT delta,reason,created_at FROM party_point_adjustments WHERE party_id=$1 ORDER BY id DESC LIMIT 30',[num(req.params.id)]);res.json(r.rows);
+ }));
+ router.post('/staff/parties/:id/points',requireStaff,wrap(async(req,res)=>{
+  const id=num(req.params.id),delta=Number(req.body.delta),reason=String(req.body.reason||'').trim();
+  if(!id||!Number.isSafeInteger(delta)||delta===0||Math.abs(delta)>1000000||!reason||reason.length>80)throw err(400,'整数のポイントと変更理由（80文字以内）を入力してください');
+  const result=await transact(pool,async c=>{
+   const r=await c.query('UPDATE parties SET points=points+$1 WHERE id=$2 AND points+$1>=0 RETURNING id,name,points',[delta,id]);
+   if(!r.rowCount)throw err(409,'パーティーが存在しないか、ポイントがマイナスになります');
+   await c.query('INSERT INTO party_point_adjustments(party_id,delta,reason) VALUES($1,$2,$3)',[id,delta,reason]);return r.rows[0];
+  });res.json(result);
+ }));
  router.get('/staff/applications',requireStaff,wrap(async(req,res)=>{
  const r=await pool.query(`SELECT a.id,a.name,a.member_ids,a.status,a.created_at,u.username applicant_name,
  ARRAY(SELECT u2.public_code||' / '||u2.username FROM users u2 WHERE u2.id=ANY(a.member_ids) ORDER BY array_position(a.member_ids,u2.id)) member_names,

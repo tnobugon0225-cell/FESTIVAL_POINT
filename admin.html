@@ -37,6 +37,7 @@
 <p class="muted small">全員が結成に同意した申請だけがここに届きます。</p>
 <div class="admin-party-toolbar"><button id="partyRefresh" class="secondary compact" type="button">申請を更新</button><span id="partyReviewCount" class="muted small">読み込み中</span></div>
 <div id="partyReviewList" aria-live="polite"><p class="muted">申請を読み込み中...</p></div>
+<div class="admin-party-management"><h3>パーティーを呼び出す・ポイント調整</h3><p class="muted small">パーティー名・所属メンバー名・4桁IDで検索できます。通知は送信しません。</p><input id="partySearch" placeholder="パーティー名 / メンバー名 / 4桁ID"><button type="button" id="partySearchBtn" class="secondary compact">検索・更新</button><div id="partyManageList"></div></div>
 <div class="admin-party-lock"><h3>大会期間のメンバー固定</h3><p id="partyLockStatus" class="muted small">状態を確認中...</p><button id="partyLockOn" type="button" class="secondary compact">変更をロック</button> <button id="partyLockOff" type="button" class="secondary compact">ロック解除</button></div>
 </section>
   </div>
@@ -175,7 +176,7 @@ function activateAdminTab(tab){
  if(!adminGroups[tab])tab='overview';
  document.querySelectorAll('[data-admin-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.adminTab===tab)));
  document.querySelectorAll('[data-admin-group]').forEach(el=>{el.classList.toggle('admin-tab-hidden',el.dataset.adminGroup!==tab)});
- if(tab==='party')loadPartyReview().catch(e=>partyError(e.message));
+ if(tab==='party'){loadPartyReview().catch(e=>partyError(e.message));loadPartyManage().catch(e=>setMsg(e.message,true));}
  if(location.hash!=='#'+tab)history.replaceState(null,'','#'+tab);
 }
 document.querySelectorAll('[data-admin-tab]').forEach(b=>b.addEventListener('click',()=>activateAdminTab(b.dataset.adminTab)));
@@ -194,11 +195,25 @@ async function loadPartyReview(){
   $('#partyLockOff').disabled=!lock.locked;
   $('#partyReviewList').innerHTML=list.length?list.map(a=>{
     const ready=a.ready===true;
-    const members=Array.isArray(a.member_ids)?a.member_ids:[];
+    const members=Array.isArray(a.member_names)?a.member_names:[];
     return '<article class="party-review-card"><div class="party-review-head"><strong>'+esc(a.name)+'</strong><span class="badge">'+(ready?'同意確認済み':'同意未確認')+'</span></div><p class="muted small">申請者：'+esc(a.applicant_name||'ID '+a.applicant_id)+'</p><p class="muted small">メンバーID：'+members.map(esc).join(' / ')+'</p><div class="party-review-actions"><button class="success compact" data-party-id="'+Number(a.id)+'" data-party-decision="approve" '+(ready?'':'disabled')+'>承認</button><button class="danger compact" data-party-id="'+Number(a.id)+'" data-party-decision="reject">却下</button></div>'+(ready?'':'<p class="muted small">全員の同意が確認できないため承認できません。</p>')+'</article>';
   }).join(''):'<p class="muted">審査待ちの申請はありません。</p>';
  }catch(e){partyError('申請の取得に失敗しました：'+e.message)}finally{partyLoading=false}
 }
+async function loadPartyManage(){
+ const q=$('#partySearch').value.trim();const list=await api('/api/party/staff/parties?q='+encodeURIComponent(q));
+ $('#partyManageList').innerHTML=list.length?list.map(p=>`<article class="party-review-card"><div class="party-review-head"><strong>${esc(p.name)}</strong><span class="badge">${Number(p.points).toLocaleString()} pt</span></div><p class="muted small">${(p.members||[]).map(m=>esc(m.name)+(m.leader?' 👑':'')+' (ID '+esc(m.code)+')').join(' / ')||'現在の所属メンバーなし'}</p><div class="row"><input type="number" min="1" inputmode="numeric" id="partyAmount-${p.id}" placeholder="POINT"><input maxlength="80" id="partyReason-${p.id}" placeholder="変更理由"></div><div class="row"><button data-party-adjust="${p.id}" data-sign="1">＋ 加算</button><button class="danger" data-party-adjust="${p.id}" data-sign="-1">－ 減算</button><button class="secondary" data-party-history="${p.id}">履歴</button></div><div id="partyHistory-${p.id}" class="muted small"></div></article>`).join(''):'<p class="muted">該当するパーティーはありません。</p>';
+}
+$('#partySearchBtn').onclick=()=>loadPartyManage().catch(e=>setMsg(e.message,true));
+$('#partySearch').addEventListener('keydown',e=>{if(e.key==='Enter')$('#partySearchBtn').click()});
+$('#partyManageList').addEventListener('click',async e=>{
+ const adj=e.target.closest('[data-party-adjust]'),hist=e.target.closest('[data-party-history]');
+ if(hist){const id=Number(hist.dataset.partyHistory);try{const rows=await api('/api/party/staff/parties/'+id+'/history');$('#partyHistory-'+id).textContent=rows.length?rows.map(r=>new Date(r.created_at).toLocaleString('ja-JP')+' '+(r.delta>0?'+':'')+r.delta+' pt：'+r.reason).join(' / '):'調整履歴はありません'}catch(err){setMsg(err.message,true)}return}
+ if(!adj)return;const id=Number(adj.dataset.partyAdjust),n=Number($('#partyAmount-'+id).value),reason=$('#partyReason-'+id).value.trim();
+ if(!Number.isSafeInteger(n)||n<=0||!reason)return setMsg('正の整数と変更理由を入力してください',true);
+ const delta=n*Number(adj.dataset.sign);if(!confirm('パーティーポイントを '+(delta>0?'+':'')+delta+' pt 調整しますか？'))return;
+ try{const result=await api('/api/party/staff/parties/'+id+'/points',{method:'POST',body:JSON.stringify({delta,reason})});setMsg(result.name+'：'+result.points+' pt に更新しました');await loadPartyManage()}catch(err){setMsg(err.message,true)}
+});
 $('#partyRefresh').onclick=()=>loadPartyReview();
 $('#partyReviewList').addEventListener('click',async e=>{
  const b=e.target.closest('[data-party-decision]');if(!b||b.disabled)return;
@@ -231,7 +246,7 @@ check();
 .party-review-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .party-review-head strong{font-size:18px;overflow-wrap:anywhere}
 .party-review-card p{overflow-wrap:anywhere}
-.admin-party-lock{margin-top:24px;padding-top:16px;border-top:1px solid #31536b}
+.admin-party-management{margin-top:22px;padding-top:16px;border-top:1px solid #31536b}.admin-party-management input{max-width:100%;margin:8px 0}.admin-party-lock{margin-top:24px;padding-top:16px;border-top:1px solid #31536b}
 .admin-party-lock h3{font-size:17px}
 .ops-stat-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}
 .ops-stat-grid>div{min-width:0}.ops-stat-grid strong{display:block}
