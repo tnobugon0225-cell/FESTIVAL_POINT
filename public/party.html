@@ -44,7 +44,7 @@
 .game-stat-head,.game-stat-row{display:grid;grid-template-columns:minmax(0,1.45fr) .65fr 1fr;gap:6px;align-items:center;padding:12px 9px}
 .game-stat-head{background:rgba(23,73,115,.3);font-size:11px;color:#9bc9e6}
 .game-stat-row{border-top:1px solid rgba(82,175,239,.16);font-size:13px}.game-stat-row strong{white-space:nowrap;font-size:16px}.game-stat-row small{white-space:nowrap;color:#bedcf0;font-size:12px}
-.game-stat-row:last-child{background:rgba(23,73,115,.2);font-weight:800}.member-manage{margin-top:16px}
+.game-stat-row.is-total{background:rgba(23,73,115,.25);font-weight:800}.member-manage{margin-top:16px}
 </style></head><body class="player-page v52-player party-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
 <nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/" data-nexus-nav="HOME">HOME</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a href="/ranking" data-nexus-nav="RANKING">RANKING</a><a class="active" href="/party" data-nexus-nav="PARTY">PARTY</a><a href="/history" data-nexus-nav="HISTORY">HISTORY</a><a href="/support.html" data-nexus-nav="CONTACT">CONTACT</a></div></nav>
@@ -79,8 +79,8 @@ const rate=r=>{const w=Number(r?.wins)||0,l=Number(r?.losses)||0;return w+l?Math
 function renderGameStats(byGame,total=false){
  const rows=Object.entries(gameLabels).map(([key,label])=>({label,stat:byGame?.[key]||{wins:0,draws:0,losses:0}}));
  const sum=rows.reduce((a,x)=>({wins:a.wins+Number(x.stat.wins),draws:a.draws+Number(x.stat.draws),losses:a.losses+Number(x.stat.losses)}),{wins:0,draws:0,losses:0});
- const row=x=>`<div class="game-stat-row"><span>${x.label}</span><strong>${rate(x.stat)}</strong><small>${Number(x.stat.wins)} / ${Number(x.stat.draws)} / ${Number(x.stat.losses)}</small></div>`;
- return `<div class="game-stats"><div class="game-stat-head"><span>GAME</span><span>勝率</span><span>勝 / 分 / 敗</span></div>${rows.filter(x=>x.label!=='その他'||x.stat.wins+x.stat.draws+x.stat.losses>0).map(row).join('')}${total?row({label:'総合',stat:sum}):''}</div><p class="muted">勝率は引き分けを除いて算出。対象は異なるパーティー間の対戦です。</p>`;
+ const row=x=>`<div class="game-stat-row${x.key==='total'?' is-total':''}"><span>${x.label}</span><strong>${rate(x.stat)}</strong><small>${Number(x.stat.wins)} / ${Number(x.stat.draws)} / ${Number(x.stat.losses)}</small></div>`;
+ return `<div class="game-stats"><div class="game-stat-head"><span>GAME</span><span>勝率</span><span>勝 / 分 / 敗</span></div>${rows.filter(x=>x.label!=='その他'||x.stat.wins+x.stat.draws+x.stat.losses>0).map(row).join('')}${total?row({key:'total',label:'総合',stat:sum}):''}</div><p class="muted">勝率は引き分けを除いて算出。対象は異なるパーティー間の対戦です。</p>`;
 }
 function selectMember(id){selectedMember=id;render();}
 function renderMemberRecord(){
