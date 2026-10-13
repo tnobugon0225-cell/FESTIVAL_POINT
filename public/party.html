@@ -33,6 +33,18 @@
 .party-page #notice:not(:empty){padding:12px 16px;margin-bottom:18px;border:1px solid rgba(79,199,171,.35);background:rgba(15,81,69,.15)}
 .party-page #notice.error{color:#ff9aaf}
 @media(max-width:480px){.party-page .party-panel .metric{padding:13px 3px}.party-page .party-panel .metric .muted{font-size:10px}.party-page .party-panel .actions button{font-size:12px}}
+.party-page .party-member-picker{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:4px 0 18px}
+.party-page .party-member-picker button{min-width:0;width:100%;margin:0;padding:11px 4px;overflow-wrap:anywhere;background:rgba(9,35,61,.8)}
+.party-page .party-member-picker button.selected{background:linear-gradient(105deg,#076fe5,#4b4af0);border-color:#78dfff}
+.party-member-summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(80,174,229,.25)}
+.party-member-summary>div{display:flex;flex-direction:column;gap:4px}.party-member-summary>div:last-child{text-align:right}
+.party-member-summary strong{font-size:18px}.party-member-summary small,.party-member-overall small{font-size:12px;color:#9bc9e6}
+.party-member-overall{display:flex;align-items:center;gap:12px;padding:18px 0;flex-wrap:wrap}.party-member-overall strong{font-size:23px}.party-member-overall small{margin-left:auto}
+.game-stats{border:1px solid rgba(82,175,239,.28);border-radius:10px;overflow:hidden;margin:10px 0}
+.game-stat-head,.game-stat-row{display:grid;grid-template-columns:minmax(0,1.45fr) .65fr 1fr;gap:6px;align-items:center;padding:12px 9px}
+.game-stat-head{background:rgba(23,73,115,.3);font-size:11px;color:#9bc9e6}
+.game-stat-row{border-top:1px solid rgba(82,175,239,.16);font-size:13px}.game-stat-row strong{white-space:nowrap;font-size:16px}.game-stat-row small{white-space:nowrap;color:#bedcf0;font-size:12px}
+.game-stat-row:last-child{background:rgba(23,73,115,.2);font-weight:800}.member-manage{margin-top:16px}
 </style></head><body class="player-page v52-player party-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
 <nav class="topbar"><a class="brand-mini" href="/" data-nexus-nav="HOME"><span class="brand-pulse"></span>NEXUS:ZERO</a><div class="nav-links"><a href="/" data-nexus-nav="HOME">HOME</a><a href="/rule" data-nexus-nav="RULE">RULE</a><a href="/ranking" data-nexus-nav="RANKING">RANKING</a><a class="active" href="/party" data-nexus-nav="PARTY">PARTY</a><a href="/history" data-nexus-nav="HISTORY">HISTORY</a><a href="/support.html" data-nexus-nav="CONTACT">CONTACT</a></div></nav>
@@ -43,19 +55,42 @@
 <section id="unaffiliated" class="system-panel party-panel hidden"><div class="eyebrow">PARTY APPLICATION</div><h2>パーティー結成申請</h2><p class="muted">申請者本人を含む3人のPLAYER IDを入力してください。残り2人の承認が揃うと運営へ申請されます。</p><form id="applyForm"><label>パーティー名</label><input name="name" maxlength="30" minlength="2" required placeholder="パーティー名"><label>リーダー（あなた）の4桁ID</label><input name="code1" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required><label>メンバー2のID</label><input name="code2" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required><label>メンバー3のID</label><input name="code3" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required><button class="roster">結成招待を送る</button></form><h3>申請状況</h3><div id="applications"></div><h3>届いた結成招待</h3><div id="formationInvites"></div><h3>届いたメンバー招待</h3><div id="invites"></div></section>
 </main><script>
 window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home'));
-const $=id=>document.getElementById(id);let state=null,rank=[];const token=localStorage.getItem('nexusParticipantToken')||'';
+const $=id=>document.getElementById(id);let state=null,rank=[],partyStats=null,selectedMember=null;const token=localStorage.getItem('nexusParticipantToken')||'';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 async function api(path,options={}){const r=await fetch('/api/party'+path,{credentials:'same-origin',headers:{'Content-Type':'application/json','X-Participant-Token':token,Authorization:'Bearer '+token},...options});const data=await r.json();if(!r.ok)throw Error(data.error||'通信エラー');return data}
 const post=(p,b)=>api(p,{method:'POST',body:JSON.stringify(b)});
 function notice(s,error=false){$('notice').textContent=s;$('notice').classList.toggle('error',error)}
 async function action(path,body,confirmText){if(confirmText&&!confirm(confirmText))return;try{await post(path,body);notice('操作が完了しました');await refresh()}catch(e){notice(e.message,true)}}
-function tab(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==t));document.querySelectorAll('#mine .tabs button').forEach((b,i)=>b.classList.toggle('selected',['members','chat','stats'][i]===t));if(t==='chat')loadChat()}
-async function refresh(){try{[state,rank]=await Promise.all([api('/mine'),api('/ranking')]);render()}catch(e){notice(e.message,true)}}
+function tab(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('hidden',x.id!==t));document.querySelectorAll('#mine .tabs button').forEach((b,i)=>b.classList.toggle('selected',['members','chat','stats'][i]===t));$('leaderTools').classList.toggle('hidden',t!=='members'||!state?.party||String(state.party.leader_id)!==String(window.myUserId));if(t==='chat')loadChat()}
+async function refresh(){try{[state,rank]=await Promise.all([api('/mine'),api('/ranking')]);partyStats=state.party?await api('/stats/'+state.party.id):null;render()}catch(e){notice(e.message,true)}}
 function render(){const p=state.party;$('mine').classList.toggle('hidden',!p);$('unaffiliated').classList.toggle('hidden',!!p);const disabled=state.locked?'disabled':'';
 
 if(!p){$('applications').innerHTML=state.applications.map(a=>`<div class="row"><div><strong>${esc(a.name)}</strong><br><span class="pill">${({collecting:'メンバー承認待ち',pending:'運営審査待ち',approved:'結成済み',rejected:'却下・辞退',cancelled:'取り消し'})[a.status]||esc(a.status)}</span>${a.status==='collecting'?`<div class="muted" style="margin-top:8px">${(a.invite_statuses||[]).map(v=>`${esc(v.name)} (#${esc(v.code)}): ${v.status==='accepted'?'承認済み':'回答待ち'}`).join('<br>')}</div>`:''}</div>${['collecting','pending'].includes(a.status)?`<button onclick="action('/applications/${Number(a.id)}/cancel',{},'結成申請を取り消しますか？')">取り消す</button>`:''}</div>`).join('')||'<p class="muted">申請なし</p>';
  $('formationInvites').innerHTML=(state.formationInvites||[]).map(i=>`<div class="row"><span><strong>${esc(i.name)}</strong><br><small class="muted">申請者：${esc(i.applicant_name)}</small></span><div class="actions"><button ${disabled} onclick="action('/applications/${Number(i.id)}/respond',{decision:'accept'})">承認</button><button ${disabled} class="danger" onclick="action('/applications/${Number(i.id)}/respond',{decision:'reject'},'結成招待を拒否しますか？')">拒否</button></div></div>`).join('')||'<p class="muted">結成招待なし</p>';$('invites').innerHTML=state.invites.map(i=>`<div class="row"><span>${esc(i.name)}</span><div class="actions"><button ${disabled} onclick="action('/invites/${Number(i.id)}/accept',{})">承認</button><button ${disabled} onclick="action('/invites/${Number(i.id)}/reject',{})">拒否</button></div></div>`).join('')||'<p class="muted">招待なし</p>';}
-else{$('pname').textContent=p.name;$('ppoints').textContent=p.points+' pt';const idx=rank.findIndex(x=>String(x.id)===String(p.id));$('prank').textContent=idx<0?'—':(idx+1)+'位';const wins=Number(p.wins),losses=Number(p.losses),draws=Number(p.draws);$('prate').textContent=(wins+losses+draws)?Math.round(wins/(wins+losses+draws)*100)+'%':'—';$('stats').innerHTML=`<p>勝利 ${wins} / 引分 ${draws} / 敗北 ${losses}</p><p class="muted">異なるパーティー同士の対象対戦のみ集計</p>`;$('members').innerHTML=state.members.map(m=>`<div class="row"><span>${String(m.id)===String(p.leader_id)?'👑 ':''}${esc(m.username)} <small class="muted">#${esc(m.public_code)}</small></span><div class="actions">${String(m.id)!==String(p.leader_id)?`<button onclick="action('/transfer',{userId:${Number(m.id)}},'リーダー権限を譲渡しますか？')">譲渡</button><button class="roster" ${disabled} onclick="action('/remove',{userId:${Number(m.id)}},'このメンバーを脱退させますか？')">脱退</button>`:''}</div></div>`).join('');const isLeader=String(p.leader_id)===String(window.myUserId);$('leaderTools').classList.toggle('hidden',!isLeader);if(!isLeader){$('members').querySelectorAll('button').forEach(b=>b.remove())}$('lockNotice').textContent=state.locked?'大会期間中のため、加入・脱退・解散は停止中です。':'';document.querySelectorAll('.roster').forEach(x=>x.disabled=state.locked);}
+else{$('pname').textContent=p.name;$('ppoints').textContent=p.points+' pt';const idx=rank.findIndex(x=>String(x.id)===String(p.id));$('prank').textContent=idx<0?'—':(idx+1)+'位';const wins=Number(p.wins),losses=Number(p.losses),draws=Number(p.draws);$('prate').textContent=rate({wins,losses});$('stats').innerHTML=renderGameStats(partyStats?.byGame,true);
+const allMembers=state.members||[];
+if(!allMembers.some(m=>String(m.id)===String(selectedMember)))selectedMember=allMembers[0]?.id;
+$('members').innerHTML=`<div class="party-member-picker">${allMembers.map(m=>`<button type="button" class="${String(m.id)===String(selectedMember)?'selected':''}" onclick="selectMember(${Number(m.id)})">${String(m.id)===String(p.leader_id)?'👑 ':''}${esc(m.username)}</button>`).join('')}</div><div id="memberRecord"></div>`;
+renderMemberRecord();
+const isLeader=String(p.leader_id)===String(window.myUserId);$('leaderTools').classList.toggle('hidden',!isLeader||document.getElementById('members').classList.contains('hidden'));$('lockNotice').textContent=state.locked?'大会期間中のため、加入・脱退・解散は停止中です。':'';document.querySelectorAll('.roster').forEach(x=>x.disabled=state.locked);}
+}
+const gameLabels={janken:'ジャンケン',chinchiro:'チンチロ',hitblow:'ヒット＆ブロー',custom:'カスタム対戦',other:'その他'};
+const rate=r=>{const w=Number(r?.wins)||0,l=Number(r?.losses)||0;return w+l?Math.round(w/(w+l)*100)+'%':'—'};
+function renderGameStats(byGame,total=false){
+ const rows=Object.entries(gameLabels).map(([key,label])=>({label,stat:byGame?.[key]||{wins:0,draws:0,losses:0}}));
+ const sum=rows.reduce((a,x)=>({wins:a.wins+Number(x.stat.wins),draws:a.draws+Number(x.stat.draws),losses:a.losses+Number(x.stat.losses)}),{wins:0,draws:0,losses:0});
+ const row=x=>`<div class="game-stat-row"><span>${x.label}</span><strong>${rate(x.stat)}</strong><small>${Number(x.stat.wins)} / ${Number(x.stat.draws)} / ${Number(x.stat.losses)}</small></div>`;
+ return `<div class="game-stats"><div class="game-stat-head"><span>GAME</span><span>勝率</span><span>勝 / 分 / 敗</span></div>${rows.filter(x=>x.label!=='その他'||x.stat.wins+x.stat.draws+x.stat.losses>0).map(row).join('')}${total?row({label:'総合',stat:sum}):''}</div><p class="muted">勝率は引き分けを除いて算出。対象は異なるパーティー間の対戦です。</p>`;
+}
+function selectMember(id){selectedMember=id;render();}
+function renderMemberRecord(){
+ const m=(state?.members||[]).find(x=>String(x.id)===String(selectedMember));if(!m)return;
+ const r=partyStats?.players?.find(x=>String(x.userId)===String(m.id));
+ const empty={wins:0,draws:0,losses:0,points:0};
+ const stat=r||empty;
+ const el=$('memberRecord');if(!el)return;
+ const isLeader=String(state.party.leader_id)===String(window.myUserId);
+ el.innerHTML=`<div class="party-member-summary"><div><strong>${esc(m.username)}</strong><small>${String(m.id)===String(state.party.leader_id)?'LEADER':'MEMBER'}</small></div><div><small>貢献ポイント</small><strong>${Number(stat.points)} pt</strong></div></div><div class="party-member-overall">総合勝率 <strong>${rate(stat)}</strong><small>${Number(stat.wins)}勝 ${Number(stat.draws)}分 ${Number(stat.losses)}敗</small></div>${renderGameStats(r?.byGame)}${isLeader&&String(m.id)!==String(state.party.leader_id)?`<div class="actions member-manage"><button onclick="action('/transfer',{userId:${Number(m.id)}},'リーダー権限を譲渡しますか？')">リーダー譲渡</button><button class="roster" ${state.locked?'disabled':''} onclick="action('/remove',{userId:${Number(m.id)}},'このメンバーを脱退させますか？')">脱退させる</button></div>`:''}`;
 }
 async function loadChat(){try{const m=await api('/chat');$('messages').innerHTML=m.map(x=>`<div class="bubble"><small>${esc(x.sender_name)} · ${new Date(x.created_at).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'})}</small>${esc(x.message)}</div>`).join('');$('messages').scrollTop=$('messages').scrollHeight}catch(e){notice(e.message,true)}}
 $('applyForm').onsubmit=async e=>{e.preventDefault();const f=new FormData(e.target);await action('/apply',{name:f.get('name'),codes:[f.get('code1'),f.get('code2'),f.get('code3')]})};

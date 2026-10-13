@@ -58,7 +58,41 @@ function install(app,pool,requireUser,requireStaff){
  res.json({party:p,members,applications:apps.rows,formationInvites:formationInvites.rows,invites:invites.rows,locked:await locked(pool)});
  }));
  router.get('/ranking',wrap(async(req,res)=>{const r=await pool.query('SELECT id,name,points,wins,draws,losses FROM parties ORDER BY points DESC,wins DESC,id LIMIT 100');res.json(r.rows);}));
- router.get('/detail/:id',wrap(async(req,res)=>{const id=num(req.params.id);const p=(await pool.query('SELECT id,name,points,wins,draws,losses,created_at FROM parties WHERE id=$1',[id])).rows[0];if(!p)throw err(404,'パーティーが見つかりません');const members=(await pool.query('SELECT u.public_code,u.username FROM party_members pm JOIN users u ON u.id=pm.user_id WHERE pm.party_id=$1 ORDER BY pm.joined_at',[id])).rows;const contributions=(await pool.query('SELECT player_name,result,points FROM party_contributions WHERE party_id=$1',[id])).rows;const players={};for(const x of contributions){const a=players[x.player_name]||={name:x.player_name,points:0,wins:0,draws:0,losses:0};a.points+=x.points;a[x.result==='win'?'wins':x.result==='draw'?'draws':'losses']++;}res.json({party:p,members,contributions:Object.values(players)});}));
+ // Shared public statistics. Contributions are snapshots: deletion of a player does not erase them.
+ async function partyStats(partyId){
+  const rows=(await pool.query(`SELECT pc.user_id,pc.player_name,pc.result,pc.points,
+    CASE WHEN pc.source='custom' THEN 'custom'
+         WHEN qm.game_type IN ('janken','chinchiro','hitblow') THEN qm.game_type
+         ELSE 'other' END AS game
+    FROM party_contributions pc
+    LEFT JOIN quick_matches qm ON pc.source='quick' AND qm.id=pc.match_id
+    WHERE pc.party_id=$1 ORDER BY pc.id`,[partyId])).rows;
+  const games=['janken','chinchiro','hitblow','custom','other'];
+  const empty=()=>({wins:0,draws:0,losses:0,points:0});
+  const byGame=Object.fromEntries(games.map(g=>[g,empty()]));
+  const byPlayer=new Map();
+  for(const r of rows){
+   const game=games.includes(r.game)?r.game:'other';
+   const key=r.user_id==null?'deleted:'+r.player_name:'user:'+r.user_id;
+   if(!byPlayer.has(key))byPlayer.set(key,{userId:r.user_id==null?null:String(r.user_id),name:r.player_name,...empty(),byGame:Object.fromEntries(games.map(g=>[g,empty()]))});
+   const player=byPlayer.get(key),field=r.result==='win'?'wins':r.result==='draw'?'draws':'losses';
+   for(const dest of [byGame[game],player,player.byGame[game]]){dest[field]++;dest.points+=Number(r.points)||0;}
+  }
+  return {byGame,players:[...byPlayer.values()]};
+ }
+ router.get('/stats/:id',wrap(async(req,res)=>{
+  const id=num(req.params.id);
+  if(!(await pool.query('SELECT 1 FROM parties WHERE id=$1',[id])).rowCount)throw err(404,'パーティーが見つかりません');
+  res.json(await partyStats(id));
+ }));
+ router.get('/detail/:id',wrap(async(req,res)=>{
+  const id=num(req.params.id);
+  const p=(await pool.query('SELECT id,name,points,wins,draws,losses,created_at FROM parties WHERE id=$1',[id])).rows[0];
+  if(!p)throw err(404,'パーティーが見つかりません');
+  const members=(await pool.query('SELECT u.id,u.username FROM party_members pm JOIN users u ON u.id=pm.user_id WHERE pm.party_id=$1 ORDER BY pm.joined_at',[id])).rows;
+  const stats=await partyStats(id);
+  res.json({party:p,members,stats,contributions:stats.players});
+ }));
  router.get('/affiliations',requireUser,wrap(async(req,res)=>{
  const ids=String(req.query.ids||'').split(',').map(num).filter(Boolean).slice(0,5);
  if(!ids.length)return res.json({});
