@@ -99,7 +99,7 @@ function setTab(tab){
   $('#individualTab').classList.toggle('active',tab==='individual');$('#partyTab').classList.toggle('active',tab==='party');
   $('#individualTab').setAttribute('aria-pressed',String(tab==='individual'));$('#partyTab').setAttribute('aria-pressed',String(tab==='party'));
   $('#rankingTitle').textContent=tab==='party'?'PARTY RANKING':'TOP 100 RANKING';
-  $('#rankingDescription').textContent=tab==='party'?'パーティーの上位100組を表示しています。タップすると詳細を確認できます。':'現在の上位100名を表示しています。';
+  $('#rankingDescription').textContent=tab==='party'?'パーティーの上位100組を表示しています。':'現在の上位100名を表示しています。';
   $('#partyDetail').hidden=true;
   if(tab==='party')loadPartyRanking();else{rankingLoaded=false;$('#fullRanking').innerHTML='';loadRanking()}
 }
