@@ -5239,3 +5239,29 @@ body.dm-open{overflow:hidden!important}
 .party-detail-metrics small{display:block;color:#91b6d1;font-size:11px}.party-detail-metrics strong{display:block;margin-top:6px;font-size:clamp(13px,3.3vw,19px)}
 .party-detail-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid rgba(75,173,224,.2)}.party-detail-row small{color:#9ebbd1;text-align:right}
 @media(max-width:500px){.party-detail-metrics{grid-template-columns:1fr 1fr}.party-detail-row{flex-wrap:wrap}}
+
+/* Party ranking switch: fixed two-column mobile layout (override global button rules) */
+.ranking-page .ranking-switch {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  gap: 10px !important;
+  width: min(100%, 420px) !important;
+  max-width: 420px !important;
+  margin: 18px auto 14px !important;
+  align-items: stretch !important;
+}
+.ranking-page .ranking-switch > .ranking-switch-button {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 10px 6px !important;
+  font-size: clamp(14px, 3.5vw, 17px) !important;
+  line-height: 1.25 !important;
+  white-space: nowrap !important;
+}

@@ -30,7 +30,7 @@ window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home')
 const $=s=>document.querySelector(s);
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
-let rankingLoaded=false;let currentTab=new URLSearchParams(location.search).get('tab')==='party'?'party':'individual';let partyRows=[];
+let rankingLoaded=false;let currentTab='individual';let partyRows=[];
 function renderRanking(rows){
   const root=$('#fullRanking');
   const list=rows.slice(0,100);
