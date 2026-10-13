@@ -13,7 +13,6 @@
 </section>
 <section id="panel" class="hidden admin-core">
   <section class="admin-command-header"><div><div class="admin-kicker">NEXUS OPERATIONS CONSOLE</div><h1 id="staffName"></h1><p>参加者・ポイント・運営アカウントを統合管理</p></div><div class="admin-actions"><button id="staffRefreshBtn" class="secondary compact">SYNC</button><button id="staffLogoutBtn" class="ghost compact">DISCONNECT</button></div><p id="actionMsg" class="admin-action-msg"></p></section>
-  <section class="admin-module admin-ops-dashboard" data-admin-group="overview"><div class="admin-kicker">LIVE OPERATIONS</div><h2>運営ダッシュボード</h2><div class="ops-stat-grid"><div><span>REGISTERED</span><strong id="dashRegistered">--</strong></div><div><span>ONLINE</span><strong id="dashOnline">--</strong></div><div><span>TODAY BATTLES</span><strong id="dashToday">--</strong></div><div><span>ACTIVE</span><strong id="dashActive">--</strong></div></div><div class="ops-game-grid"><span>HIT &amp; BLOW <strong id="dashHitblow">--</strong></span><span>JANKEN <strong id="dashJanken">--</strong></span><span>CHINCHIRO <strong id="dashChinchiro">--</strong></span><span>CUSTOM <strong id="dashCustom">--</strong></span></div></section>
   <nav class="admin-section-tabs" aria-label="運営機能">
 <button type="button" data-admin-tab="overview" aria-selected="true">概要</button>
 <button type="button" data-admin-tab="players" aria-selected="false">参加者</button>
@@ -21,7 +20,9 @@
 <button type="button" data-admin-tab="party" aria-selected="false">パーティー <span id="partyPendingBadge"></span></button>
 <button type="button" data-admin-tab="support" aria-selected="false">問い合わせ</button>
 <button type="button" data-admin-tab="operations" aria-selected="false">運営設定</button>
-</nav><div class="admin-dashboard-grid">
+</nav>
+  <section class="admin-module admin-ops-dashboard" data-admin-group="overview"><div class="admin-kicker">LIVE OPERATIONS</div><h2>運営ダッシュボード</h2><div class="ops-stat-grid"><div><span>REGISTERED</span><strong id="dashRegistered">--</strong></div><div><span>ONLINE</span><strong id="dashOnline">--</strong></div><div><span>TODAY BATTLES</span><strong id="dashToday">--</strong></div><div><span>ACTIVE</span><strong id="dashActive">--</strong></div></div><div class="ops-game-grid"><span>HIT &amp; BLOW <strong id="dashHitblow">--</strong></span><span>JANKEN <strong id="dashJanken">--</strong></span><span>CHINCHIRO <strong id="dashChinchiro">--</strong></span><span>CUSTOM <strong id="dashCustom">--</strong></span></div></section>
+<div class="admin-dashboard-grid">
     <section data-admin-group="players" class="admin-module admin-module-create"><div class="module-no">01</div><div class="admin-kicker">PLAYER CREATE</div><h2>参加者アカウント作成</h2><div class="split"><div><label>PLAYER NAME</label><input id="newParticipantUser" maxlength="20" placeholder="参加者名"></div><div><label>INITIAL PASSWORD</label><input id="newParticipantPassword" type="password" maxlength="72" placeholder="6文字以上"></div></div><button id="createParticipantBtn" class="success admin-wide">CREATE PLAYER</button><div id="participantCreateResult"></div></section>
     <section data-admin-group="players" class="admin-module admin-module-search"><div class="module-no">02</div><div class="admin-kicker">PLAYER SEARCH</div><h2>参加者を呼び出す</h2><label>NAME / 4 DIGIT ID</label><input id="search" placeholder="例：ノノンガ / 0042"><div id="users" class="admin-search-results"></div></section>
     <section data-admin-group="points" class="admin-module admin-module-points"><div class="module-no">03</div><div class="admin-kicker">POINT ROUTER</div><h2>ポイント移動</h2><div class="split"><div><label>FROM</label><select id="fromUser"></select></div><div><label>TO</label><select id="toUser"></select></div></div><div class="split"><div><label>POINT</label><input id="transferAmount" type="number" inputmode="numeric" min="1" placeholder="POINT"></div><div><label>REASON</label><input id="transferReason" maxlength="80" placeholder="例：運営判定"></div></div><button id="transferBtn" class="primary-action admin-wide">EXECUTE TRANSFER</button></section>
@@ -219,7 +220,7 @@ check();
 .support-tabs button[aria-pressed="true"]{border:1px solid #79dfff!important;box-shadow:inset 0 0 0 1px #79dfff;color:#d7faff}
 
 /* Admin mobile-first grouped navigation */
-.admin-section-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 22px;position:sticky;top:52px;z-index:15;padding:10px 0;background:linear-gradient(180deg,#030b19 80%,rgba(3,11,25,.92));}
+.admin-section-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:16px 0 22px;position:static;z-index:auto;padding:10px 0;background:linear-gradient(180deg,#030b19 80%,rgba(3,11,25,.92));}
 .admin-section-tabs button{width:100%;min-width:0;min-height:45px;font-size:clamp(12px,2.9vw,15px);font-weight:700;white-space:nowrap;padding:9px 3px;border:1px solid #2c607e;border-radius:7px;background:#0a1b30;color:#a9cfe5;}
 .admin-section-tabs button[aria-selected="true"]{background:linear-gradient(115deg,#0875d3,#5036dc);color:white;border-color:#58d8ff;box-shadow:0 0 12px #1367a555;}
 .admin-tab-hidden{display:none!important}
