@@ -141,3 +141,39 @@
 
   window.NexusUI={playClick,playAvatar,navigate,pulsePress};
 })();
+
+// Party affiliations are displayed only on battle player cards; no client supplied party names.
+(()=>{
+ const cache=new Map(),inFlight=new Set();let queued=false;
+ const escapeText=v=>String(v??'');
+ function paint(){
+  document.querySelectorAll('.battle-person[data-party-user]').forEach(card=>{
+   const id=card.dataset.partyUser;
+   const existing=card.querySelector('.nexus-party-affiliation');
+   if(!cache.has(id)){if(existing)existing.remove();return}
+   const name=cache.get(id);
+   if(!name){if(existing)existing.remove();return}
+   if(existing){if(existing.textContent!==name)existing.textContent=name;return}
+   const badge=document.createElement('span');badge.className='nexus-party-affiliation';badge.textContent=name;
+   const strong=card.querySelector('strong');if(strong)strong.insertAdjacentElement('afterend',badge);
+  });
+ }
+ async function update(){
+  queued=false;
+  const ids=[...new Set([...document.querySelectorAll('.battle-person[data-party-user]')].map(x=>x.dataset.partyUser))].filter(x=>/^\d+$/.test(x)&&Number(x)>0&&!cache.has(x)&&!inFlight.has(x));
+  paint();if(!ids.length)return;
+  ids.forEach(id=>inFlight.add(id));
+  try{
+   const token=localStorage.getItem('nexusParticipantToken')||'';
+   const res=await fetch('/api/party/affiliations?ids='+encodeURIComponent(ids.join(',')),{headers:{'X-Participant-Token':token,Authorization:'Bearer '+token},credentials:'same-origin'});
+   if(!res.ok)return;
+   const data=await res.json();ids.forEach(id=>cache.set(id,data[id]||''));paint();
+  }catch(e){}finally{ids.forEach(id=>inFlight.delete(id))}
+ }
+ function schedule(){if(queued)return;queued=true;queueMicrotask(update)}
+ const style=document.createElement('style');style.textContent=`
+ .battle-person .nexus-party-affiliation{display:block;max-width:100%;margin:5px auto 0;padding:4px 9px;border:1px solid rgba(66,205,255,.55);border-radius:6px;background:rgba(4,35,67,.86);box-shadow:0 0 10px rgba(16,135,255,.18);color:#8fe7ff;font-size:clamp(10px,2.5vw,12px);font-weight:800;letter-spacing:.03em;text-align:center;overflow-wrap:anywhere}
+ `;document.head.appendChild(style);
+ new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.battle-person[data-party-user]')||n.querySelector?.('.battle-person[data-party-user]')))))schedule()}).observe(document.documentElement,{subtree:true,childList:true});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
+})();
