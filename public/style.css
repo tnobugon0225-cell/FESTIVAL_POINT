@@ -5265,3 +5265,6 @@ body.dm-open{overflow:hidden!important}
   line-height: 1.25 !important;
   white-space: nowrap !important;
 }
+
+/* Integrated party approval panel */
+.admin-module-party{grid-column:1/-1}.admin-party-request{padding:18px 0;border-top:1px solid rgba(100,180,220,.28)}.admin-party-request h3{margin:6px 0 10px}.admin-party-roster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:12px 0}.admin-party-roster>div{padding:12px;border:1px solid rgba(80,170,220,.32);border-radius:8px;overflow-wrap:anywhere;background:rgba(8,23,40,.55)}.admin-party-lock{padding:15px;border:1px solid rgba(80,170,220,.25);border-radius:10px;margin:16px 0}.admin-party-lock .badge{margin-left:12px}.admin-party-lock .row{margin-top:10px}.admin-party-request button:disabled{opacity:.35;cursor:not-allowed}@media(max-width:620px){.admin-party-roster{grid-template-columns:1fr}.admin-party-request .row{display:flex;gap:10px}}
