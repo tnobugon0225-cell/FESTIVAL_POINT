@@ -147,7 +147,7 @@
  const cache=new Map(),inFlight=new Set();let queued=false;
  const escapeText=v=>String(v??'');
  function paint(){
-  document.querySelectorAll('.battle-person[data-party-user]').forEach(card=>{
+  document.querySelectorAll('.battle-person[data-party-user],.prebattle-player[data-party-user]').forEach(card=>{
    const id=card.dataset.partyUser;
    const existing=card.querySelector('.nexus-party-affiliation');
    if(!cache.has(id)){if(existing)existing.remove();return}
@@ -155,12 +155,25 @@
    if(!name){if(existing)existing.remove();return}
    if(existing){if(existing.textContent!==name)existing.textContent=name;return}
    const badge=document.createElement('span');badge.className='nexus-party-affiliation';badge.textContent=name;
-   const strong=card.querySelector('strong');if(strong)strong.insertAdjacentElement('afterend',badge);
+   const strong=card.querySelector('.prebattle-meta strong, strong');if(strong)strong.insertAdjacentElement('afterend',badge);
+  });
+  document.querySelectorAll('.nexus-party-result').forEach(el=>{
+   const a=el.dataset.partySelf,b=el.dataset.partyRival;
+   if(!cache.has(a)||!cache.has(b))return;
+   const self=cache.get(a),rival=cache.get(b);
+   const eligible=!!self&&!!rival&&self!==rival;
+   const outcome=el.dataset.partyOutcome;
+   const pt=outcome==='win'?2:outcome==='draw'?1:0;
+   const signature=eligible?`${self}:${pt}`:'not-eligible';
+   if(el.dataset.rendered===signature)return;
+   el.dataset.rendered=signature;
+   if(eligible){el.replaceChildren();const small=document.createElement('small');small.textContent='PARTY POINTS';const big=document.createElement('b');big.textContent=`+${pt} pt`;const name=document.createElement('span');name.textContent=self;el.append(small,big,name)}
+   else{el.textContent='パーティーポイント対象外'}
   });
  }
  async function update(){
   queued=false;
-  const ids=[...new Set([...document.querySelectorAll('.battle-person[data-party-user]')].map(x=>x.dataset.partyUser))].filter(x=>/^\d+$/.test(x)&&Number(x)>0&&!cache.has(x)&&!inFlight.has(x));
+  const ids=[...new Set([...document.querySelectorAll('.battle-person[data-party-user],.prebattle-player[data-party-user],.nexus-party-result[data-party-self],.nexus-party-result[data-party-rival]')].flatMap(x=>[x.dataset.partyUser,x.dataset.partySelf,x.dataset.partyRival].filter(Boolean)))].filter(x=>/^\d+$/.test(x)&&Number(x)>0&&!cache.has(x)&&!inFlight.has(x));
   paint();if(!ids.length)return;
   ids.forEach(id=>inFlight.add(id));
   try{
@@ -172,8 +185,14 @@
  }
  function schedule(){if(queued)return;queued=true;queueMicrotask(update)}
  const style=document.createElement('style');style.textContent=`
- .battle-person .nexus-party-affiliation{display:block;max-width:100%;margin:5px auto 0;padding:4px 9px;border:1px solid rgba(66,205,255,.55);border-radius:6px;background:rgba(4,35,67,.86);box-shadow:0 0 10px rgba(16,135,255,.18);color:#8fe7ff;font-size:clamp(10px,2.5vw,12px);font-weight:800;letter-spacing:.03em;text-align:center;overflow-wrap:anywhere}
+ .battle-person .nexus-party-affiliation,.prebattle-player .nexus-party-affiliation{display:block;max-width:100%;margin:5px auto 0;padding:4px 9px;border:1px solid rgba(66,205,255,.55);border-radius:6px;background:rgba(4,35,67,.86);box-shadow:0 0 10px rgba(16,135,255,.18);color:#8fe7ff;font-size:clamp(10px,2.5vw,12px);font-weight:800;letter-spacing:.03em;text-align:center;overflow-wrap:anywhere}
+ .prebattle-player .nexus-party-affiliation{font-size:clamp(8px,2vw,11px);max-width:100%;padding:2px 7px;margin:3px auto 0;line-height:1.25;white-space:normal;letter-spacing:0;overflow-wrap:anywhere}
+ .prebattle-meta{max-width:min(62vw,370px)!important}
+ .nexus-party-result{margin:12px auto;padding:10px 14px;max-width:340px;border:1px solid rgba(79,216,255,.38);border-radius:8px;background:rgba(4,28,51,.78);color:#d8f8ff;font-size:12px;line-height:1.5;letter-spacing:0;text-align:center}
+ .nexus-party-result:empty{display:none}
+ .nexus-party-result b{display:block;color:#74eaff;font-size:17px;margin:3px 0}
+ .nexus-party-result small{display:block;color:#a0bfd3;font-size:10px}
  `;document.head.appendChild(style);
- new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.battle-person[data-party-user]')||n.querySelector?.('.battle-person[data-party-user]')))))schedule()}).observe(document.documentElement,{subtree:true,childList:true});
+ new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.battle-person[data-party-user],.prebattle-player[data-party-user],.nexus-party-result')||n.querySelector?.('.battle-person[data-party-user],.prebattle-player[data-party-user],.nexus-party-result')))))schedule()}).observe(document.documentElement,{subtree:true,childList:true});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
 })();
