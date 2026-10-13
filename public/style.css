@@ -5271,3 +5271,13 @@ body.dm-open{overflow:hidden!important}
 
 /* Compact party detail: keep all three metrics on one row on phones */
 @media(max-width:500px){.ranking-page .party-ranking-detail .party-detail-metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Party ranking detail: compact name + points header (2026-10-13) */
+.ranking-page .party-ranking-detail .party-detail-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.ranking-page .party-ranking-detail .party-detail-heading h2{flex:1;min-width:0;margin:0;overflow-wrap:anywhere;line-height:1.3}
+.ranking-page .party-detail-heading-actions{display:flex;flex-direction:column;align-items:flex-end;flex-shrink:0;gap:7px}
+.ranking-page .party-detail-points{text-align:right;white-space:nowrap;line-height:1.15}
+.ranking-page .party-detail-points small{display:block;font-size:10px;letter-spacing:.12em;color:#8fb8d3}
+.ranking-page .party-detail-points strong{display:block;margin-top:3px;font-size:clamp(17px,4vw,22px);color:#eaf7ff}
+.ranking-page .party-ranking-detail #partyDetailBody>h3:first-child{margin-top:8px}
+.ranking-page .party-detail-heading-actions #closePartyDetail{margin:0;padding:7px 12px;min-height:34px;font-size:13px}

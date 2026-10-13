@@ -53,7 +53,7 @@ body.ranking-page .ranking-hero .ranking-switch button.ranking-switch-button.act
   <section class="system-panel top100-panel">
     <div id="fullRanking"><p class="muted">ランキングを読み込み中...</p></div>
   </section>
-  <section class="system-panel party-ranking-detail" id="partyDetail" hidden><div class="party-detail-heading"><h2 id="partyDetailName">パーティー詳細</h2><button type="button" id="closePartyDetail" class="secondary compact">閉じる</button></div><div id="partyDetailBody"></div></section>
+  <section class="system-panel party-ranking-detail" id="partyDetail" hidden><div class="party-detail-heading"><h2 id="partyDetailName">パーティー詳細</h2><div class="party-detail-heading-actions"><div class="party-detail-points"><small>POINTS</small><strong id="partyDetailPoints">—</strong></div><button type="button" id="closePartyDetail" class="secondary compact">閉じる</button></div></div><div id="partyDetailBody"></div></section>
 </main>
 <script>
 window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home'));
@@ -103,11 +103,11 @@ function renderPartyRanking(rows){
   });
 }
 async function showPartyDetail(id){
-  const box=$('#partyDetail');box.hidden=false;$('#partyDetailName').textContent='パーティー詳細';$('#partyDetailBody').textContent='読み込み中...';
+  const box=$('#partyDetail');box.hidden=false;$('#partyDetailName').textContent='パーティー詳細';$('#partyDetailPoints').textContent='—';$('#partyDetailBody').textContent='読み込み中...';
   box.scrollIntoView({behavior:'smooth',block:'start'});
   try{
     const r=await fetch('/api/party/detail/'+encodeURIComponent(id),{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'取得に失敗しました');
-    const p=d.party;$('#partyDetailName').textContent=p.name;
+    const p=d.party;$('#partyDetailName').textContent=p.name;$('#partyDetailPoints').textContent=Number(p.points).toLocaleString()+' pt';
     const stats=d.stats||{}, players=stats.players||[];
     const gameLabels={janken:'ジャンケン',chinchiro:'チンチロ',hitblow:'ヒット＆ブロー',custom:'カスタム対戦',other:'その他'};
     const rate=x=>{const w=Number(x?.wins)||0,l=Number(x?.losses)||0;return w+l?Math.round(w/(w+l)*100)+'%':'—'};
@@ -124,7 +124,7 @@ async function showPartyDetail(id){
       return `<article class="party-player-card"><div class="party-player-head"><strong>${esc(m.username)}</strong><span>貢献 ${Number(r.points)} pt</span></div><div class="party-player-summary">総合勝率 <strong>${rate(r)}</strong> <small>${Number(r.wins)}勝 ${Number(r.draws)}分 ${Number(r.losses)}敗</small></div>${gamesTable(r.byGame,false)}</article>`;
     };
     const old=players.filter(x=>!current.some(m=>x.userId!=null&&String(m.id)===String(x.userId)));
-    $('#partyDetailBody').innerHTML=`<div class="party-detail-metrics"><div><small>POINTS</small><strong>${Number(p.points).toLocaleString()} pt</strong></div><div><small>WIN RATE</small><strong>${rate(total)}</strong></div><div><small>RECORD</small><strong>${total.wins}勝 ${total.draws}分 ${total.losses}敗</strong></div></div><h3>パーティー総合・ゲーム別戦績</h3>${gamesTable(stats.byGame)}<h3>所属メンバーの戦績</h3>${current.length?`<div class="party-detail-member-picker">${current.map((m,i)=>`<button type="button" class="${i===0?'selected':''}" data-party-member="${i}">${esc(m.username)}</button>`).join('')}</div><div id="partySelectedMember">${playerCard(current[0])}</div>`:'<p class="muted">現在所属しているメンバーはいません。</p>'}${old.length?`<h3>過去メンバーの貢献記録</h3>${old.map(x=>`<p class="party-detail-row">${esc(x.name)} <small>${Number(x.points)} pt / ${Number(x.wins)}勝 ${Number(x.draws)}分 ${Number(x.losses)}敗</small></p>`).join('')}`:''}<p class="muted">勝率は引き分けを除いて算出。対象は異なるパーティー間の対戦です。</p>`;
+    $('#partyDetailBody').innerHTML=`<h3>パーティー総合・ゲーム別戦績</h3>${gamesTable(stats.byGame)}<h3>所属メンバーの戦績</h3>${current.length?`<div class="party-detail-member-picker">${current.map((m,i)=>`<button type="button" class="${i===0?'selected':''}" data-party-member="${i}">${esc(m.username)}</button>`).join('')}</div><div id="partySelectedMember">${playerCard(current[0])}</div>`:'<p class="muted">現在所属しているメンバーはいません。</p>'}${old.length?`<h3>過去メンバーの貢献記録</h3>${old.map(x=>`<p class="party-detail-row">${esc(x.name)} <small>${Number(x.points)} pt / ${Number(x.wins)}勝 ${Number(x.draws)}分 ${Number(x.losses)}敗</small></p>`).join('')}`:''}<p class="muted">勝率は引き分けを除いて算出。対象は異なるパーティー間の対戦です。</p>`;
     $('#partyDetailBody').querySelectorAll('[data-party-member]').forEach(btn=>btn.addEventListener('click',()=>{
       const i=Number(btn.dataset.partyMember);
       if(!current[i])return;
