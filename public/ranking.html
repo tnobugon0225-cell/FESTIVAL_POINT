@@ -5,7 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#02050b">
   <title>RANKING | NEXUS:ZERO</title>
-  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/style.css?v=party-layout-20261013-2">
+<style>
+/* Standalone switch layout: overrides all shared/global button rules */
+body.ranking-page .ranking-hero .ranking-switch {display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;width:100%!important;max-width:440px!important;margin:22px auto 14px!important;}
+body.ranking-page .ranking-hero .ranking-switch button.ranking-switch-button {display:flex!important;align-items:center!important;justify-content:center!important;width:100%!important;min-width:0!important;max-width:none!important;margin:0!important;padding:12px 5px!important;min-height:54px!important;flex:none!important;font-size:clamp(15px,4vw,19px)!important;box-sizing:border-box!important;}
+body.ranking-page .ranking-hero .ranking-switch button.ranking-switch-button:not(.active){background:rgba(5,20,38,.88)!important;color:#9ebbd1!important;border-color:rgba(75,190,255,.35)!important;box-shadow:none!important;}
+body.ranking-page .ranking-hero .ranking-switch button.ranking-switch-button.active{background:linear-gradient(100deg,#0877ff,#175cff 55%,#7543ff)!important;color:white!important;border-color:rgba(125,215,255,.65)!important;}
+</style>
   <script src="/bgm.js" defer></script>
   <script src="/ui-fx.js" defer></script>
 </head>
