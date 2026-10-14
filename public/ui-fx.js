@@ -160,6 +160,22 @@
    party.before(grid);grid.append(personalBox,party);
   });
  }
+ function fitBattlePartyName(badge){
+  if(!badge.closest('.battle-person'))return;
+  const card=badge.closest('.battle-person');
+  const available=Math.max(40,card.clientWidth-12);
+  badge.style.fontSize='10px';
+  badge.style.letterSpacing='0';
+  const text=badge.textContent||'';
+  const canvas=fitBattlePartyName.canvas||(fitBattlePartyName.canvas=document.createElement('canvas'));
+  const ctx=canvas.getContext('2d');
+  if(!ctx)return;
+  const weight=getComputedStyle(badge).fontWeight||'800';
+  const family=getComputedStyle(badge).fontFamily||'sans-serif';
+  let size=10;
+  while(size>6.5){ctx.font=`${weight} ${size}px ${family}`;if(ctx.measureText(text).width+16<=available)break;size-=.25}
+  badge.style.fontSize=`${size}px`;
+ }
  function paint(){
   compactResult();
   document.querySelectorAll('.battle-person[data-party-user],.prebattle-player[data-party-user]').forEach(card=>{
@@ -168,9 +184,9 @@
    if(!cache.has(id)){if(existing)existing.remove();return}
    const name=cache.get(id);
    if(!name){if(existing)existing.remove();return}
-   if(existing){if(existing.textContent!==name)existing.textContent=name;return}
+   if(existing){if(existing.textContent!==name)existing.textContent=name;fitBattlePartyName(existing);return}
    const badge=document.createElement('span');badge.className='nexus-party-affiliation';badge.textContent=name;
-   const strong=card.querySelector('.prebattle-meta strong, strong');if(strong)strong.insertAdjacentElement('afterend',badge);
+   const strong=card.querySelector('.prebattle-meta strong, strong');if(strong){strong.insertAdjacentElement('afterend',badge);fitBattlePartyName(badge)}
   });
   document.querySelectorAll('.nexus-party-result').forEach(el=>{
    const a=el.dataset.partySelf,b=el.dataset.partyRival;
@@ -208,15 +224,16 @@
  .janken-page #jkPlayers .battle-person .nexus-party-affiliation,
  .chinchiro-page #ccPlayers .battle-person .nexus-party-affiliation,
  .match-page #battlePlayers .battle-person .nexus-party-affiliation{
-   grid-column:1!important;grid-row:4!important;justify-self:start!important;align-self:start!important;
+   grid-column:1 / -1!important;grid-row:4!important;justify-self:start!important;align-self:start!important;
    width:max-content!important;max-width:100%!important;margin:3px 0 0!important;
    padding:3px 5px!important;min-width:0!important;text-align:left!important;
+   font-size:clamp(7px,1.7vw,10px)!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;
  }
  .hitblow-page #hbPlayers .battle-person:last-child .nexus-party-affiliation,
  .janken-page #jkPlayers .battle-person:last-child .nexus-party-affiliation,
  .chinchiro-page #ccPlayers .battle-person:last-child .nexus-party-affiliation,
  .match-page #battlePlayers .battle-person:last-child .nexus-party-affiliation{
-   grid-column:2!important;justify-self:end!important;text-align:right!important;
+   grid-column:1 / -1!important;justify-self:end!important;text-align:right!important;
  }
  .battle-person>strong{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .battle-player-row{min-width:0}
