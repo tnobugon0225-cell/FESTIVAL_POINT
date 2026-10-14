@@ -77,7 +77,7 @@ async function load(){
      startResultReturn(m.id);
    }
    lastStatus=m.status;
- }catch(e){if(e.status===401||e.status===403){location.href='/';return}$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}
+ }catch(e){if(e.status===401||e.status===403){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent='認証・対戦情報を確認できません。画面を保持して再試行します。';console.warn('[MATCH] polling auth error',e.status);return}$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}
 }
 async function approve(id){$('#battleMsg').textContent='承認処理中...';try{await api(`/api/matches/${id}/approve`,{method:'POST'});$('#battleMsg').className='match-action-msg ok';$('#battleMsg').textContent='承認しました';await load()}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=`承認できませんでした：${e.message}`}}
 async function rejectMatch(id){if(!confirm('この対戦申請を拒否／取消しますか？'))return;try{await api(`/api/matches/${id}/reject`,{method:'POST'});location.href='/'}catch(e){$('#battleMsg').className='match-action-msg error';$('#battleMsg').textContent=e.message}}
