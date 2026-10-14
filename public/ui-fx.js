@@ -146,7 +146,22 @@
 (()=>{
  const cache=new Map(),inFlight=new Set();let queued=false;
  const escapeText=v=>String(v??'');
+ function compactResult(){
+  // Preserve game logic and the result countdown; only regroup existing nodes.
+  document.querySelectorAll('.hb-result').forEach(result=>{
+   if(result.querySelector('.nexus-result-points-grid'))return;
+   const personal=[...result.children].find(el=>el.tagName==='STRONG');
+   const party=result.querySelector('.nexus-party-result');
+   if(!personal||!party)return;
+   const grid=document.createElement('div');grid.className='nexus-result-points-grid';
+   const personalBox=document.createElement('div');personalBox.className='nexus-personal-points';
+   const label=document.createElement('small');label.textContent='個人ポイント';
+   personalBox.append(label,personal);
+   party.before(grid);grid.append(personalBox,party);
+  });
+ }
  function paint(){
+  compactResult();
   document.querySelectorAll('.battle-person[data-party-user],.prebattle-player[data-party-user]').forEach(card=>{
    const id=card.dataset.partyUser;
    const existing=card.querySelector('.nexus-party-affiliation');
@@ -185,14 +200,35 @@
  }
  function schedule(){if(queued)return;queued=true;queueMicrotask(update)}
  const style=document.createElement('style');style.textContent=`
- .battle-person .nexus-party-affiliation,.prebattle-player .nexus-party-affiliation{display:block;max-width:100%;margin:5px auto 0;padding:4px 9px;border:1px solid rgba(66,205,255,.55);border-radius:6px;background:rgba(4,35,67,.86);box-shadow:0 0 10px rgba(16,135,255,.18);color:#8fe7ff;font-size:clamp(10px,2.5vw,12px);font-weight:800;letter-spacing:.03em;text-align:center;overflow-wrap:anywhere}
- .prebattle-player .nexus-party-affiliation{font-size:clamp(8px,2vw,11px);max-width:100%;padding:2px 7px;margin:3px auto 0;line-height:1.25;white-space:normal;letter-spacing:0;overflow-wrap:anywhere}
+ .battle-person .nexus-party-affiliation,.prebattle-player .nexus-party-affiliation{display:block;box-sizing:border-box;max-width:100%;min-width:0;margin:4px auto 0;padding:4px 7px;border:1px solid rgba(66,205,255,.55);border-radius:6px;background:rgba(4,35,67,.86);box-shadow:0 0 10px rgba(16,135,255,.18);color:#8fe7ff;font-size:clamp(9px,2.2vw,11px);font-weight:800;letter-spacing:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;line-height:1.3}
+ .battle-person{min-width:0}
+ .battle-person .nexus-party-affiliation{width:max-content;max-width:100%}
+ .battle-person>strong{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .battle-player-row{min-width:0}
+ @media(max-width:480px){.battle-person .nexus-party-affiliation{padding:3px 5px;font-size:9px}.battle-person{padding-left:5px!important;padding-right:5px!important}}
+ 
+ .prebattle-player .nexus-party-affiliation{font-size:clamp(8px,2vw,11px);max-width:100%;padding:2px 7px;margin:3px auto 0;line-height:1.25;white-space:nowrap;letter-spacing:0;overflow:hidden;text-overflow:ellipsis}
  .prebattle-meta{max-width:min(62vw,370px)!important}
  .nexus-party-result{margin:12px auto;padding:10px 14px;max-width:340px;border:1px solid rgba(79,216,255,.38);border-radius:8px;background:rgba(4,28,51,.78);color:#d8f8ff;font-size:12px;line-height:1.5;letter-spacing:0;text-align:center}
  .nexus-party-result:empty{display:none}
  .nexus-party-result b{display:block;color:#74eaff;font-size:17px;margin:3px 0}
  .nexus-party-result small{display:block;color:#a0bfd3;font-size:10px}
+ .nexus-result-points-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;align-items:stretch;width:min(100%,540px);margin:12px auto}
+ .nexus-result-points-grid .nexus-personal-points,.nexus-result-points-grid .nexus-party-result{min-width:0;max-width:none;margin:0;padding:11px 7px;border:1px solid rgba(79,216,255,.38);border-radius:8px;background:rgba(4,28,51,.78);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;line-height:1.35;letter-spacing:0}
+ .nexus-result-points-grid .nexus-personal-points small{font-size:10px;color:#a0bfd3}
+ .nexus-result-points-grid .nexus-personal-points>strong{font-size:clamp(19px,5vw,27px);line-height:1.2;margin:0;color:#fff}
+ .nexus-result-points-grid .nexus-party-result b{font-size:clamp(18px,4.8vw,25px);margin:0}
+ .nexus-result-points-grid .nexus-party-result span{font-size:10px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .nexus-result-points-grid .nexus-party-result{font-size:11px}
+ .hb-result{padding:14px 8px!important}
+ .hb-result h2{margin:5px 0 8px!important}
+ .hb-result>p{margin:7px 0 9px!important;font-size:clamp(13px,3.5vw,18px)!important}
+ .hb-result .nexus-result-points-grid + div{margin-top:10px}
+ .match-page .winner-line{padding:12px!important;letter-spacing:.06em}
+ .match-page .winner-line .nexus-party-result{margin:8px auto!important;padding:8px!important}
+ @media(max-width:380px){.nexus-result-points-grid{gap:6px}.nexus-result-points-grid .nexus-personal-points,.nexus-result-points-grid .nexus-party-result{padding:9px 5px}}
+ 
  `;document.head.appendChild(style);
- new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.battle-person[data-party-user],.prebattle-player[data-party-user],.nexus-party-result')||n.querySelector?.('.battle-person[data-party-user],.prebattle-player[data-party-user],.nexus-party-result')))))schedule()}).observe(document.documentElement,{subtree:true,childList:true});
+ new MutationObserver(records=>{if(records.some(r=>[...r.addedNodes].some(n=>n.nodeType===1&&(n.matches?.('.battle-person[data-party-user],.prebattle-player[data-party-user],.nexus-party-result,.hb-result')||n.querySelector?.('.battle-person[data-party-user],.prebattle-player[data-party-user],.nexus-party-result,.hb-result')))))schedule()}).observe(document.documentElement,{subtree:true,childList:true});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule);else schedule();
 })();
