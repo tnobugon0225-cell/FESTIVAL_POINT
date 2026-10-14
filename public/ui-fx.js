@@ -203,6 +203,21 @@
  .battle-person .nexus-party-affiliation,.prebattle-player .nexus-party-affiliation{display:block;box-sizing:border-box;max-width:100%;min-width:0;margin:4px auto 0;padding:4px 7px;border:1px solid rgba(66,205,255,.55);border-radius:6px;background:rgba(4,35,67,.86);box-shadow:0 0 10px rgba(16,135,255,.18);color:#8fe7ff;font-size:clamp(9px,2.2vw,11px);font-weight:800;letter-spacing:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;overflow-wrap:normal;line-height:1.3}
  .battle-person{min-width:0}
  .battle-person .nexus-party-affiliation{width:max-content;max-width:100%}
+ /* Align affiliation badges with the avatar column on both sides of the VS row. */
+ .hitblow-page #hbPlayers .battle-person .nexus-party-affiliation,
+ .janken-page #jkPlayers .battle-person .nexus-party-affiliation,
+ .chinchiro-page #ccPlayers .battle-person .nexus-party-affiliation,
+ .match-page #battlePlayers .battle-person .nexus-party-affiliation{
+   grid-column:1!important;grid-row:4!important;justify-self:start!important;align-self:start!important;
+   width:max-content!important;max-width:100%!important;margin:3px 0 0!important;
+   padding:3px 5px!important;min-width:0!important;text-align:left!important;
+ }
+ .hitblow-page #hbPlayers .battle-person:last-child .nexus-party-affiliation,
+ .janken-page #jkPlayers .battle-person:last-child .nexus-party-affiliation,
+ .chinchiro-page #ccPlayers .battle-person:last-child .nexus-party-affiliation,
+ .match-page #battlePlayers .battle-person:last-child .nexus-party-affiliation{
+   grid-column:2!important;justify-self:end!important;text-align:right!important;
+ }
  .battle-person>strong{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .battle-player-row{min-width:0}
  @media(max-width:480px){.battle-person .nexus-party-affiliation{padding:3px 5px;font-size:9px}.battle-person{padding-left:5px!important;padding-right:5px!important}}

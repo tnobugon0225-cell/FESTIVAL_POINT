@@ -148,6 +148,7 @@ function install(app,pool,requireUser,requireStaff){
  router.post('/chat',requireUser,wrap(async(req,res)=>{const message=String(req.body.message||'').trim();if(!message||Array.from(message).length>120)throw err(400,'メッセージは1〜120文字です');await transact(pool,async c=>{const p=await member(c,req.userId);if(!p)throw err(403,'所属していません');const last=(await c.query('SELECT created_at FROM party_chat WHERE sender_id=$1 ORDER BY id DESC LIMIT 1',[req.userId])).rows[0];if(last&&Date.now()-new Date(last.created_at).getTime()<3000)throw err(429,'3秒あけて送信してください');const u=(await c.query('SELECT username FROM users WHERE id=$1',[req.userId])).rows[0];await c.query('INSERT INTO party_chat(party_id,sender_id,sender_name,message) VALUES($1,$2,$3,$4)',[p.id,req.userId,u.username,message]);});res.json({ok:true});}));
  router.get('/staff/parties',requireStaff,wrap(async(req,res)=>{
   const q=String(req.query.q||'').trim().slice(0,60);
+  if(!q)return res.json([]);
   const rows=await pool.query(`SELECT p.id,p.name,p.points,p.wins,p.draws,p.losses,
    COALESCE(json_agg(json_build_object('name',u.username,'code',u.public_code,'leader',u.id=p.leader_id) ORDER BY pm.joined_at) FILTER (WHERE u.id IS NOT NULL),'[]'::json) members
    FROM parties p LEFT JOIN party_members pm ON pm.party_id=p.id LEFT JOIN users u ON u.id=pm.user_id

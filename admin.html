@@ -176,7 +176,7 @@ function activateAdminTab(tab){
  if(!adminGroups[tab])tab='overview';
  document.querySelectorAll('[data-admin-tab]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.adminTab===tab)));
  document.querySelectorAll('[data-admin-group]').forEach(el=>{el.classList.toggle('admin-tab-hidden',el.dataset.adminGroup!==tab)});
- if(tab==='party'){loadPartyReview().catch(e=>partyError(e.message));loadPartyManage().catch(e=>setMsg(e.message,true));}
+ if(tab==='party'){loadPartyReview().catch(e=>partyError(e.message));}
  if(location.hash!=='#'+tab)history.replaceState(null,'','#'+tab);
 }
 document.querySelectorAll('[data-admin-tab]').forEach(b=>b.addEventListener('click',()=>activateAdminTab(b.dataset.adminTab)));
@@ -201,11 +201,14 @@ async function loadPartyReview(){
  }catch(e){partyError('申請の取得に失敗しました：'+e.message)}finally{partyLoading=false}
 }
 async function loadPartyManage(){
- const q=$('#partySearch').value.trim();const list=await api('/api/party/staff/parties?q='+encodeURIComponent(q));
+ const q=$('#partySearch').value.trim();
+ if(!q){$('#partyManageList').replaceChildren();return;}
+ const list=await api('/api/party/staff/parties?q='+encodeURIComponent(q));
  $('#partyManageList').innerHTML=list.length?list.map(p=>`<article class="party-review-card"><div class="party-review-head"><strong>${esc(p.name)}</strong><span class="badge">${Number(p.points).toLocaleString()} pt</span></div><p class="muted small">${(p.members||[]).map(m=>esc(m.name)+(m.leader?' 👑':'')+' (ID '+esc(m.code)+')').join(' / ')||'現在の所属メンバーなし'}</p><div class="row"><input type="number" min="1" inputmode="numeric" id="partyAmount-${p.id}" placeholder="POINT"><input maxlength="80" id="partyReason-${p.id}" placeholder="変更理由"></div><div class="row"><button data-party-adjust="${p.id}" data-sign="1">＋ 加算</button><button class="danger" data-party-adjust="${p.id}" data-sign="-1">－ 減算</button><button class="secondary" data-party-history="${p.id}">履歴</button></div><div id="partyHistory-${p.id}" class="muted small"></div></article>`).join(''):'<p class="muted">該当するパーティーはありません。</p>';
 }
 $('#partySearchBtn').onclick=()=>loadPartyManage().catch(e=>setMsg(e.message,true));
 $('#partySearch').addEventListener('keydown',e=>{if(e.key==='Enter')$('#partySearchBtn').click()});
+$('#partySearch').addEventListener('input',e=>{if(!e.target.value.trim())$('#partyManageList').replaceChildren()});
 $('#partyManageList').addEventListener('click',async e=>{
  const adj=e.target.closest('[data-party-adjust]'),hist=e.target.closest('[data-party-history]');
  if(hist){const id=Number(hist.dataset.partyHistory);try{const rows=await api('/api/party/staff/parties/'+id+'/history');$('#partyHistory-'+id).textContent=rows.length?rows.map(r=>new Date(r.created_at).toLocaleString('ja-JP')+' '+(r.delta>0?'+':'')+r.delta+' pt：'+r.reason).join(' / '):'調整履歴はありません'}catch(err){setMsg(err.message,true)}return}
