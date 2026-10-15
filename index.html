@@ -36,11 +36,10 @@
     body.mail-open{overflow:hidden!important}
     @media(max-width:600px){#homeMailPanel{margin:5px 0 12px!important}#mailOpen>img{max-height:94px!important}#mailModal{padding:max(8px,env(safe-area-inset-top)) 7px max(8px,env(safe-area-inset-bottom))!important}#mailModal .nexus-mail-card{min-height:calc(100dvh - 16px)!important}}
   
-/* v3: Party rank emblems should not visually overpower the podium title. */
+/* V5: Party rank emblems use exactly the same dimensions as ordinary titles. */
 #titlePickerList .title-option.party-rank-title{min-height:72px!important}
-#titlePickerList .title-option.party-rank-title>img{width:76%!important;max-width:360px!important;height:64px!important;max-height:64px!important;margin:0 auto!important;object-fit:contain!important}
+#titlePickerList .title-option.party-rank-title>img{display:block!important;width:100%!important;max-width:none!important;height:72px!important;max-height:none!important;margin:0!important;object-fit:contain!important}
 #titlePickerList .title-option.party-rank-title.selected>em{right:8px!important}
-@media(max-width:480px){#titlePickerList .title-option.party-rank-title>img{width:78%!important;max-width:280px!important;height:60px!important}}
 #podiumParticipant{margin:10px auto 14px;padding:10px 14px;border:1px solid rgba(84,210,255,.33);border-radius:10px;background:linear-gradient(90deg,rgba(4,24,43,.9),rgba(6,17,32,.85));color:#d6f6ff;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px}
 #podiumParticipant .podium-time{font-variant-numeric:tabular-nums;font-size:18px;font-weight:900;letter-spacing:.04em;color:#8beaff}
 #podiumParticipant.hidden{display:none!important}
