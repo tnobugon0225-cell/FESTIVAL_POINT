@@ -576,8 +576,10 @@ async function processPodiumAward(){
   try{
     await client.query('BEGIN');
     await client.query('SELECT pg_advisory_xact_lock(60515030)');
-    const setting=await client.query("SELECT setting_value FROM app_settings WHERE setting_key='podium_start_at'");
-    const started=setting.rows[0]&&new Date(setting.rows[0].setting_value).getTime();
+    const setting=await client.query("SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN ('podium_start_at','podium_paused_at')");
+    const podiumSettings=Object.fromEntries(setting.rows.map(x=>[x.setting_key,x.setting_value]));
+    if(podiumSettings.podium_paused_at){await client.query('ROLLBACK');return;}
+    const started=podiumSettings.podium_start_at&&new Date(podiumSettings.podium_start_at).getTime();
     if(!Number.isFinite(started)){await client.query('ROLLBACK');return;}
     const current=Math.min(10,Math.floor((Date.now()-started)/1800000));
     if(current<1){await client.query('ROLLBACK');return;}
@@ -712,7 +714,7 @@ app.post('/api/staff/game-reset',requireAdmin,async(req,res,next)=>{
     }
     await client.query('UPDATE users SET points=$1,selected_title_key=$2',[STARTING_POINTS,'rookie']);
     await client.query('INSERT INTO user_titles(user_id,title_key) SELECT id,$1 FROM users ON CONFLICT DO NOTHING',['rookie']);
-    await client.query("DELETE FROM app_settings WHERE setting_key IN ('podium_start_at','podium_last_slot')");
+    await client.query("DELETE FROM app_settings WHERE setting_key IN ('podium_start_at','podium_last_slot','podium_paused_at')");
 
     await client.query('INSERT INTO game_reset_log(staff_id,staff_name,player_count,starting_points) VALUES($1,$2,$3,$4)',[req.staff.id,req.staff.username,count,STARTING_POINTS]);
     await client.query('COMMIT');
@@ -722,20 +724,48 @@ app.post('/api/staff/game-reset',requireAdmin,async(req,res,next)=>{
   }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });
 
-app.post('/api/staff/podium/start',requireAdmin,async(req,res,next)=>{try{
-  const c=await pool.connect();try{await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(60515030)');
-  const old=await c.query("SELECT setting_value FROM app_settings WHERE setting_key='podium_start_at'");
-  if(old.rowCount){await c.query('ROLLBACK');return res.status(409).json({error:'ランキング表彰は開始済みです。再開始には初期化が必要です'})}
-  await c.query("INSERT INTO app_settings(setting_key,setting_value) VALUES('podium_start_at',$1)",[new Date().toISOString()]);
-  await c.query("INSERT INTO app_settings(setting_key,setting_value) VALUES('podium_last_slot','0') ON CONFLICT(setting_key) DO UPDATE SET setting_value='0',updated_at=NOW()");
-  await c.query('COMMIT');res.json({ok:true,startAt:new Date().toISOString(),intervalMinutes:30,maxRounds:10});
-  }catch(e){try{await c.query('ROLLBACK')}catch{}throw e}finally{c.release()}
-}catch(e){next(e)}});
-app.get('/api/podium/status',requireUser,async(req,res,next)=>{try{
- const q=await query("SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN ('podium_start_at','podium_last_slot')");const settings=Object.fromEntries(q.rows.map(x=>[x.setting_key,x.setting_value]));const start=settings.podium_start_at||null;
- const slot=start?Math.min(10,Math.max(0,Math.floor((Date.now()-new Date(start).getTime())/1800000))):0;
- res.json({started:!!start,startAt:start,completedRounds:Number(settings.podium_last_slot||0),nextAt:start&&slot<10?new Date(new Date(start).getTime()+(slot+1)*1800000).toISOString():null});
-}catch(e){next(e)}});
+// Podium controls: pause freezes the countdown; resume continues from the remaining time.
+app.post('/api/staff/podium/start',requireAdmin,async(req,res,next)=>{const c=await pool.connect();try{
+ await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(60515030)');
+ const old=await c.query("SELECT 1 FROM app_settings WHERE setting_key='podium_start_at'");
+ if(old.rowCount){await c.query('ROLLBACK');return res.status(409).json({error:'表彰は開始済みです。中断中なら再開ボタンを押してください'})}
+ const now=new Date().toISOString();
+ await c.query("INSERT INTO app_settings(setting_key,setting_value) VALUES('podium_start_at',$1)",[now]);
+ await c.query("INSERT INTO app_settings(setting_key,setting_value) VALUES('podium_last_slot','0') ON CONFLICT(setting_key) DO UPDATE SET setting_value='0',updated_at=NOW()");
+ await c.query('COMMIT');res.json({ok:true,startAt:now});
+}catch(e){try{await c.query('ROLLBACK')}catch{}next(e)}finally{c.release()}});
+app.post('/api/staff/podium/pause',requireAdmin,async(req,res,next)=>{const c=await pool.connect();try{
+ await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(60515030)');
+ const r=await c.query("SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN ('podium_start_at','podium_paused_at','podium_last_slot')");
+ const v=Object.fromEntries(r.rows.map(x=>[x.setting_key,x.setting_value]));
+ if(!v.podium_start_at){await c.query('ROLLBACK');return res.status(409).json({error:'表彰は開始されていません'})}
+ if(Number(v.podium_last_slot||0)>=10){await c.query('ROLLBACK');return res.status(409).json({error:'全10回の表彰が終了しています'})}
+ if(v.podium_paused_at){await c.query('ROLLBACK');return res.status(409).json({error:'すでに中断中です'})}
+ const now=new Date().toISOString();
+ await c.query("INSERT INTO app_settings(setting_key,setting_value) VALUES('podium_paused_at',$1)",[now]);
+ await c.query('COMMIT');res.json({ok:true,pausedAt:now});
+}catch(e){try{await c.query('ROLLBACK')}catch{}next(e)}finally{c.release()}});
+app.post('/api/staff/podium/resume',requireAdmin,async(req,res,next)=>{const c=await pool.connect();try{
+ await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(60515030)');
+ const r=await c.query("SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN ('podium_start_at','podium_paused_at')");
+ const v=Object.fromEntries(r.rows.map(x=>[x.setting_key,x.setting_value]));
+ if(!v.podium_start_at||!v.podium_paused_at){await c.query('ROLLBACK');return res.status(409).json({error:'中断中の表彰がありません'})}
+ const shifted=new Date(new Date(v.podium_start_at).getTime()+Math.max(0,Date.now()-new Date(v.podium_paused_at).getTime())).toISOString();
+ await c.query("UPDATE app_settings SET setting_value=$1,updated_at=NOW() WHERE setting_key='podium_start_at'",[shifted]);
+ await c.query("DELETE FROM app_settings WHERE setting_key='podium_paused_at'");
+ await c.query('COMMIT');res.json({ok:true,startAt:shifted});
+}catch(e){try{await c.query('ROLLBACK')}catch{}next(e)}finally{c.release()}});
+async function podiumStatus(){
+ const q=await query("SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN ('podium_start_at','podium_last_slot','podium_paused_at')");
+ const v=Object.fromEntries(q.rows.map(x=>[x.setting_key,x.setting_value]));
+ const start=v.podium_start_at||null,pausedAt=v.podium_paused_at||null,completedRounds=Math.min(10,Math.max(0,Number(v.podium_last_slot||0)));
+ const now=pausedAt?new Date(pausedAt).getTime():Date.now();
+ const slot=start?Math.min(10,Math.max(0,Math.floor((now-new Date(start).getTime())/1800000))):0;
+ return {started:!!start,paused:!!pausedAt,pausedAt,startAt:start,completedRounds,
+  nextAt:start&&slot<10?new Date(new Date(start).getTime()+(slot+1)*1800000).toISOString():null,serverNow:new Date().toISOString()};
+}
+app.get('/api/staff/podium/status',requireAdmin,async(req,res,next)=>{try{res.set('Cache-Control','no-store');res.json(await podiumStatus())}catch(e){next(e)}});
+app.get('/api/podium/status',requireUser,async(req,res,next)=>{try{res.set('Cache-Control','no-store');res.json(await podiumStatus())}catch(e){next(e)}});
 app.get('/api/registration/status',async(req,res,next)=>{try{res.json({enabled:await publicRegistrationEnabled()})}catch(e){next(e)}});
 app.post('/api/register', async (req,res,next)=>{
   try{

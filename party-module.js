@@ -28,7 +28,7 @@ async function init(pool){
  BEGIN
    rank_letter:=CASE WHEN NEW.points>=150 THEN 's' WHEN NEW.points>=100 THEN 'a' WHEN NEW.points>=60 THEN 'b' WHEN NEW.points>=30 THEN 'c' WHEN NEW.points>=10 THEN 'd' ELSE 'e' END;
    UPDATE users u SET selected_title_key='rookie' FROM party_members pm
-     WHERE pm.user_id=u.id AND pm.party_id=NEW.id AND u.LEFT(selected_title_key,6)='party_'
+     WHERE pm.user_id=u.id AND pm.party_id=NEW.id AND LEFT(u.selected_title_key,6)='party_'
        AND u.selected_title_key<>'party_'||rank_letter;
    RETURN NEW;
  END; $$ LANGUAGE plpgsql;

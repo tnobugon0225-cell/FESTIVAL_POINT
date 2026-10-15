@@ -22,6 +22,18 @@
 <button type="button" data-admin-tab="operations" aria-selected="false">運営設定</button>
 </nav>
   <section class="admin-module admin-ops-dashboard" data-admin-group="overview"><div class="admin-kicker">LIVE OPERATIONS</div><h2>運営ダッシュボード</h2><div class="ops-stat-grid"><div><span>REGISTERED</span><strong id="dashRegistered">--</strong></div><div><span>ONLINE</span><strong id="dashOnline">--</strong></div><div><span>TODAY BATTLES</span><strong id="dashToday">--</strong></div><div><span>ACTIVE</span><strong id="dashActive">--</strong></div></div><div class="ops-game-grid"><span>HIT &amp; BLOW <strong id="dashHitblow">--</strong></span><span>JANKEN <strong id="dashJanken">--</strong></span><span>CHINCHIRO <strong id="dashChinchiro">--</strong></span><span>CUSTOM <strong id="dashCustom">--</strong></span></div></section>
+<section class="admin-module" id="podiumCard" data-admin-group="overview" style="margin:18px 0;padding:18px;border:1px solid #24506b;border-radius:12px">
+<h2>ランキング称号・30分表彰</h2>
+<p>文化祭開始時に一度だけ押してください。累計5試合以上の上位3名に30分ごと、最大10回称号を自動付与します。</p>
+<p id="podiumState" class="muted" aria-live="polite">状態を読み込み中...</p>
+<p id="podiumCountdown" style="font-size:clamp(22px,5vw,32px);font-weight:800;font-variant-numeric:tabular-nums">--:--</p>
+<div style="display:flex;flex-wrap:wrap;gap:10px">
+<button type="button" id="podiumStartBtn" class="primary" disabled>30分表彰を開始</button>
+<button type="button" id="podiumPauseBtn" class="secondary" disabled>中断</button>
+<button type="button" id="podiumResumeBtn" class="secondary" disabled>再開</button>
+</div>
+<p id="podiumStartMsg" aria-live="polite"></p>
+</section>
 <div class="admin-dashboard-grid">
     <section data-admin-group="players" class="admin-module admin-module-create"><div class="module-no">01</div><div class="admin-kicker">PLAYER CREATE</div><h2>参加者アカウント作成</h2><div class="split"><div><label>PLAYER NAME</label><input id="newParticipantUser" maxlength="20" placeholder="参加者名"></div><div><label>INITIAL PASSWORD</label><input id="newParticipantPassword" type="password" maxlength="72" placeholder="6文字以上"></div></div><button id="createParticipantBtn" class="success admin-wide">CREATE PLAYER</button><div id="participantCreateResult"></div></section>
     <section data-admin-group="players" class="admin-module admin-module-search"><div class="module-no">02</div><div class="admin-kicker">PLAYER SEARCH</div><h2>参加者を呼び出す</h2><label>NAME / 4 DIGIT ID</label><input id="search" placeholder="例：ノノンガ / 0042"><div id="users" class="admin-search-results"></div></section>
@@ -41,11 +53,6 @@
 <div class="admin-party-lock"><h3>大会期間のメンバー固定</h3><p id="partyLockStatus" class="muted small">状態を確認中...</p><button id="partyLockOn" type="button" class="secondary compact">変更をロック</button> <button id="partyLockOff" type="button" class="secondary compact">ロック解除</button></div>
 </section>
   </div>
-</section><section class="admin-section" style="margin:20px 0;padding:18px;border:1px solid #24506b;border-radius:12px">
-<h2>ランキング称号・30分表彰</h2>
-<p>文化祭開始時に一度だけ押してください。累計5試合以上の上位3名に30分ごと、最大10回称号を自動付与します。</p>
-<button type="button" id="podiumStartBtn" class="primary">30分表彰を開始</button>
-<p id="podiumStartMsg" aria-live="polite"></p>
 </section></main>
 <script>
 const $=s=>document.querySelector(s);let meStaff=null,allUsers=[],staffAutoTimer=null,historyType='adjust';
@@ -239,12 +246,38 @@ activateAdminTab(location.hash==='#partyReview'?'party':location.hash.slice(1));
 
 check();
 
-$('#podiumStartBtn')?.addEventListener('click',async()=>{
-  if(!confirm('今から5時間、30分ごとのランキング表彰を開始します。開始しますか？'))return;
-  const msg=$('#podiumStartMsg');
-  try{const r=await api('/api/staff/podium/start',{method:'POST',body:'{}'});msg.textContent='表彰を開始しました。開始時刻：'+new Date(r.startAt).toLocaleString('ja-JP');$('#podiumStartBtn').disabled=true;}
-  catch(e){msg.textContent=e.message;}
-});
+let podiumAdminState=null,podiumSyncAt=0;
+function paintPodium(){
+ const d=podiumAdminState;if(!d)return;
+ const complete=d.completedRounds>=10;
+ $('#podiumStartBtn').disabled=d.started;
+ $('#podiumPauseBtn').disabled=!d.started||d.paused||complete;
+ $('#podiumResumeBtn').disabled=!d.paused||complete;
+ $('#podiumState').textContent=!d.started?'未開始：開始ボタンで30分ごとの表彰を開始します':complete?'全10回の表彰が終了しました':d.paused?'中断中（残り時間を保持しています）':`実施中：${d.completedRounds} / 10回 表彰済み`;
+ if(!d.nextAt){$('#podiumCountdown').textContent='--:--';return}
+ const reference=d.paused?new Date(d.pausedAt).getTime():Date.now()+(new Date(d.serverNow).getTime()-podiumSyncAt);
+ const remain=Math.max(0,Math.ceil((new Date(d.nextAt).getTime()-reference)/1000));
+ $('#podiumCountdown').textContent=`次回まで ${String(Math.floor(remain/60)).padStart(2,'0')}:${String(remain%60).padStart(2,'0')}`;
+}
+async function refreshPodium(){
+ try{const d=await api('/api/staff/podium/status');podiumAdminState=d;podiumSyncAt=Date.now();paintPodium()}
+ catch(e){$('#podiumState').textContent='表彰状態を取得できません：'+e.message}
+}
+async function podiumAction(kind){
+ const prompts={start:'30分ごとのランキング表彰を開始しますか？',pause:'表彰タイマーを中断しますか？ 残り時間は保持されます。',resume:'中断した表彰タイマーを再開しますか？'};
+ if(!confirm(prompts[kind]))return;
+ const msg=$('#podiumStartMsg');
+ for(const id of ['podiumStartBtn','podiumPauseBtn','podiumResumeBtn'])$('#'+id).disabled=true;
+ try{await api('/api/staff/podium/'+kind,{method:'POST',body:'{}'});msg.textContent=kind==='start'?'表彰を開始しました':kind==='pause'?'表彰を中断しました':'表彰を再開しました'}
+ catch(e){msg.textContent=e.message}
+ finally{await refreshPodium()}
+}
+$('#podiumStartBtn').addEventListener('click',()=>podiumAction('start'));
+$('#podiumPauseBtn').addEventListener('click',()=>podiumAction('pause'));
+$('#podiumResumeBtn').addEventListener('click',()=>podiumAction('resume'));
+setInterval(paintPodium,1000);
+setInterval(()=>{if(!$('#panel').classList.contains('hidden'))refreshPodium()},15000);
+refreshPodium();
 </script><style>
 .support-ticket summary{cursor:pointer;list-style:none}.support-ticket summary::-webkit-details-marker{display:none}.support-ticket-summary{display:flex;justify-content:space-between;gap:8px}.support-ticket-summary::after{content:"＋";font-size:24px;color:#79dfff}.support-ticket[open] .support-ticket-summary::after{content:"−"}.support-ticket-body{border-top:1px solid #354060;margin-top:12px;padding-top:12px}.support-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
 .support-tabs button[aria-pressed="true"]{border:1px solid #79dfff!important;box-shadow:inset 0 0 0 1px #79dfff;color:#d7faff}
