@@ -516,12 +516,12 @@ const TITLE_DEFS={
   chinchiro5:{name:'DICE RUNNER',jp:'CHINCHIRO 5戦',tier:'B',image:'/titles/chinchiro5.webp'},
   chinchiro10:{name:'DICE STRIKER',jp:'CHINCHIRO 10戦',tier:'A',image:'/titles/chinchiro10.webp'},
   chinchiro15:{name:'DICE EMPEROR',jp:'CHINCHIRO 15戦',tier:'S',image:'/titles/chinchiro15.webp'},
-  party_e:{name:'PARTY RANK E',jp:'騎士団 Eランク',tier:'E',image:'/titles/party_e.webp',partyRank:true},
-  party_d:{name:'PARTY RANK D',jp:'騎士団 Dランク',tier:'D',image:'/titles/party_d.webp',partyRank:true},
-  party_c:{name:'PARTY RANK C',jp:'騎士団 Cランク',tier:'C',image:'/titles/party_c.webp',partyRank:true},
-  party_b:{name:'PARTY RANK B',jp:'騎士団 Bランク',tier:'B',image:'/titles/party_b.webp',partyRank:true},
-  party_a:{name:'PARTY RANK A',jp:'騎士団 Aランク',tier:'A',image:'/titles/party_a.webp',partyRank:true},
-  party_s:{name:'PARTY RANK S',jp:'騎士団 Sランク',tier:'S',image:'/titles/party_s.webp',partyRank:true}
+  party_e:{name:'PARTY RANK E',jp:'騎士団 Eランク',tier:'E',image:'/titles/party_e.webp?v=4',partyRank:true},
+  party_d:{name:'PARTY RANK D',jp:'騎士団 Dランク',tier:'D',image:'/titles/party_d.webp?v=4',partyRank:true},
+  party_c:{name:'PARTY RANK C',jp:'騎士団 Cランク',tier:'C',image:'/titles/party_c.webp?v=4',partyRank:true},
+  party_b:{name:'PARTY RANK B',jp:'騎士団 Bランク',tier:'B',image:'/titles/party_b.webp?v=4',partyRank:true},
+  party_a:{name:'PARTY RANK A',jp:'騎士団 Aランク',tier:'A',image:'/titles/party_a.webp?v=4',partyRank:true},
+  party_s:{name:'PARTY RANK S',jp:'騎士団 Sランク',tier:'S',image:'/titles/party_s.webp?v=4',partyRank:true}
 };
 function titleMeta(key){const k=TITLE_DEFS[key]?key:'rookie';return {key:k,...TITLE_DEFS[k]}}
 const PARTY_RANK_LIMITS=[['S',150],['A',100],['B',60],['C',30],['D',10],['E',0]];
