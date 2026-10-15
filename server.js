@@ -1046,7 +1046,20 @@ app.post('/api/quick-matches/:id/approve',requireUser,async(req,res,next)=>{
   }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });
 
-app.post('/api/quick-matches/:id/reject',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const m=await one('SELECT * FROM quick_matches WHERE id=$1',[id]);if(!m)return res.status(404).json({error:'マッチが見つかりません'});if(![Number(m.challenger_id),Number(m.opponent_id)].includes(Number(req.userId)))return res.status(403).json({error:'このマッチを拒否できません'});if(m.status!=='pending')return res.status(409).json({error:'この申請はすでに開始されています'});await query("UPDATE quick_matches SET status='rejected' WHERE id=$1",[id]);res.json({ok:true});}catch(e){next(e)}});
+app.post('/api/quick-matches/:id/reject',requireUser,async(req,res,next)=>{
+  const id=Number(req.params.id);
+  const client=await pool.connect();
+  try{
+    await client.query('BEGIN');
+    const m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+    if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}
+    if(![Number(m.challenger_id),Number(m.opponent_id)].includes(Number(req.userId))){await client.query('ROLLBACK');return res.status(403).json({error:'このマッチを拒否できません'})}
+    if(m.status!=='pending'){await client.query('ROLLBACK');return res.status(409).json({error:'この申請はすでに開始されています'})}
+    await client.query("UPDATE quick_matches SET status='rejected' WHERE id=$1 AND status='pending'",[id]);
+    await client.query('COMMIT');
+    res.json({ok:true});
+  }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
+});
 
 app.post('/api/quick-matches/:id/secret',requireUser,async(req,res,next)=>{const id=Number(req.params.id);const code=Array.isArray(req.body.keys)?req.body.keys.map(String).join(''):String(req.body.code||'');if(!validKeyCode(code))return res.status(400).json({error:'0〜9から重複なしで4つのPASSKEYを選択してください'});const client=await pool.connect();try{await client.query('BEGIN');let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];if(!m){await client.query('ROLLBACK');return res.status(404).json({error:'マッチが見つかりません'})}if(m.status!=='setup'){await client.query('ROLLBACK');return res.status(409).json({error:'現在は暗号キーを設定できません'})}const role=Number(m.challenger_id)===Number(req.userId)?'challenger':Number(m.opponent_id)===Number(req.userId)?'opponent':null;if(!role){await client.query('ROLLBACK');return res.status(403).json({error:'このマッチに参加していません'})}const col=role==='challenger'?'challenger_secret':'opponent_secret';if(m[col]){await client.query('ROLLBACK');return res.status(409).json({error:'暗号キーはすでにロックされています'})}await client.query(`UPDATE quick_matches SET ${col}=$1 WHERE id=$2`,[code,id]);m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];if(m.challenger_secret&&m.opponent_secret){const first=Number(m.first_player_id);const firstSecret=first===Number(m.challenger_id)?m.challenger_secret:m.opponent_secret;const hint=firstSecret[randomInt(0,4)];m=(await client.query(`UPDATE quick_matches SET status='in_progress',turn_player_id=first_player_id,initial_hint_key=$1,started_at=NOW(),turn_no=1,turn_started_at=NOW() + INTERVAL '4 seconds',live_selection='' WHERE id=$2 RETURNING *`,[hint,id])).rows[0];}await client.query('COMMIT');res.json({ok:true,match:publicQuickMatch(m,req.userId)});}catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
 
@@ -1064,8 +1077,9 @@ app.get('/api/quick-matches/:id/state',requireUser,async(req,res,next)=>{const i
   }
   await client.query('COMMIT');
   }
-  const r=await query(`${quickSelect} WHERE q.id=$1 AND (q.challenger_id=$2 OR q.opponent_id=$2)`,[id,req.userId]);
-  const g=await query('SELECT player_id,player_name,turn_no,guess,hits,blows,created_at FROM hit_blow_guesses WHERE match_id=$1 ORDER BY id',[id]);
+  // Reuse the acquired connection; avoid waiting on another pool slot.
+  const r=await client.query(`${quickSelect} WHERE q.id=$1 AND (q.challenger_id=$2 OR q.opponent_id=$2)`,[id,req.userId]);
+  const g=await client.query('SELECT player_id,player_name,turn_no,guess,hits,blows,created_at FROM hit_blow_guesses WHERE match_id=$1 ORDER BY id',[id]);
   res.json({match:publicQuickMatch(r.rows[0],req.userId),guesses:g.rows.map(x=>({playerId:Number(x.player_id),playerName:x.player_name,turnNo:Number(x.turn_no),guess:x.guess,hits:Number(x.hits),blows:Number(x.blows),createdAt:x.created_at}))});
 }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}});
 
@@ -1226,8 +1240,9 @@ app.get('/api/quick-matches/:id/janken-state',requireUser,async(req,res,next)=>{
     if(m.game_type!=='janken'){await client.query('ROLLBACK');return res.status(400).json({error:'このマッチはJANKENではありません'})}
     if(m.status==='in_progress')m=await resolveJankenRound(client,m);
     await client.query('COMMIT');
-    const full=(await query(`${quickSelect} WHERE q.id=$1`,[id])).rows[0];
-    const rounds=await query('SELECT round_no,challenger_choice,opponent_choice,winner_user_id,result,created_at FROM janken_rounds WHERE match_id=$1 ORDER BY id',[id]);
+    // Reuse the acquired connection to avoid pool starvation under concurrent polling.
+    const full=(await client.query(`${quickSelect} WHERE q.id=$1`,[id])).rows[0];
+    const rounds=await client.query('SELECT round_no,challenger_choice,opponent_choice,winner_user_id,result,created_at FROM janken_rounds WHERE match_id=$1 ORDER BY id',[id]);
     res.json({match:publicQuickMatch(full,uid),rounds:rounds.rows.map(x=>({roundNo:Number(x.round_no),challengerChoice:x.challenger_choice,opponentChoice:x.opponent_choice,winnerUserId:x.winner_user_id?Number(x.winner_user_id):null,result:x.result,createdAt:x.created_at}))});
   }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });
