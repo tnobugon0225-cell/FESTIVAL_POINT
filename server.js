@@ -734,6 +734,15 @@ app.post('/api/staff/podium/start',requireAdmin,async(req,res,next)=>{const c=aw
  await c.query("INSERT INTO app_settings(setting_key,setting_value) VALUES('podium_last_slot','0') ON CONFLICT(setting_key) DO UPDATE SET setting_value='0',updated_at=NOW()");
  await c.query('COMMIT');res.json({ok:true,startAt:now});
 }catch(e){try{await c.query('ROLLBACK')}catch{}next(e)}finally{c.release()}});
+// Cancel the active award event without revoking already awarded titles.
+// The same advisory lock as the award worker prevents a cancellation race.
+app.post('/api/staff/podium/cancel',requireAdmin,async(req,res,next)=>{const c=await pool.connect();try{
+ await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(60515030)');
+ const existing=await c.query("SELECT setting_value FROM app_settings WHERE setting_key='podium_start_at'");
+ if(!existing.rowCount){await c.query('ROLLBACK');return res.status(409).json({error:'実施中の表彰はありません'})}
+ await c.query("DELETE FROM app_settings WHERE setting_key IN ('podium_start_at','podium_last_slot','podium_paused_at')");
+ await c.query('COMMIT');res.json({ok:true,cancelled:true});
+}catch(e){try{await c.query('ROLLBACK')}catch{}next(e)}finally{c.release()}});
 app.post('/api/staff/podium/pause',requireAdmin,async(req,res,next)=>{const c=await pool.connect();try{
  await c.query('BEGIN');await c.query('SELECT pg_advisory_xact_lock(60515030)');
  const r=await c.query("SELECT setting_key,setting_value FROM app_settings WHERE setting_key IN ('podium_start_at','podium_paused_at','podium_last_slot')");

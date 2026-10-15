@@ -31,6 +31,7 @@
 <button type="button" id="podiumStartBtn" class="primary" disabled>30分表彰を開始</button>
 <button type="button" id="podiumPauseBtn" class="secondary" disabled>中断</button>
 <button type="button" id="podiumResumeBtn" class="secondary" disabled>再開</button>
+<button type="button" id="podiumCancelBtn" class="danger" disabled>中止</button>
 </div>
 <p id="podiumStartMsg" aria-live="polite"></p>
 </section>
@@ -253,6 +254,7 @@ function paintPodium(){
  $('#podiumStartBtn').disabled=d.started;
  $('#podiumPauseBtn').disabled=!d.started||d.paused||complete;
  $('#podiumResumeBtn').disabled=!d.paused||complete;
+ $('#podiumCancelBtn').disabled=!d.started;
  $('#podiumState').textContent=!d.started?'未開始：開始ボタンで30分ごとの表彰を開始します':complete?'全10回の表彰が終了しました':d.paused?'中断中（残り時間を保持しています）':`実施中：${d.completedRounds} / 10回 表彰済み`;
  if(!d.nextAt){$('#podiumCountdown').textContent='--:--';return}
  const reference=d.paused?new Date(d.pausedAt).getTime():Date.now()+(new Date(d.serverNow).getTime()-podiumSyncAt);
@@ -264,17 +266,18 @@ async function refreshPodium(){
  catch(e){$('#podiumState').textContent='表彰状態を取得できません：'+e.message}
 }
 async function podiumAction(kind){
- const prompts={start:'30分ごとのランキング表彰を開始しますか？',pause:'表彰タイマーを中断しますか？ 残り時間は保持されます。',resume:'中断した表彰タイマーを再開しますか？'};
+ const prompts={start:'30分ごとのランキング表彰を開始しますか？',pause:'表彰タイマーを中断しますか？ 残り時間は保持されます。',resume:'中断した表彰タイマーを再開しますか？',cancel:'表彰イベントを中止しますか？ これまでの獲得称号は残ります。再開ではなく、次回は最初から開始します。'};
  if(!confirm(prompts[kind]))return;
  const msg=$('#podiumStartMsg');
- for(const id of ['podiumStartBtn','podiumPauseBtn','podiumResumeBtn'])$('#'+id).disabled=true;
- try{await api('/api/staff/podium/'+kind,{method:'POST',body:'{}'});msg.textContent=kind==='start'?'表彰を開始しました':kind==='pause'?'表彰を中断しました':'表彰を再開しました'}
+ for(const id of ['podiumStartBtn','podiumPauseBtn','podiumResumeBtn','podiumCancelBtn'])$('#'+id).disabled=true;
+ try{await api('/api/staff/podium/'+kind,{method:'POST',body:'{}'});msg.textContent=({start:'表彰を開始しました',pause:'表彰を中断しました',resume:'表彰を再開しました',cancel:'表彰を中止しました（獲得済み称号は保持）'})[kind]}
  catch(e){msg.textContent=e.message}
  finally{await refreshPodium()}
 }
 $('#podiumStartBtn').addEventListener('click',()=>podiumAction('start'));
 $('#podiumPauseBtn').addEventListener('click',()=>podiumAction('pause'));
 $('#podiumResumeBtn').addEventListener('click',()=>podiumAction('resume'));
+$('#podiumCancelBtn').addEventListener('click',()=>podiumAction('cancel'));
 setInterval(paintPodium,1000);
 setInterval(()=>{if(!$('#panel').classList.contains('hidden'))refreshPodium()},15000);
 refreshPodium();

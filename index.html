@@ -35,7 +35,16 @@
     #mailModal .mail-item p{margin:9px 0!important;line-height:1.7!important;font-size:14px!important;color:#d8e8f2!important;white-space:normal!important}
     body.mail-open{overflow:hidden!important}
     @media(max-width:600px){#homeMailPanel{margin:5px 0 12px!important}#mailOpen>img{max-height:94px!important}#mailModal{padding:max(8px,env(safe-area-inset-top)) 7px max(8px,env(safe-area-inset-bottom))!important}#mailModal .nexus-mail-card{min-height:calc(100dvh - 16px)!important}}
-  </style>
+  
+/* v3: Party rank emblems should not visually overpower the podium title. */
+#titlePickerList .title-option.party-rank-title{min-height:72px!important}
+#titlePickerList .title-option.party-rank-title>img{width:76%!important;max-width:360px!important;height:64px!important;max-height:64px!important;margin:0 auto!important;object-fit:contain!important}
+#titlePickerList .title-option.party-rank-title.selected>em{right:8px!important}
+@media(max-width:480px){#titlePickerList .title-option.party-rank-title>img{width:78%!important;max-width:280px!important;height:60px!important}}
+#podiumParticipant{margin:10px auto 14px;padding:10px 14px;border:1px solid rgba(84,210,255,.33);border-radius:10px;background:linear-gradient(90deg,rgba(4,24,43,.9),rgba(6,17,32,.85));color:#d6f6ff;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px}
+#podiumParticipant .podium-time{font-variant-numeric:tabular-nums;font-size:18px;font-weight:900;letter-spacing:.04em;color:#8beaff}
+#podiumParticipant.hidden{display:none!important}
+</style>
   <script src="/bgm.js" defer></script>
   <script src="/ui-fx.js" defer></script>
 
@@ -404,6 +413,7 @@ body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,
     <img src="/nexus-zero-header-integrated.webp" alt="NEXUS:ZERO 奪え。守れ。生き残れ。" class="hero-logo integrated-header-logo">
   </section>
 
+  <div id="podiumParticipant" class="hidden" aria-live="off"><span id="podiumParticipantLabel">次回ランキング表彰まで</span><strong id="podiumParticipantTime" class="podium-time">--:--</strong></div>
   <div class="home-action-pair">
   <section id="homeMailPanel" class="nexus-mail-panel home-mail-strip hidden"><button type="button" id="mailOpen" class="nexus-mail-image-button" aria-label="運営からのお知らせを開く"><img src="/ui/home-message-v701.webp" alt="MESSAGE 運営からのお知らせ"><span id="mailBadge" class="mail-badge hidden">0</span></button></section>
   <div class="mission-home-row"><button type="button" id="missionsOpen" class="mission-home-button" aria-label="称号ミッションを開く"><img src="/ui/home-missions-v701.webp" alt="MISSIONS 称号ミッション"><span id="missionHomeCount" class="mission-home-count hidden">0</span></button></div>
@@ -578,9 +588,37 @@ $('#titleBadgeBtn')?.addEventListener('click',openTitlePicker);
 $('#avatarChangeBtn')?.addEventListener('click',()=>$('#avatarPicker').classList.remove('hidden'));
 document.addEventListener('click',async e=>{const close=e.target.closest('[data-close-picker]');if(close){$('#'+close.dataset.closePicker+'Picker')?.classList.add('hidden');return}const title=e.target.closest('[data-title-key]');if(title){try{const r=await api('/api/titles/select',{method:'POST',body:JSON.stringify({key:title.dataset.titleKey})});renderSelectedTitle(r.title);$('#titlePicker').classList.add('hidden')}catch(err){alert(err.message)}return}const av=e.target.closest('[data-avatar-change]');if(av){try{const r=await api('/api/me/avatar',{method:'POST',body:JSON.stringify({avatarKey:av.dataset.avatarChange})});setImgSrc($('#playerAvatar'),avatarSrc(r.avatarKey));$('#avatarPicker').classList.add('hidden')}catch(err){alert(err.message)}}});
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
+
+// Participant podium timer: one lightweight JSON fetch every 3 minutes, 1-second local display updates.
+let participantPodium=null,participantPodiumSynced=0,participantPodiumBusy=false;
+function drawParticipantPodium(){
+ const root=$('#podiumParticipant');if(!root)return;
+ if(!authToken||$('#account').classList.contains('hidden')){root.classList.add('hidden');return}
+ root.classList.remove('hidden');
+ const label=$('#podiumParticipantLabel'),value=$('#podiumParticipantTime'),d=participantPodium;
+ if(!d){label.textContent='ランキング表彰';value.textContent='確認中';return}
+ if(!d.started){label.textContent='ランキング表彰';value.textContent='開始待ち';return}
+ if(d.completedRounds>=10||!d.nextAt){label.textContent='ランキング表彰';value.textContent='全日程終了';return}
+ const reference=d.paused?new Date(d.pausedAt).getTime():new Date(d.serverNow).getTime()+(Date.now()-participantPodiumSynced);
+ const seconds=Math.max(0,Math.ceil((new Date(d.nextAt).getTime()-reference)/1000));
+ label.textContent=d.paused?'ランキング表彰・中断中':'次回ランキング表彰まで';
+ value.textContent=String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0');
+}
+async function syncParticipantPodium(){
+ if(!authToken||document.hidden||participantPodiumBusy)return;
+ participantPodiumBusy=true;
+ try{const d=await api('/api/podium/status');participantPodium=d;participantPodiumSynced=Date.now();drawParticipantPodium()}
+ catch(e){if(!participantPodium){const value=$('#podiumParticipantTime');if(value)value.textContent='確認できません'}}
+ finally{participantPodiumBusy=false}
+}
+setInterval(drawParticipantPodium,1000);
+setInterval(syncParticipantPodium,180000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&authToken)syncParticipantPodium()});
+if(authToken)syncParticipantPodium();
+
 const TITLE_FALLBACK={key:'rookie',name:'ROOKIE',jp:'ルーキー',tier:'C'};
 function renderSelectedTitle(t){t=t||TITLE_FALLBACK;const b=$('#titleBadgeBtn');if(!b)return;b.className=`player-title-badge tier-${t.tier||'C'}`;$('#selectedTitleName').textContent=t.name||'ROOKIE';$('#selectedTitleJp').textContent=t.jp||'ルーキー';setImgSrc($('#selectedTitleImage'),t.image||'/titles/rookie.webp')}
-async function openTitlePicker(){try{const d=await api('/api/titles');$('#titlePickerList').innerHTML=d.titles.filter(t=>!t.partyRank||t.owned).map(t=>`<button type="button" class="title-option image-title ${t.owned?'':'locked'} ${t.key===d.selectedKey?'selected':''}" ${t.owned?`data-title-key="${t.key}"`:'disabled'}><img src="${t.image}" alt="${esc(t.name)}">${t.owned?'':'<span class="title-lock"><img src="/titles/title-lock.webp" alt="LOCKED"></span>'}${t.key===d.selectedKey?'<em>EQUIPPED</em>':''}</button>`).join('');$('#titlePicker').classList.remove('hidden')}catch(e){alert(e.message)}}
+async function openTitlePicker(){try{const d=await api('/api/titles');$('#titlePickerList').innerHTML=d.titles.filter(t=>!t.partyRank||t.owned).map(t=>`<button type="button" class="title-option image-title ${t.partyRank?'party-rank-title':''} ${t.owned?'':'locked'} ${t.key===d.selectedKey?'selected':''}" ${t.owned?`data-title-key="${t.key}"`:'disabled'}><img src="${t.image}" alt="${esc(t.name)}">${t.owned?'':'<span class="title-lock"><img src="/titles/title-lock.webp" alt="LOCKED"></span>'}${t.key===d.selectedKey?'<em>EQUIPPED</em>':''}</button>`).join('');$('#titlePicker').classList.remove('hidden')}catch(e){alert(e.message)}}
 function setImgSrc(el,src){if(!el)return;const abs=new URL(src,location.href).href;if(el.src!==abs)el.src=src}
 function setStableHTML(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken;}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const err=new Error('ネットワーク通信に失敗しました');err.status=0;throw err}const d=await r.json().catch(()=>({}));if(!r.ok){const err=new Error(d.error||'通信に失敗しました');err.status=r.status;err.code=d.code||'';throw err}return d}
@@ -616,7 +654,7 @@ async function loadMailBadge(){try{const d=await api('/api/announcements');const
 function renderMail(d){$('#mailList').innerHTML=d&&d.items.length?d.items.map(x=>`<button type="button" class="mail-item ${x.read?'read':'unread'}" data-mail-id="${x.id}"><div class="mail-item-top"><strong>${esc(x.title)}</strong>${x.read?'':'<span>NEW</span>'}</div><p>${esc(x.body).replace(/\n/g,'<br>')}</p><small>${new Date(x.created_at).toLocaleString('ja-JP')}</small></button>`).join(''):'<p class="muted">お知らせはまだありません。</p>'}
 $('#mailOpen').onclick=async()=>{const d=await loadMailBadge();renderMail(d);$('#mailModal').classList.remove('hidden');document.body.classList.add('mail-open');$('#mailModal').scrollTop=0};$('#mailClose').onclick=()=>{$('#mailModal').classList.add('hidden');document.body.classList.remove('mail-open')};$('#mailModal').addEventListener('click',e=>{if(e.target.id==='mailModal'){$('#mailModal').classList.add('hidden');document.body.classList.remove('mail-open')}});$('#mailList').addEventListener('click',async e=>{const el=e.target.closest('[data-mail-id]');if(!el||el.classList.contains('read'))return;try{await api('/api/announcements/'+el.dataset.mailId+'/read',{method:'POST'});el.classList.remove('unread');el.classList.add('read');el.querySelector('.mail-item-top span')?.remove();await loadMailBadge()}catch(_){}});
 async function loadMe(showError=false){let me;try{me=await api('/api/me')}catch(e){if(e.status===401||e.status===403){clearInterval(timer);localStorage.removeItem('nexusParticipantToken');authToken='';$('#account').classList.add('hidden');$('#auth').classList.remove('hidden');$('#publicRanking').classList.remove('hidden');window.NexusBGM?.clearTrack?.();getRanking().catch(()=>{});if(sessionExpired)$('#authMsg').textContent=`ログインが切れました：${e.message}`;else $('#authMsg').textContent='';return}if(showError)$('#authMsg').textContent=`更新に失敗しました：${e.message}`;clearInterval(timer);timer=setInterval(()=>loadMe(false),12000);return}
-$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');refreshMissionBadge();$('#publicRanking').classList.add('hidden');window.NexusBGM?.setTrack('home');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));renderSelectedTitle(me.selectedTitle);if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();loadMailBadge().catch(()=>{});clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
+$('#authMsg').textContent='';$('#auth').classList.add('hidden');$('#account').classList.remove('hidden');if(!participantPodium||Date.now()-participantPodiumSynced>180000)syncParticipantPodium();drawParticipantPodium();refreshMissionBadge();$('#publicRanking').classList.add('hidden');window.NexusBGM?.setTrack('home');$('#name').textContent=me.username;$('#customerCode').textContent=me.public_code;$('#points').textContent=me.points.toLocaleString()+' pt';setImgSrc($('#playerAvatar'),avatarSrc(me.avatar_key));renderSelectedTitle(me.selectedTitle);if(me.points===0){showGameOver();return}const rank=await getRanking(me).catch(()=>[]);setRank(rank,me);await checkMatchNotification().catch(()=>{});startMatchPolling();loadMailBadge().catch(()=>{});clearInterval(timer);timer=setInterval(()=>loadMe(false),12000)}
 async function auth(mode){
   if(accessTransitionRunning)return;
   $('#authMsg').textContent='';
