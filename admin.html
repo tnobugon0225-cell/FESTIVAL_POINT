@@ -41,6 +41,11 @@
 <div class="admin-party-lock"><h3>大会期間のメンバー固定</h3><p id="partyLockStatus" class="muted small">状態を確認中...</p><button id="partyLockOn" type="button" class="secondary compact">変更をロック</button> <button id="partyLockOff" type="button" class="secondary compact">ロック解除</button></div>
 </section>
   </div>
+</section><section class="admin-section" style="margin:20px 0;padding:18px;border:1px solid #24506b;border-radius:12px">
+<h2>ランキング称号・30分表彰</h2>
+<p>文化祭開始時に一度だけ押してください。累計5試合以上の上位3名に30分ごと、最大10回称号を自動付与します。</p>
+<button type="button" id="podiumStartBtn" class="primary">30分表彰を開始</button>
+<p id="podiumStartMsg" aria-live="polite"></p>
 </section></main>
 <script>
 const $=s=>document.querySelector(s);let meStaff=null,allUsers=[],staffAutoTimer=null,historyType='adjust';
@@ -233,6 +238,13 @@ for(const [id,locked] of [['partyLockOn',true],['partyLockOff',false]]){
 activateAdminTab(location.hash==='#partyReview'?'party':location.hash.slice(1));
 
 check();
+
+$('#podiumStartBtn')?.addEventListener('click',async()=>{
+  if(!confirm('今から5時間、30分ごとのランキング表彰を開始します。開始しますか？'))return;
+  const msg=$('#podiumStartMsg');
+  try{const r=await api('/api/staff/podium/start',{method:'POST',body:'{}'});msg.textContent='表彰を開始しました。開始時刻：'+new Date(r.startAt).toLocaleString('ja-JP');$('#podiumStartBtn').disabled=true;}
+  catch(e){msg.textContent=e.message;}
+});
 </script><style>
 .support-ticket summary{cursor:pointer;list-style:none}.support-ticket summary::-webkit-details-marker{display:none}.support-ticket-summary{display:flex;justify-content:space-between;gap:8px}.support-ticket-summary::after{content:"＋";font-size:24px;color:#79dfff}.support-ticket[open] .support-ticket-summary::after{content:"−"}.support-ticket-body{border-top:1px solid #354060;margin-top:12px;padding-top:12px}.support-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
 .support-tabs button[aria-pressed="true"]{border:1px solid #79dfff!important;box-shadow:inset 0 0 0 1px #79dfff;color:#d7faff}

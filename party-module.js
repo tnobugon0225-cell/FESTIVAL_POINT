@@ -16,6 +16,25 @@ async function init(pool){
  CREATE TABLE IF NOT EXISTS party_contributions(id BIGSERIAL PRIMARY KEY,party_id BIGINT NOT NULL REFERENCES parties(id) ON DELETE CASCADE,user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,player_name VARCHAR(20) NOT NULL,source VARCHAR(10) NOT NULL,match_id BIGINT NOT NULL,result VARCHAR(4) NOT NULL,points INTEGER NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),UNIQUE(source,match_id,party_id));
  UPDATE party_applications SET status='rejected',reviewed_at=NOW() WHERE status='pending' AND NOT EXISTS(SELECT 1 FROM party_application_votes v WHERE v.application_id=party_applications.id);
  INSERT INTO app_settings(setting_key,setting_value) VALUES('party_roster_locked','off') ON CONFLICT DO NOTHING;
+ CREATE OR REPLACE FUNCTION clear_party_rank_title_on_leave() RETURNS TRIGGER AS $$
+ BEGIN
+   UPDATE users SET selected_title_key='rookie' WHERE id=OLD.user_id AND LEFT(selected_title_key,6)='party_';
+   RETURN OLD;
+ END; $$ LANGUAGE plpgsql;
+ DROP TRIGGER IF EXISTS party_title_membership_exit ON party_members;
+ CREATE TRIGGER party_title_membership_exit AFTER DELETE ON party_members FOR EACH ROW EXECUTE FUNCTION clear_party_rank_title_on_leave();
+ CREATE OR REPLACE FUNCTION clear_party_rank_title_on_points_change() RETURNS TRIGGER AS $$
+ DECLARE rank_letter TEXT;
+ BEGIN
+   rank_letter:=CASE WHEN NEW.points>=150 THEN 's' WHEN NEW.points>=100 THEN 'a' WHEN NEW.points>=60 THEN 'b' WHEN NEW.points>=30 THEN 'c' WHEN NEW.points>=10 THEN 'd' ELSE 'e' END;
+   UPDATE users u SET selected_title_key='rookie' FROM party_members pm
+     WHERE pm.user_id=u.id AND pm.party_id=NEW.id AND u.LEFT(selected_title_key,6)='party_'
+       AND u.selected_title_key<>'party_'||rank_letter;
+   RETURN NEW;
+ END; $$ LANGUAGE plpgsql;
+ DROP TRIGGER IF EXISTS party_title_points_change ON parties;
+ CREATE TRIGGER party_title_points_change AFTER UPDATE OF points ON parties FOR EACH ROW WHEN (OLD.points IS DISTINCT FROM NEW.points) EXECUTE FUNCTION clear_party_rank_title_on_points_change();
+
  `);
 }
 async function locked(c){return (await c.query("SELECT setting_value FROM app_settings WHERE setting_key='party_roster_locked'")).rows[0]?.setting_value==='on';}
