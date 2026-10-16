@@ -810,7 +810,7 @@ app.post('/api/staff/game-reset',requireAdmin,async(req,res,next)=>{
   for(const table of ['secret_chinchiro_draws','secret_match_snapshots','hit_blow_guesses','janken_rounds','chinchiro_rolls','random_match_queue','random_matches','quick_matches','matches','point_history','user_titles','announcement_reads','global_chat','direct_messages','friendships','support_thread_entries','support_messages','party_contributions','party_chat','party_invites','party_application_votes','party_applications','party_members','party_point_adjustments','parties']){
    await client.query('DELETE FROM '+table);
   }
-  await client.query("UPDATE users SET points=$1,selected_title_key='rookie' WHERE NOT is_official",[STARTING_POINTS]);
+  await client.query("UPDATE users SET points=$1,selected_title_key='rookie',avatar_key=NULL WHERE NOT is_official",[STARTING_POINTS]);
   await client.query("INSERT INTO user_titles(user_id,title_key) SELECT id,'rookie' FROM users ON CONFLICT DO NOTHING");
   await client.query("DELETE FROM app_settings WHERE setting_key IN ('podium_start_at','podium_last_slot','podium_paused_at')");
   await client.query("INSERT INTO app_settings(setting_key,setting_value,updated_at) VALUES('secret_epoch',NOW()::text,NOW()) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=NOW()");
