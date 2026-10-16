@@ -631,11 +631,24 @@ async function missionSnapshot(userId,client=pool){
   const battleTotal=Number(total.rows[0]?.n||0);
   const state=await client.query("SELECT setting_value FROM app_settings WHERE setting_key='podium_start_at'");
   const started=state.rows[0]?.setting_value||null;
-  return Object.keys(TITLE_DEFS).filter(key=>key!=='rookie'&&!TITLE_DEFS[key].partyRank).map(key=>{
+  const secretDescriptions={
+    secret_halloween:'HIT & BLOWで自分のコードを1031に設定する',
+    secret_senrigan:'HIT & BLOWで最初の予想で相手のコードを当てる',
+    secret_revenger:'ジャンケンで2敗のあと3勝する（あいこは除外）',
+    secret_twins:'ジャンケンで5回連続あいこになる',
+    secret_synchro:'チンチロで同じ役同士で引き分ける（ノーロールを除く）',
+    secret_steady:'チンチロで10ptを3試合連続で賭ける',
+    secret_veteran:'ルーキーを装備した状態で20戦する',
+    secret_fan:'全12種類のキャラアイコンを使って対戦する',
+    secret_rival:'同じ相手とHIT & BLOW・ジャンケン・チンチロで対戦する',
+    secret_zero:'ほかのシークレット称号9種類をすべて獲得する'
+  };
+  return Object.keys(TITLE_DEFS).filter(key=>key!=='rookie'&&!TITLE_DEFS[key].partyRank&&(!TITLE_DEFS[key].secret||ownedKeys.has(key))).map(key=>{
     let progress=0,target=1,description='',hidden=false,claimable=false;
     const battle=/^(hitblow|janken|chinchiro)(5|10|15)$/.exec(key);
     const claimed=ownedKeys.has(key);
-    if(battle){target=Number(battle[2]);progress=Math.min(target,byGame[battle[1]]||0);const game={hitblow:'HIT & BLOW',janken:'JANKEN',chinchiro:'CHINCHIRO'}[battle[1]];description=`${game}を${target}戦プレイする`;claimable=!claimed&&progress>=target;}
+    if(TITLE_DEFS[key].secret){progress=1;description=secretDescriptions[key]||'シークレット称号を獲得';}
+    else if(battle){target=Number(battle[2]);progress=Math.min(target,byGame[battle[1]]||0);const game={hitblow:'HIT & BLOW',janken:'JANKEN',chinchiro:'CHINCHIRO'}[battle[1]];description=`${game}を${target}戦プレイする`;claimable=!claimed&&progress>=target;}
     else {const rank=Number(key.replace('rank',''));progress=claimed?1:0;description=`累計5試合以上で30分ごとの総合ランキング${rank}位を獲得（自動授与）`;if(!started)description+=' ※表彰開始待ち';}
     return {...titleMeta(key),description,hidden,progress,target,remaining:Math.max(0,target-progress),claimable,claimed,autoAward:!battle,qualifyingMatches:battleTotal};
   });

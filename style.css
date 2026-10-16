@@ -5224,3 +5224,10 @@ body.dm-open{overflow:hidden!important}
 .home-action-pair #mailBadge.hidden,.home-action-pair #missionHomeCount.hidden{display:none!important}
 @media(max-width:430px){.home-action-pair{gap:5px!important;padding:0 5px!important;margin:6px auto 10px!important}.home-action-pair #mailBadge,.home-action-pair #missionHomeCount{min-width:18px!important;height:18px!important;font-size:9px!important;border-width:1px!important}}
 
+
+/* Secret title patch: profile record must span both identity columns. */
+#profileBody > .network-personal-record{grid-column:1/-1!important;width:100%!important;min-width:0!important;display:block!important;box-sizing:border-box!important;}
+#profileBody > .network-personal-record p{overflow-wrap:anywhere;line-height:1.55;}
+#profileBody > #networkRecordLoading{grid-column:1/-1!important;}
+#individualRecordClose.asset-close{position:relative;flex:0 0 auto;width:44px;height:44px;padding:0;background:transparent;border:0;}
+#individualRecordClose.asset-close img{display:block;width:100%;height:100%;object-fit:contain;}
