@@ -35,7 +35,8 @@
     #mailModal .mail-item p{margin:9px 0!important;line-height:1.7!important;font-size:14px!important;color:#d8e8f2!important;white-space:normal!important}
     body.mail-open{overflow:hidden!important}
     @media(max-width:600px){#homeMailPanel{margin:5px 0 12px!important}#mailOpen>img{max-height:94px!important}#mailModal{padding:max(8px,env(safe-area-inset-top)) 7px max(8px,env(safe-area-inset-bottom))!important}#mailModal .nexus-mail-card{min-height:calc(100dvh - 16px)!important}}
-  </style>
+  .title-tabs{display:flex;gap:10px;margin-bottom:12px}.title-tab{flex:1;padding:10px;border:1px solid #4c7c9c;border-radius:8px;background:#0b192e;color:#c9e6ff;font-weight:bold}.title-tab.active{background:#1a4368;color:#fff}.secret-title-text{display:flex;align-items:center;justify-content:center;min-height:68px;font-size:1.3rem;letter-spacing:.07em;color:#e8d7ff;text-shadow:0 0 14px #9870df}.title-empty-note{padding:24px 8px;text-align:center;color:#9bb7ce}
+</style>
   <script src="/bgm.js" defer></script>
   <script src="/ui-fx.js?v=party-fullname-authguard-20261014" defer></script>
 
@@ -428,6 +429,8 @@ body> .random-match-console.random-cinematic #randomMatchedArea{width:min(620px,
     </div>
   </section>
 
+  <section class="system-panel" style="margin:10px 0;padding:12px"><button type="button" id="myRecordBtn" class="title-tab" style="width:100%">PERSONAL RECORD / 個人戦績を見る</button><div id="myRecordPanel" class="hidden" style="margin-top:12px;color:#e4f3ff"></div></section>
+
   <div id="homePrimaryMenu" class="home-primary-menu" data-battle-step="root">
   <section class="system-panel transfer-card arena-transfer match-create-card battle-hub">
     <button type="button" id="battleHubOpen" class="art-menu-root">
@@ -558,7 +561,9 @@ document.addEventListener('click',async e=>{const close=e.target.closest('[data-
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
 const TITLE_FALLBACK={key:'rookie',name:'ROOKIE',jp:'ルーキー',tier:'C'};
 function renderSelectedTitle(t){t=t||TITLE_FALLBACK;const b=$('#titleBadgeBtn');if(!b)return;b.className=`player-title-badge tier-${t.tier||'C'}`;$('#selectedTitleName').textContent=t.name||'ROOKIE';$('#selectedTitleJp').textContent=t.jp||'ルーキー';setImgSrc($('#selectedTitleImage'),t.image||'/titles/rookie.webp')}
-async function openTitlePicker(){try{const d=await api('/api/titles');$('#titlePickerList').innerHTML=d.titles.map(t=>`<button type="button" class="title-option image-title ${t.owned?'':'locked'} ${t.key===d.selectedKey?'selected':''}" ${t.owned?`data-title-key="${t.key}"`:'disabled'}><img src="${t.image}" alt="${esc(t.name)}">${t.owned?'':'<span class="title-lock"><img src="/titles/title-lock.webp" alt="LOCKED"></span>'}${t.key===d.selectedKey?'<em>EQUIPPED</em>':''}</button>`).join('');$('#titlePicker').classList.remove('hidden')}catch(e){alert(e.message)}}
+document.getElementById('myRecordBtn').addEventListener('click',async()=>{const box=document.getElementById('myRecordPanel');if(!box.classList.contains('hidden')){box.classList.add('hidden');return}box.classList.remove('hidden');box.textContent='読み込み中...';try{const me=await api('/api/me');const d=await api('/api/players/'+Number(me.id)+'/record');const names={hitblow:'Hit & Blow',janken:'ジャンケン',chinchiro:'チンチロ',custom:'カスタム対戦'};box.innerHTML=`<strong>総対戦数 ${d.total.played}戦 / ${d.total.wins}勝 ${d.total.losses}敗 ${d.total.draws}分 / 勝率 ${d.total.winRate}%</strong>`+d.games.map(g=>`<p style="margin:8px 0">${names[g.key]}：${g.played}戦 ${g.wins}勝 ${g.losses}敗 ${g.draws}分 / ${g.winRate}%</p>`).join('')}catch(e){box.textContent=e.message}});
+async function openTitlePicker(){try{const d=await api('/api/titles');const make=(secret)=>d.titles.filter(t=>!!t.secret===secret).map(t=>`<button type="button" class="title-option image-title ${t.key===d.selectedKey?'selected':''}" data-title-key="${t.key}">${t.image?`<img src="${t.image}" alt="${esc(t.name)}">`:`<span class="secret-title-text">${esc(t.name)}</span>`}${t.key===d.selectedKey?'<em>EQUIPPED</em>':''}</button>`).join('')||'<p class="title-empty-note">まだ獲得した称号はありません</p>';$('#titlePickerList').innerHTML=`<div class="title-tabs"><button type="button" class="title-tab active" data-secret-tab="normal">通常</button><button type="button" class="title-tab" data-secret-tab="secret">シークレット</button></div><div id="normalTitles">${make(false)}</div><div id="secretTitles" style="display:none">${make(true)}</div>`;$('#titlePicker').classList.remove('hidden')}catch(e){alert(e.message)}}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-secret-tab]');if(!b)return;const secret=b.dataset.secretTab==='secret';$('#normalTitles').style.display=secret?'none':'';$('#secretTitles').style.display=secret?'':'none';document.querySelectorAll('.title-tab').forEach(x=>x.classList.toggle('active',x===b))});
 function setImgSrc(el,src){if(!el)return;const abs=new URL(src,location.href).href;if(el.src!==abs)el.src=src}
 function setStableHTML(el,html){if(el&&el.innerHTML!==html)el.innerHTML=html}
 async function api(url,options={}){const headers={'Content-Type':'application/json',...(options.headers||{})};if(authToken){headers['X-Participant-Token']=authToken;headers.Authorization='Bearer '+authToken;}let r;try{r=await fetch(url,{credentials:'same-origin',cache:'no-store',...options,headers})}catch(e){const err=new Error('ネットワーク通信に失敗しました');err.status=0;throw err}const d=await r.json().catch(()=>({}));if(!r.ok){const err=new Error(d.error||'通信に失敗しました');err.status=r.status;err.code=d.code||'';throw err}return d}
