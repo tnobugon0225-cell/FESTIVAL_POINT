@@ -584,8 +584,7 @@ async function evaluateSecrets(userId){
  const user=await one('SELECT id,created_at FROM users WHERE id=$1',[userId]);if(!user)return [];
  const ep=await one("SELECT setting_value FROM app_settings WHERE setting_key='secret_epoch'");
  const epoch=ep?.setting_value||new Date().toISOString();
- // No beta account may obtain a new secret title until it is re-created after the reset.
- if(new Date(user.created_at)<new Date(epoch))return [];
+ // Existing accounts can earn secrets now; only events after the secret feature epoch count.
  const owned=new Set((await query('SELECT title_key FROM user_titles WHERE user_id=$1',[userId])).rows.map(x=>x.title_key));
  const unlock=async(k,ok)=>{if(ok&&!owned.has(k)){await unlockTitle(userId,k);owned.add(k)}};
  const q=await query(`SELECT id,game_type,wager,challenger_id,opponent_id,challenger_secret,opponent_secret,completed_at
@@ -643,14 +642,14 @@ async function missionSnapshot(userId,client=pool){
     secret_rival:'同じ相手とHIT & BLOW・ジャンケン・チンチロで対戦する',
     secret_zero:'ほかのシークレット称号9種類をすべて獲得する'
   };
-  return Object.keys(TITLE_DEFS).filter(key=>key!=='rookie'&&!TITLE_DEFS[key].partyRank&&(!TITLE_DEFS[key].secret||ownedKeys.has(key))).map(key=>{
+  return Object.keys(TITLE_DEFS).filter(key=>key!=='rookie'&&!TITLE_DEFS[key].partyRank).map(key=>{
     let progress=0,target=1,description='',hidden=false,claimable=false;
     const battle=/^(hitblow|janken|chinchiro)(5|10|15)$/.exec(key);
     const claimed=ownedKeys.has(key);
-    if(TITLE_DEFS[key].secret){progress=1;description=secretDescriptions[key]||'シークレット称号を獲得';}
+    if(TITLE_DEFS[key].secret){hidden=!claimed;progress=claimed?1:0;description=claimed?(secretDescriptions[key]||'シークレット称号を獲得'):'？';}
     else if(battle){target=Number(battle[2]);progress=Math.min(target,byGame[battle[1]]||0);const game={hitblow:'HIT & BLOW',janken:'JANKEN',chinchiro:'CHINCHIRO'}[battle[1]];description=`${game}を${target}戦プレイする`;claimable=!claimed&&progress>=target;}
     else {const rank=Number(key.replace('rank',''));progress=claimed?1:0;description=`累計5試合以上で30分ごとの総合ランキング${rank}位を獲得（自動授与）`;if(!started)description+=' ※表彰開始待ち';}
-    return {...titleMeta(key),description,hidden,progress,target,remaining:Math.max(0,target-progress),claimable,claimed,autoAward:!battle,qualifyingMatches:battleTotal};
+    return {...titleMeta(key),category:TITLE_DEFS[key].secret?'secret':'permanent',description,hidden,progress,target,remaining:Math.max(0,target-progress),claimable,claimed,autoAward:!battle&&!TITLE_DEFS[key].secret,qualifyingMatches:battleTotal};
   });
 }
 // Podium awards: explicitly started by an admin; never grant at initial 100pt tie.
@@ -968,7 +967,7 @@ app.get('/api/titles',requireUser,async(req,res,next)=>{try{
   res.set('Cache-Control','no-store');
   res.json({selectedKey,titles:Object.keys(TITLE_DEFS).filter(key=>key==='rookie'||(TITLE_DEFS[key].partyRank?key===currentPartyKey:owned.has(key))).map(key=>({...titleMeta(key),owned:true,unlockedAt:owned.get(key)||null}))});
 }catch(e){next(e)}});
-app.get('/api/missions',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);await processPodiumAward();const missions=await missionSnapshot(req.userId);res.set('Cache-Control','no-store');res.json({missions,claimableCount:missions.filter(m=>m.claimable).length})}catch(e){next(e)}});
+app.get('/api/missions',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);await processPodiumAward();await evaluateSecrets(req.userId);const missions=await missionSnapshot(req.userId);res.set('Cache-Control','no-store');res.json({missions,claimableCount:missions.filter(m=>m.claimable).length})}catch(e){next(e)}});
 app.post('/api/missions/claim',requireUser,async(req,res,next)=>{
   const key=String(req.body?.key||'');if(!TITLE_DEFS[key]||key==='rookie'||TITLE_DEFS[key].partyRank||TITLE_DEFS[key].secret||/^rank[123]$/.test(key))return res.status(400).json({error:'この称号はミッションから受け取れません'});
   const client=await pool.connect();try{await client.query('BEGIN');
