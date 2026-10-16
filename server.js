@@ -834,15 +834,13 @@ app.post('/api/staff/official-users/:id',requireAdmin,async(req,res,next)=>{
   if(!u){await client.query('ROLLBACK');return res.status(404).json({error:'アカウントがありません'})}
   if(await activeMatchForUser(id,client)){await client.query('ROLLBACK');return res.status(409).json({error:'対戦中は権限を変更できません'})}
   if(enabled){
-   const membership=await client.query('SELECT 1 FROM party_members WHERE user_id=$1',[id]);
-   if(membership.rowCount){await client.query('ROLLBACK');return res.status(409).json({error:'先にパーティーから脱退させてください'})}
    await client.query('DELETE FROM random_match_queue WHERE user_id=$1',[id]);
    await client.query('UPDATE users SET is_official=TRUE WHERE id=$1',[id]);
   }else{
    await client.query("UPDATE users SET is_official=FALSE,points=$2,selected_title_key='rookie' WHERE id=$1",[id,STARTING_POINTS]);
   }
   await client.query('COMMIT');
-  await addAudit('adjust',`OFFICIAL ${enabled?'GRANT':'REVOKE'} // ${u.username}`,{staffName:req.staff.username,userName:u.username});
+  await addAudit('adjust',`OFFICIAL ${enabled?'GRANT':'REVOKE'} // ${u.username}`,{staffName:req.staff.username,userName:u.username}).catch(err=>console.error('OFFICIAL audit log failed:',err));
   res.json({ok:true,id,enabled});
  }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
 });

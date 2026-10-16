@@ -46,7 +46,7 @@
     <section id="staffAccountsCard" data-admin-group="operations" class="admin-module admin-module-accounts hidden"><div class="module-no">07</div><div class="admin-kicker">ADMIN ONLY</div><h2>運営アカウント管理</h2><div class="split"><div><label>OPERATOR ID</label><input id="newStaffUser" maxlength="30" placeholder="新規ID"></div><div><label>ROLE</label><select id="newStaffRole"><option value="staff">STAFF</option><option value="admin">ADMIN</option></select></div></div><label>INITIAL PASSWORD</label><input id="newStaffPassword" type="password" maxlength="72" placeholder="8文字以上"><button id="createStaffBtn" class="success admin-wide">CREATE OPERATOR</button><p id="staffAccountMsg"></p><div id="staffList" class="operator-list"></div></section>
     <section class="admin-module" id="supportCard" data-admin-group="support"><div class="admin-kicker">PLAYER SUPPORT</div><h2>参加者からの問い合わせ <span id="supportNewBadge" class="badge hidden" aria-live="polite"></span></h2><p id="supportCounts" class="muted small">問い合わせを確認中...</p><button id="supportRefresh" class="secondary compact" type="button">更新</button><div class="support-tabs" role="group" aria-label="問い合わせの表示切り替え"><button id="staffSupportOpen" class="secondary compact" type="button" aria-pressed="true">未対応</button><button id="staffSupportResolved" class="secondary compact" type="button" aria-pressed="false">対応済み</button></div><div id="supportInbox"></div></section>
     <section id="resetCard" data-admin-group="operations" class="admin-module hidden"><div class="admin-kicker">ADMIN ONLY / DANGER ZONE</div><h2>全員のゲーム状態を初期化</h2><p class="muted">ログイン情報・名前・パスワード・4桁IDは維持。一般参加者のポイント・アバター設定・対戦・称号・フレンド・チャット・問い合わせ・パーティーを初期化し、全パーティーを解散します。運営アカウントは維持します。元に戻せません。実行前にDBバックアップを取ってください。</p><p id="resetPreview"></p><button id="resetAllBtn" class="danger admin-wide" type="button">全員初期化（管理者限定）</button><p id="resetResult"></p></section>
-<section id="officialPlayersCard" data-admin-group="official" class="admin-module hidden"><div class="admin-kicker">ADMIN ONLY / OFFICIAL PLAYERS</div><h2>ゲーム内運営アカウント</h2><p class="muted">管理画面のログイン権限とは別です。プレイヤーを公式運営に指定できます。対戦中やパーティー所属中は変更できません。</p><button type="button" class="secondary compact" id="officialRefresh">一覧更新</button><div id="officialPlayersList"></div><p id="officialPlayersMsg" aria-live="polite"></p></section>
+<section id="officialPlayersCard" data-admin-group="official" class="admin-module hidden"><div class="admin-kicker">ADMIN ONLY / OFFICIAL PLAYERS</div><h2>ゲーム内運営アカウント</h2><p class="muted">名前または4桁IDで呼び出して運営権限を設定します。対戦中・パーティー所属中のアカウントは変更できません。</p><div class="row"><input id="officialSearch" type="search" autocomplete="off" placeholder="参加者名 / 4桁ID"><button type="button" class="secondary compact" id="officialRefresh">検索</button></div><div id="officialPlayersList"></div><p id="officialPlayersMsg" aria-live="polite" style="white-space:pre-wrap"></p><h3>現在の運営アカウント</h3><div id="officialCurrentList"></div></section>
 <section class="admin-module" id="partyReview" data-admin-group="party">
 <div class="admin-kicker">PARTY CONTROL</div><h2>パーティー結成申請</h2>
 <p class="muted small">全員が結成に同意した申請だけがここに届きます。</p>
@@ -183,12 +183,32 @@ $('#supportInbox').addEventListener('click',async event=>{
 });
 $('#supportRefresh').onclick=()=>loadSupport().catch(e=>setMsg(e.message,true));
 async function loadResetPreview(){const d=await api('/api/staff/game-reset/preview');$('#resetPreview').textContent=`一般参加者 ${d.count} 人 / 保護する運営 ${d.official} 人 / 初期ポイント ${d.startingPoints} pt`}
-async function loadOfficialPlayers(){
- const rows=await api('/api/staff/official-users');const el=$('#officialPlayersList');
- el.innerHTML=(rows.length?rows.map(u=>`<div class="user" style="display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px;margin:8px 0"><span>${esc(u.username)} (${esc(u.public_code)}) ${u.is_official?'★ OFFICIAL':''}</span><button type="button" class="secondary compact" data-official-id="${u.id}" data-official-enabled="${u.is_official?'false':'true'}">${u.is_official?'運営を解除':'運営に指定'}</button></div>`).join(''):'<p class="muted">登録済み参加者がいません。</p>');
+let officialSearchCache=[];
+function renderOfficialPlayers(){
+ const q=($('#officialSearch').value||'').trim().toLocaleLowerCase();
+ const el=$('#officialPlayersList');
+ const current=officialSearchCache.filter(u=>u.is_official);
+ const render=u=>`<div class="user" style="display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px;margin:8px 0;flex-wrap:wrap"><span>${esc(u.username)} (ID ${esc(u.public_code)}) ${u.is_official?'★ OFFICIAL':''}</span><button type="button" class="secondary compact" data-official-id="${u.id}" data-official-enabled="${u.is_official?'false':'true'}">${u.is_official?'運営を解除':'運営に指定'}</button></div>`;
+ if(!q){el.innerHTML='<p class="muted">名前またはIDを入力して検索してください。</p>'}
+ else {const found=officialSearchCache.filter(u=>u.username.toLocaleLowerCase().includes(q)||String(u.public_code).includes(q)).slice(0,15);el.innerHTML=found.length?found.map(render).join(''):'<p class="muted">該当する参加者はいません。</p>'}
+ $('#officialCurrentList').innerHTML=current.length?current.map(render).join(''):'<p class="muted">まだ運営アカウントはありません。</p>';
 }
-$('#officialRefresh').onclick=()=>loadOfficialPlayers().catch(e=>$('#officialPlayersMsg').textContent=e.message);
-$('#officialPlayersList').addEventListener('click',async e=>{const b=e.target.closest('button[data-official-id]');if(!b)return;const enabled=b.dataset.officialEnabled==='true';const id=Number(b.dataset.officialId);if(!confirm(`このアカウントの運営権限を${enabled?'付与':'解除'}しますか？`))return;try{b.disabled=true;await api('/api/staff/official-users/'+id,{method:'POST',body:JSON.stringify({enabled})});$('#officialPlayersMsg').textContent='変更しました';await loadOfficialPlayers()}catch(err){$('#officialPlayersMsg').textContent=err.message;b.disabled=false}});
+async function loadOfficialPlayers(){
+ officialSearchCache=await api('/api/staff/official-users');
+ renderOfficialPlayers();
+}
+$('#officialRefresh').onclick=()=>loadOfficialPlayers().catch(e=>$('#officialPlayersMsg').textContent='検索失敗: '+e.message);
+$('#officialSearch').addEventListener('input',renderOfficialPlayers);
+async function officialRoleClick(e){
+ const b=e.target.closest('button[data-official-id]');if(!b)return;
+ const enabled=b.dataset.officialEnabled==='true',id=Number(b.dataset.officialId);
+ const u=officialSearchCache.find(x=>x.id===id);if(!u)return;
+ if(!confirm(`${u.username} (ID ${u.public_code}) の運営権限を${enabled?'付与':'解除'}しますか？\n※パーティー所属中・対戦中は変更できません。`))return;
+ try{b.disabled=true;$('#officialPlayersMsg').textContent='変更中...';await api('/api/staff/official-users/'+id,{method:'POST',body:JSON.stringify({enabled})});$('#officialPlayersMsg').textContent=`${u.username} の運営権限を${enabled?'付与':'解除'}しました。`;await loadOfficialPlayers()}
+ catch(err){$('#officialPlayersMsg').textContent=`${u.username} の変更に失敗しました: ${err.message}`;b.disabled=false;}
+}
+$('#officialPlayersList').addEventListener('click',officialRoleClick);
+$('#officialCurrentList').addEventListener('click',officialRoleClick);
 $('#resetAllBtn').onclick=async()=>{try{const d=await api('/api/staff/game-reset/preview');if(!confirm(`一般参加者${d.count}人のポイント・戦績・称号・フレンド・チャット・問い合わせ・全パーティーを削除します。運営${d.official}人のアカウントは残します。バックアップを取得しましたか？`))return;const typed=prompt('最終確認：RESET と入力してください');if(typed!=='RESET')return;const r=await api('/api/staff/game-reset',{method:'POST',body:JSON.stringify({confirm:'RESET ALL PLAYERS',startingPoints:d.startingPoints})});$('#resetResult').textContent=`一般参加者${r.count}人を初期化しました（運営${r.official}人は保護）`;await refreshAll(false)}catch(e){$('#resetResult').textContent=e.message}};
 
 // Keep existing admin handlers intact; tabs only control presentation.
