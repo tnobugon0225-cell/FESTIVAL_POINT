@@ -827,6 +827,29 @@ app.get('/api/me', requireUser, async (req, res, next) => {
 app.get('/api/announcements',requireUser,async(req,res,next)=>{try{await query('UPDATE users SET last_seen_at=NOW() WHERE id=$1',[req.userId]);const r=await query(`SELECT a.id,a.title,a.body,a.staff_name,a.created_at,(ar.user_id IS NOT NULL) AS read FROM announcements a LEFT JOIN announcement_reads ar ON ar.announcement_id=a.id AND ar.user_id=$1 ORDER BY a.id DESC LIMIT 50`,[req.userId]);res.json({unread:r.rows.filter(x=>!x.read).length,items:r.rows.map(x=>({...x,id:Number(x.id),read:Boolean(x.read)}))})}catch(e){next(e)}});
 app.post('/api/announcements/:id/read',requireUser,async(req,res,next)=>{try{const id=Number(req.params.id);const exists=await one('SELECT id FROM announcements WHERE id=$1',[id]);if(!exists)return res.status(404).json({error:'お知らせが見つかりません'});await query('INSERT INTO announcement_reads(announcement_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[id,req.userId]);res.json({ok:true})}catch(e){next(e)}});
 
+// Individual battle record: only finalized matches, no wagers or private opponent data.
+app.get('/api/players/:id/record',requireUser,async(req,res,next)=>{
+ try{
+  const id=Number(req.params.id);
+  if(!Number.isSafeInteger(id)||id<=0)return res.status(400).json({error:'プレイヤーIDが不正です'});
+  const u=await one('SELECT id,public_code,username FROM users WHERE id=$1',[id]);
+  if(!u)return res.status(404).json({error:'プレイヤーが見つかりません'});
+  const q=await query(`SELECT game_type AS game,COUNT(*)::int AS played,
+    COUNT(*) FILTER (WHERE winner_user_id=$1)::int AS wins,
+    COUNT(*) FILTER (WHERE winner_user_id IS NULL)::int AS draws
+    FROM quick_matches WHERE status='completed' AND (challenger_id=$1 OR opponent_id=$1)
+    GROUP BY game_type`,[id]);
+  const c=await query(`SELECT COUNT(*)::int AS played,
+    COUNT(*) FILTER (WHERE winner_user_id=$1)::int AS wins,
+    COUNT(*) FILTER (WHERE winner_user_id IS NULL)::int AS draws
+    FROM matches WHERE status='completed' AND (challenger_id=$1 OR opponent_id=$1)`,[id]);
+  const types=['hitblow','janken','chinchiro','custom'];
+  const by=Object.fromEntries(q.rows.map(x=>[x.game,x]));by.custom=c.rows[0]||{played:0,wins:0,draws:0};
+  const games=types.map(key=>{const x=by[key]||{};const played=Number(x.played||0),wins=Number(x.wins||0),draws=Number(x.draws||0);return {key,played,wins,draws,losses:played-wins-draws,winRate:played?Math.round(wins/played*1000)/10:0}});
+  const total=games.reduce((a,x)=>({played:a.played+x.played,wins:a.wins+x.wins,draws:a.draws+x.draws,losses:a.losses+x.losses}),{played:0,wins:0,draws:0,losses:0});
+  res.set('Cache-Control','no-store');res.json({player:{id:Number(u.id),code:u.public_code,name:u.username},total:{...total,winRate:total.played?Math.round(total.wins/total.played*1000)/10:0},games});
+ }catch(e){next(e)}
+});
 app.get('/api/titles',requireUser,async(req,res,next)=>{try{
   await ensureBaseTitle(req.userId);await processPodiumAward();
   const selectedKey=await resolveMySelectedTitle(req.userId);
@@ -834,7 +857,7 @@ app.get('/api/titles',requireUser,async(req,res,next)=>{try{
   const owned=new Map(r.rows.map(x=>[x.title_key,x.unlocked_at]));
   const currentPartyKey=await currentPartyTitle(req.userId);
   res.set('Cache-Control','no-store');
-  res.json({selectedKey,titles:Object.keys(TITLE_DEFS).map(key=>({...titleMeta(key),owned:TITLE_DEFS[key].partyRank?key===currentPartyKey:owned.has(key),unlockedAt:owned.get(key)||null}))});
+  res.json({selectedKey,titles:Object.keys(TITLE_DEFS).filter(key=>key==='rookie'||(TITLE_DEFS[key].partyRank?key===currentPartyKey:owned.has(key))).map(key=>({...titleMeta(key),owned:true,unlockedAt:owned.get(key)||null}))});
 }catch(e){next(e)}});
 app.get('/api/missions',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);await processPodiumAward();const missions=await missionSnapshot(req.userId);res.set('Cache-Control','no-store');res.json({missions,claimableCount:missions.filter(m=>m.claimable).length})}catch(e){next(e)}});
 app.post('/api/missions/claim',requireUser,async(req,res,next)=>{
