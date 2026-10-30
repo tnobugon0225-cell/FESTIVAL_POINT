@@ -149,6 +149,12 @@ async function initDb() {
       PRIMARY KEY(user_id,title_key)
     );
     CREATE INDEX IF NOT EXISTS idx_user_titles_user ON user_titles(user_id, unlocked_at);
+    CREATE TABLE IF NOT EXISTS mission_eligibility (
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title_key VARCHAR(64) NOT NULL,
+      achieved_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY(user_id,title_key)
+    );
 
     CREATE TABLE IF NOT EXISTS admin_audit_log (
       id BIGSERIAL PRIMARY KEY,
@@ -605,8 +611,8 @@ async function evaluateSecrets(userId){
  const ep=await one("SELECT setting_value FROM app_settings WHERE setting_key='secret_epoch'");
  const epoch=ep?.setting_value||new Date().toISOString();
  // Existing accounts can earn secrets now; only events after the secret feature epoch count.
- const owned=new Set((await query('SELECT title_key FROM user_titles WHERE user_id=$1',[userId])).rows.map(x=>x.title_key));
- const unlock=async(k,ok)=>{if(ok&&!owned.has(k)){await unlockTitle(userId,k);owned.add(k)}};
+ const eligible=new Set((await query('SELECT title_key FROM mission_eligibility WHERE user_id=$1',[userId])).rows.map(x=>x.title_key));
+ const unlock=async(k,ok)=>{if(ok&&!eligible.has(k)){await query('INSERT INTO mission_eligibility(user_id,title_key) VALUES($1,$2) ON CONFLICT DO NOTHING',[userId,k]);eligible.add(k)}};
  const q=await query(`SELECT id,game_type,wager,challenger_id,opponent_id,challenger_secret,opponent_secret,completed_at
    FROM quick_matches WHERE status='completed' AND completed_at >= $2 AND (challenger_id=$1 OR opponent_id=$1) ORDER BY completed_at,id`,[userId,epoch]);
  const rows=q.rows;
@@ -633,8 +639,10 @@ async function evaluateSecrets(userId){
  await unlock('secret_fan',Number(sn.rows[0].avatars)>=12);
  const rivals=new Map();for(const m of rows){const other=Number(m.challenger_id)===userId?m.opponent_id:m.challenger_id;if(!other)continue;const key=String(other);if(!rivals.has(key))rivals.set(key,new Set());rivals.get(key).add(m.game_type)}
  await unlock('secret_rival',[...rivals.values()].some(v=>['hitblow','janken','chinchiro'].every(g=>v.has(g))));
- if(SECRET_KEYS.every(k=>owned.has(k)))await unlock('secret_zero',true);
- return [...owned].filter(k=>k.startsWith('secret_'));
+ // Final secret requires the other nine titles to have actually been claimed.
+ const claimed=await query("SELECT title_key FROM user_titles WHERE user_id=$1 AND title_key = ANY($2::text[])",[userId,SECRET_KEYS]);
+ if(claimed.rows.length===SECRET_KEYS.length)await unlock('secret_zero',true);
+ return [...eligible].filter(k=>k.startsWith('secret_'));
 }
 async function unlockTitle(userId,key,client=pool){if(!TITLE_DEFS[key])return;await client.query(`INSERT INTO user_titles(user_id,title_key) VALUES($1,$2) ON CONFLICT DO NOTHING`,[userId,key]);}
 async function ensureBaseTitle(userId,client=pool){await unlockTitle(userId,'rookie',client);}
@@ -646,6 +654,8 @@ async function missionSnapshot(userId,client=pool){
   const byGame=Object.fromEntries(counts.rows.map(r=>[r.game_type,Number(r.n)]));
   const owned=await client.query('SELECT title_key FROM user_titles WHERE user_id=$1',[userId]);
   const ownedKeys=new Set(owned.rows.map(r=>r.title_key));
+  const elig=await client.query('SELECT title_key FROM mission_eligibility WHERE user_id=$1',[userId]);
+  const eligibleKeys=new Set(elig.rows.map(r=>r.title_key));
   const total=await client.query(`SELECT (SELECT COUNT(*) FROM quick_matches WHERE status='completed' AND (challenger_id=$1 OR opponent_id=$1)) + (SELECT COUNT(*) FROM matches WHERE status='completed' AND (challenger_id=$1 OR opponent_id=$1)) AS n`,[userId]);
   const battleTotal=Number(total.rows[0]?.n||0);
   const state=await client.query("SELECT setting_value FROM app_settings WHERE setting_key='podium_start_at'");
@@ -666,10 +676,10 @@ async function missionSnapshot(userId,client=pool){
     let progress=0,target=1,description='',hidden=false,claimable=false;
     const battle=/^(hitblow|janken|chinchiro)(5|10|15)$/.exec(key);
     const claimed=ownedKeys.has(key);
-    if(TITLE_DEFS[key].secret){hidden=!claimed;progress=claimed?1:0;description=claimed?(secretDescriptions[key]||'シークレット称号を獲得'):'？';}
+    if(TITLE_DEFS[key].secret){hidden=!claimed;claimable=!claimed&&eligibleKeys.has(key);progress=(claimed||claimable)?1:0;description=claimed?(secretDescriptions[key]||'シークレット称号を獲得'):'？';}
     else if(battle){target=Number(battle[2]);progress=Math.min(target,byGame[battle[1]]||0);const game={hitblow:'HIT & BLOW',janken:'JANKEN',chinchiro:'CHINCHIRO'}[battle[1]];description=`${game}を${target}戦プレイする`;claimable=!claimed&&progress>=target;}
-    else {const rank=Number(key.replace('rank',''));progress=claimed?1:0;description=`累計5試合以上で30分ごとの総合ランキング${rank}位を獲得（自動授与）`;if(!started)description+=' ※表彰開始待ち';}
-    return {...titleMeta(key),category:TITLE_DEFS[key].secret?'secret':'permanent',description,hidden,progress,target,remaining:Math.max(0,target-progress),claimable,claimed,autoAward:!battle&&!TITLE_DEFS[key].secret,qualifyingMatches:battleTotal};
+    else {const rank=Number(key.replace('rank',''));claimable=!claimed&&eligibleKeys.has(key);progress=(claimed||claimable)?1:0;description=`累計5試合以上で30分ごとの総合ランキング${rank}位に入る`;if(!started&&!claimable&&!claimed)description+=' ※表彰開始待ち';}
+    return {...titleMeta(key),category:TITLE_DEFS[key].secret?'secret':'permanent',description,hidden,progress,target,remaining:Math.max(0,target-progress),claimable,claimed,autoAward:false,qualifyingMatches:battleTotal};
   });
 }
 // Podium awards: explicitly started by an admin; never grant at initial 100pt tie.
@@ -694,7 +704,7 @@ async function processPodiumAward(){
       ((SELECT COUNT(*) FROM quick_matches q WHERE q.status='completed' AND (q.challenger_id=u.id OR q.opponent_id=u.id))+
        (SELECT COUNT(*) FROM matches m WHERE m.status='completed' AND (m.challenger_id=u.id OR m.opponent_id=u.id)))>=5
       ORDER BY u.points DESC,u.id ASC LIMIT 3`);
-    for(const [i,user] of ranking.rows.entries())await unlockTitle(user.id,'rank'+(i+1),client);
+    for(const [i,user] of ranking.rows.entries())await client.query('INSERT INTO mission_eligibility(user_id,title_key) VALUES($1,$2) ON CONFLICT DO NOTHING',[user.id,'rank'+(i+1)]);
     await client.query(`INSERT INTO app_settings(setting_key,setting_value,updated_at) VALUES('podium_last_slot',$1,NOW()) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=NOW()`,[String(current)]);
     await client.query('COMMIT');
   }catch(e){try{await client.query('ROLLBACK')}catch{}console.error('Podium award failed:',e)}finally{client.release()}
@@ -810,7 +820,7 @@ app.post('/api/staff/game-reset',requireAdmin,async(req,res,next)=>{
   const players=await client.query('SELECT id FROM users WHERE NOT is_official ORDER BY id FOR UPDATE');
   const count=players.rowCount;
   // Match/social/party tables include both sides; removing these also removes links to official accounts.
-  for(const table of ['secret_chinchiro_draws','secret_match_snapshots','hit_blow_guesses','janken_rounds','chinchiro_rolls','random_match_queue','random_matches','quick_matches','matches','point_history','user_titles','announcement_reads','global_chat','direct_messages','friendships','support_thread_entries','support_messages','party_contributions','party_chat','party_invites','party_application_votes','party_applications','party_members','party_point_adjustments','parties']){
+  for(const table of ['secret_chinchiro_draws','secret_match_snapshots','hit_blow_guesses','janken_rounds','chinchiro_rolls','random_match_queue','random_matches','quick_matches','matches','point_history','mission_eligibility','user_titles','announcement_reads','global_chat','direct_messages','friendships','support_thread_entries','support_messages','party_contributions','party_chat','party_invites','party_application_votes','party_applications','party_members','party_point_adjustments','parties']){
    await client.query('DELETE FROM '+table);
   }
   await client.query("UPDATE users SET points=$1,selected_title_key='rookie',avatar_key=NULL WHERE NOT is_official",[STARTING_POINTS]);
@@ -859,7 +869,7 @@ app.post('/api/staff/full-reset',requireAdmin,async(req,res,next)=>{return res.s
   await client.query('BEGIN');await client.query('SELECT pg_advisory_xact_lock(60490)');
   const count=Number((await client.query('SELECT COUNT(*)::int AS n FROM users WHERE NOT is_official')).rows[0].n);
   // Remove dependent content first, including old match history and social data.
-  for(const table of ['secret_chinchiro_draws','secret_match_snapshots','hit_blow_guesses','janken_rounds','chinchiro_rolls','random_match_queue','random_matches','quick_matches','matches','point_history','user_titles','announcement_reads','global_chat','direct_messages','friendships','support_thread_entries','support_messages','party_contributions','party_chat','party_invites','party_application_votes','party_applications','party_members','party_point_adjustments','parties']){
+  for(const table of ['secret_chinchiro_draws','secret_match_snapshots','hit_blow_guesses','janken_rounds','chinchiro_rolls','random_match_queue','random_matches','quick_matches','matches','point_history','mission_eligibility','user_titles','announcement_reads','global_chat','direct_messages','friendships','support_thread_entries','support_messages','party_contributions','party_chat','party_invites','party_application_votes','party_applications','party_members','party_point_adjustments','parties']){
    await client.query('DELETE FROM '+table);
   }
   await client.query('DELETE FROM users WHERE NOT is_official');
@@ -1011,10 +1021,13 @@ app.get('/api/titles',requireUser,async(req,res,next)=>{try{
 }catch(e){next(e)}});
 app.get('/api/missions',requireUser,async(req,res,next)=>{try{await ensureBaseTitle(req.userId);await processPodiumAward();await evaluateSecrets(req.userId);const missions=await missionSnapshot(req.userId);if(await officialUser(req.userId)){const desc={secret_halloween:'HIT & BLOWで自分のコードを1031に設定',secret_senrigan:'HIT & BLOWで1回目に正解',secret_revenger:'ジャンケンで2敗のあと3勝',secret_twins:'ジャンケンで5連続あいこ',secret_synchro:'チンチロで同じ役同士の引き分け',secret_steady:'チンチロで10ptを3試合連続で賭ける',secret_veteran:'ルーキー装備で20戦',secret_fan:'全12種類のアイコンを使用して対戦',secret_rival:'同じ相手と3種類のゲームで対戦',secret_zero:'ほかのシークレット9種類をすべて獲得'};for(const m of missions){if(m.category==='secret'){m.hidden=false;m.claimed=true;m.description=desc[m.key]||m.description;}}}res.set('Cache-Control','no-store');res.json({missions,claimableCount:missions.filter(m=>m.claimable).length})}catch(e){next(e)}});
 app.post('/api/missions/claim',requireUser,async(req,res,next)=>{
-  const key=String(req.body?.key||'');if(!TITLE_DEFS[key]||key==='rookie'||TITLE_DEFS[key].partyRank||TITLE_DEFS[key].secret||/^rank[123]$/.test(key))return res.status(400).json({error:'この称号はミッションから受け取れません'});
+  const key=String(req.body?.key||'');if(!TITLE_DEFS[key]||key==='rookie'||TITLE_DEFS[key].partyRank)return res.status(400).json({error:'この称号はミッションから受け取れません'});
   const client=await pool.connect();try{await client.query('BEGIN');
     const u=await client.query('SELECT id FROM users WHERE id=$1 FOR UPDATE',[req.userId]);if(!u.rows.length){await client.query('ROLLBACK');return res.status(404).json({error:'ユーザーが見つかりません'})}
+    // Re-evaluate on the server before claiming, never trust client progress.
+    if(TITLE_DEFS[key].secret){await client.query('COMMIT');await evaluateSecrets(req.userId);await client.query('BEGIN');await client.query('SELECT id FROM users WHERE id=$1 FOR UPDATE',[req.userId]);}
     const missions=await missionSnapshot(req.userId,client);const mission=missions.find(m=>m.key===key);
+    if(!mission){await client.query('ROLLBACK');return res.status(404).json({error:'ミッションが見つかりません'})}
     if(mission.claimed){await client.query('ROLLBACK');return res.status(409).json({error:'受取済みです'})}
     if(!mission.claimable){await client.query('ROLLBACK');return res.status(403).json({error:'まだ条件を達成していません'})}
     await unlockTitle(req.userId,key,client);await client.query('COMMIT');res.json({ok:true,title:titleMeta(key)});
