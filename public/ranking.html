@@ -71,7 +71,7 @@ window.addEventListener('DOMContentLoaded',()=>window.NexusBGM?.setTrack('home')
 const $=s=>document.querySelector(s);
 function esc(s){const d=document.createElement('div');d.textContent=s??'';return d.innerHTML}
 function avatarSrc(key){return `/avatars/${/^avatar-(0[1-9]|1[0-2])$/.test(String(key||''))?key:'avatar-01'}.webp`}
-let rankingLoaded=false;let currentTab='individual';let partyRows=[];
+let rankingLoaded=false;let currentTab='individual';let individualRankRequest=null;
 function renderRanking(rows){
   const root=$('#fullRanking');
   const list=rows.slice(0,100);
@@ -97,12 +97,17 @@ function renderRanking(rows){
   rankingLoaded=true;
 }
 async function loadRanking(){
+  if(individualRankRequest)return individualRankRequest;
+  individualRankRequest=loadRankingOnce();
+  try{return await individualRankRequest}finally{individualRankRequest=null}
+}
+async function loadRankingOnce(){
   const root=$('#fullRanking');
   if(!rankingLoaded)root.innerHTML='<p class="muted">ランキングを読み込み中...</p>';
   try{
     const r=await fetch('/api/ranking',{cache:'no-store'});const rows=await r.json();if(!r.ok)throw new Error(rows.error||'取得に失敗しました');
-    renderRanking(rows);
-  }catch(e){if(!rankingLoaded)root.innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
+    if(currentTab==='individual')renderRanking(rows);
+  }catch(e){if(currentTab==='individual'&&!rankingLoaded)root.innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
 }
 const PARTY_RANKS=[['S',80],['A',50],['B',30],['C',15],['D',5],['E',0]];
 function partyRank(points){return PARTY_RANKS.find(([,min])=>Number(points)>=min)?.[0]||'E'}
@@ -178,7 +183,6 @@ async function loadPartyRanking(force=false){
       if(currentTab!=='party'||generation!==partyRankGeneration)return;
       // Ignore server-side ordering; only actual changes to rank membership trigger a redraw.
       const signature=JSON.stringify(d.map(p=>[String(p.id),String(p.name),partyRank(p.points)]).sort((a,b)=>a[0].localeCompare(b[0])));
-      partyRows=d;
       if(force||signature!==partyRankSignature){
         partyRankSignature=signature;
         renderPartyRanking(d);
@@ -205,7 +209,15 @@ function setTab(tab){
 $('#individualTab').onclick=()=>setTab('individual');$('#partyTab').onclick=()=>setTab('party');
 $('#closePartyDetail').onclick=()=>{$('#partyDetail').hidden=true};
 $('#refreshRanking').onclick=()=>currentTab==='party'?loadPartyRanking(true):loadRanking();
-setTab(new URLSearchParams(location.search).get('tab')==='party'?'party':'individual');setInterval(()=>{if(currentTab==='party'){if($('#partyDetail').hidden)loadPartyRanking()}else loadRanking()},12000);
+setTab(new URLSearchParams(location.search).get('tab')==='party'?'party':'individual');
+// Background tabs do not need network polling; resume once when visible again.
+function refreshVisibleRanking(){
+  if(document.hidden)return;
+  if(currentTab==='party'){if($('#partyDetail').hidden)loadPartyRanking()}
+  else loadRanking();
+}
+setInterval(refreshVisibleRanking,12000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshVisibleRanking()});
 </script>
 </body>
 </html>

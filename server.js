@@ -1794,7 +1794,17 @@ app.get('/style.css',(req,res,next)=>{
   res.type('text/css');
   res.sendFile(path.join(__dirname,'style.css'),err=>{if(err)next(err)});
 });
-app.use(express.static(path.join(__dirname,'public')));
+// Cache media briefly to avoid repeated downloads when navigating between game screens.
+// HTML, CSS and JS remain uncached here to preserve rapid festival updates.
+app.use(express.static(path.join(__dirname,'public'),{
+  setHeaders(res,file){
+    if(/\.(?:webp|png|jpe?g|gif|svg|mp3|ogg|wav|woff2?)$/i.test(file)){
+      res.setHeader('Cache-Control','public, max-age=3600');
+    }else if(/\.(?:html?|css|js)$/i.test(file)){
+      res.setHeader('Cache-Control','no-cache');
+    }
+  }
+}));
 app.get('/party',(req,res)=>res.sendFile(path.join(__dirname,'public','party.html')));
 app.get('/party-admin',(req,res)=>res.sendFile(path.join(__dirname,'public','party-admin.html')));
 app.get('/ranking',(req,res)=>res.sendFile(path.join(__dirname,'public','ranking.html')));
