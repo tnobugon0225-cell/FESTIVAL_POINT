@@ -107,13 +107,21 @@ async function loadRanking(){
 const PARTY_RANKS=[['S',80],['A',50],['B',30],['C',15],['D',5],['E',0]];
 function partyRank(points){return PARTY_RANKS.find(([,min])=>Number(points)>=min)?.[0]||'E'}
 let expandedPartyRanks=new Set();
+let partyRankSignature=null;
+let partyRankRequest=null;
+let partyRankGeneration=0;
 function renderPartyRanking(rows){
   const root=$('#fullRanking');
   const groups=Object.fromEntries(PARTY_RANKS.map(([rank])=>[rank,[]]));
   rows.forEach(p=>groups[partyRank(p.points)].push(p));
+  // Read the current DOM state before replacing nodes, so live user choices survive refreshes.
+  root.querySelectorAll('details.party-rank-accordion').forEach(el=>{
+    const rank=el.dataset.rank;
+    if(rank){if(el.open)expandedPartyRanks.add(rank);else expandedPartyRanks.delete(rank)}
+  });
   root.innerHTML='';
   for(const [rank,min] of PARTY_RANKS){
-    const details=document.createElement('details');details.className='party-rank-accordion';
+    const details=document.createElement('details');details.className='party-rank-accordion';details.dataset.rank=rank;
     details.open=expandedPartyRanks.has(rank);
     details.addEventListener('toggle',()=>{if(details.open)expandedPartyRanks.add(rank);else expandedPartyRanks.delete(rank)});
     const head=document.createElement('summary');head.className='party-rank-accordion-head';
@@ -157,24 +165,47 @@ async function showPartyDetail(id){
     }));
   }catch(e){$('#partyDetailBody').innerHTML=`<p class="error">${esc(e.message)}</p>`}
 }
-async function loadPartyRanking(){
-  const root=$('#fullRanking');if(!partyRows.length)root.innerHTML='<p class="muted">パーティーランクを読み込み中...</p>';
-  try{const r=await fetch('/api/party/ranking',{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'取得に失敗しました');partyRows=d;renderPartyRanking(d)}
-  catch(e){root.innerHTML=`<p class="error">パーティーランクを取得できませんでした：${esc(e.message)}</p>`}
+async function loadPartyRanking(force=false){
+  if(partyRankRequest)return partyRankRequest; // Don't overlap a poll and a manual refresh.
+  const generation=partyRankGeneration;
+  const root=$('#fullRanking');
+  if(!partyRankSignature&&currentTab==='party')root.innerHTML='<p class="muted">パーティーランクを読み込み中...</p>';
+  partyRankRequest=(async()=>{
+    try{
+      const r=await fetch('/api/party/ranking',{cache:'no-store'});
+      const d=await r.json();
+      if(!r.ok)throw Error(d.error||'取得に失敗しました');
+      if(currentTab!=='party'||generation!==partyRankGeneration)return;
+      // Ignore server-side ordering; only actual changes to rank membership trigger a redraw.
+      const signature=JSON.stringify(d.map(p=>[String(p.id),String(p.name),partyRank(p.points)]).sort((a,b)=>a[0].localeCompare(b[0])));
+      partyRows=d;
+      if(force||signature!==partyRankSignature){
+        partyRankSignature=signature;
+        renderPartyRanking(d);
+      }
+    }catch(e){
+      // Keep the existing list visible during temporary network failures.
+      if(currentTab==='party'&&generation===partyRankGeneration&&!partyRankSignature)
+        root.innerHTML=`<p class="error">パーティーランクを取得できませんでした：${esc(e.message)}</p>`;
+    }
+  })();
+  try{await partyRankRequest}finally{partyRankRequest=null}
 }
+
 function setTab(tab){
+  if(currentTab!==tab)partyRankGeneration++;
   currentTab=tab;history.replaceState(null,'',tab==='party'?'/ranking?tab=party':'/ranking');
   $('#individualTab').classList.toggle('active',tab==='individual');$('#partyTab').classList.toggle('active',tab==='party');
   $('#individualTab').setAttribute('aria-pressed',String(tab==='individual'));$('#partyTab').setAttribute('aria-pressed',String(tab==='party'));
   $('#rankingTitle').textContent=tab==='party'?'PARTY RANK':'TOP 100 RANKING';
   $('#rankingDescription').textContent=tab==='party'?'ランクを押すと所属するパーティーが表示されます。':'現在の上位100名を表示しています。';
   $('#partyDetail').hidden=true;
-  if(tab==='party')loadPartyRanking();else{rankingLoaded=false;$('#fullRanking').innerHTML='';loadRanking()}
+  if(tab==='party'){partyRankSignature=null;loadPartyRanking()}else{rankingLoaded=false;$('#fullRanking').innerHTML='';loadRanking()}
 }
 $('#individualTab').onclick=()=>setTab('individual');$('#partyTab').onclick=()=>setTab('party');
 $('#closePartyDetail').onclick=()=>{$('#partyDetail').hidden=true};
-$('#refreshRanking').onclick=()=>currentTab==='party'?loadPartyRanking():loadRanking();
-setTab(currentTab);setInterval(()=>{if(currentTab==='party'){if($('#partyDetail').hidden)loadPartyRanking()}else loadRanking()},12000);
+$('#refreshRanking').onclick=()=>currentTab==='party'?loadPartyRanking(true):loadRanking();
+setTab(new URLSearchParams(location.search).get('tab')==='party'?'party':'individual');setInterval(()=>{if(currentTab==='party'){if($('#partyDetail').hidden)loadPartyRanking()}else loadRanking()},12000);
 </script>
 </body>
 </html>
