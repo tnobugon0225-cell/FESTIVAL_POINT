@@ -26,7 +26,7 @@ async function init(pool){
  CREATE OR REPLACE FUNCTION clear_party_rank_title_on_points_change() RETURNS TRIGGER AS $$
  DECLARE rank_letter TEXT;
  BEGIN
-   rank_letter:=CASE WHEN NEW.points>=150 THEN 's' WHEN NEW.points>=100 THEN 'a' WHEN NEW.points>=60 THEN 'b' WHEN NEW.points>=30 THEN 'c' WHEN NEW.points>=10 THEN 'd' ELSE 'e' END;
+   rank_letter:=CASE WHEN NEW.points>=80 THEN 's' WHEN NEW.points>=50 THEN 'a' WHEN NEW.points>=30 THEN 'b' WHEN NEW.points>=15 THEN 'c' WHEN NEW.points>=5 THEN 'd' ELSE 'e' END;
    UPDATE users u SET selected_title_key='rookie' FROM party_members pm
      WHERE pm.user_id=u.id AND pm.party_id=NEW.id AND LEFT(u.selected_title_key,6)='party_'
        AND u.selected_title_key<>'party_'||rank_letter;
@@ -34,6 +34,7 @@ async function init(pool){
  END; $$ LANGUAGE plpgsql;
  DROP TRIGGER IF EXISTS party_title_points_change ON parties;
  CREATE TRIGGER party_title_points_change AFTER UPDATE OF points ON parties FOR EACH ROW WHEN (OLD.points IS DISTINCT FROM NEW.points) EXECUTE FUNCTION clear_party_rank_title_on_points_change();
+ UPDATE users u SET selected_title_key='rookie' FROM party_members pm JOIN parties p ON p.id=pm.party_id WHERE pm.user_id=u.id AND LEFT(u.selected_title_key,6)='party_' AND u.selected_title_key<>('party_'||CASE WHEN p.points>=80 THEN 's' WHEN p.points>=50 THEN 'a' WHEN p.points>=30 THEN 'b' WHEN p.points>=15 THEN 'c' WHEN p.points>=5 THEN 'd' ELSE 'e' END);
 
  `);
 }
@@ -44,8 +45,11 @@ async function transact(pool,fn){const c=await pool.connect();try{await c.query(
 async function credit(c,source,matchId,player1,player2,winner){
  const a=num(player1),b=num(player2);if(!a||!b||a===b)return;
  const ps=await c.query(`SELECT pm.user_id,pm.party_id,u.username FROM party_members pm JOIN users u ON u.id=pm.user_id WHERE pm.user_id=ANY($1::bigint[])`,[[a,b]]);
- if(ps.rows.length!==2||String(ps.rows[0].party_id)===String(ps.rows[1].party_id))return;
- for(const x of ps.rows){const win=num(winner)===Number(x.user_id),draw=!num(winner),result=draw?'draw':win?'win':'loss',pts=draw?1:win?2:0;
+ // An ungrouped opponent is eligible; only the party member receives credit.
+ // Matches between members of the SAME party do not generate party points.
+ if(ps.rows.length===0)return;
+ if(ps.rows.length===2&&String(ps.rows[0].party_id)===String(ps.rows[1].party_id))return;
+ for(const x of ps.rows){const win=num(winner)===Number(x.user_id),draw=!num(winner),result=draw?'draw':win?'win':'loss',pts=draw?2:win?3:1;
  const inserted=await c.query('INSERT INTO party_contributions(party_id,user_id,player_name,source,match_id,result,points) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT DO NOTHING RETURNING id',[x.party_id,x.user_id,x.username,source,matchId,result,pts]);
  if(inserted.rowCount)await c.query(`UPDATE parties SET points=points+$2,wins=wins+$3,draws=draws+$4,losses=losses+$5 WHERE id=$1`,[x.party_id,pts,win?1:0,draw?1:0,!win&&!draw?1:0]);
  }
@@ -77,7 +81,7 @@ function install(app,pool,requireUser,requireStaff){
  let members=[];if(p){members=(await pool.query('SELECT u.id,u.public_code,u.username,pm.joined_at FROM party_members pm JOIN users u ON u.id=pm.user_id WHERE pm.party_id=$1 ORDER BY pm.joined_at,u.id',[p.id])).rows;}
  res.json({party:p,members,applications:apps.rows,formationInvites:formationInvites.rows,invites:invites.rows,locked:await locked(pool)});
  }));
- router.get('/ranking',wrap(async(req,res)=>{const r=await pool.query('SELECT id,name,points,wins,draws,losses FROM parties ORDER BY points DESC,wins DESC,id LIMIT 100');res.json(r.rows);}));
+ router.get('/ranking',wrap(async(req,res)=>{const r=await pool.query('SELECT id,name,points,wins,draws,losses FROM parties ORDER BY id');res.json(r.rows);}));
  // Shared public statistics. Contributions are snapshots: deletion of a player does not erase them.
  async function partyStats(partyId){
   const rows=(await pool.query(`SELECT pc.user_id,pc.player_name,pc.result,pc.points,

@@ -38,6 +38,17 @@ body.ranking-page .ranking-hero .ranking-switch button.ranking-switch-button.act
 </style>
   <script src="/bgm.js" defer></script>
   <script src="/ui-fx.js?v=party-fullname-authguard-20261014" defer></script>
+<style>
+.party-rank-accordion{margin:0 0 12px;border:1px solid rgba(102,177,225,.25);border-radius:13px;background:rgba(11,28,48,.65);overflow:hidden}
+.party-rank-accordion-head{cursor:pointer;display:flex;align-items:center;gap:14px;padding:15px;list-style:none;user-select:none}
+.party-rank-accordion-head::-webkit-details-marker{display:none}
+.party-rank-letter{display:grid;place-items:center;width:49px;height:49px;flex:none;border-radius:10px;background:#7c8799;color:#101927;font-size:28px;font-weight:900}
+.party-rank-letter.rank-s{background:#e4bd63}.party-rank-letter.rank-a{background:#b494eb}.party-rank-letter.rank-b{background:#70a5ee}.party-rank-letter.rank-c{background:#5ecbbd}.party-rank-letter.rank-d{background:#99c16e}
+.party-rank-caption{display:flex;flex:1;min-width:0;flex-direction:column;gap:4px}.party-rank-caption strong{font-size:17px}.party-rank-caption small{opacity:.7}.party-rank-count{font-size:13px;opacity:.8;white-space:nowrap}.party-rank-chevron{font-size:26px;transition:transform .2s}.party-rank-accordion[open] .party-rank-chevron{transform:rotate(180deg)}
+.party-rank-accordion-content{padding:0 12px 12px;display:grid;gap:7px}.party-rank-accordion-content .muted{padding:9px}
+.party-rank-entry{display:flex;justify-content:space-between;align-items:center;width:100%;padding:13px 15px;border:1px solid rgba(120,177,216,.17);border-radius:9px;background:rgba(69,122,167,.12);color:inherit;text-align:left;font:inherit;cursor:pointer}
+.party-rank-entry:hover,.party-rank-entry:focus-visible{background:rgba(69,122,167,.27)}
+</style>
 </head>
 <body class="player-page v52-player ranking-page">
 <div class="cyber-bg" aria-hidden="true"><div class="cyber-orbit orbit-a"></div><div class="cyber-orbit orbit-b"></div><div class="scanline"></div></div>
@@ -93,14 +104,27 @@ async function loadRanking(){
     renderRanking(rows);
   }catch(e){if(!rankingLoaded)root.innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
 }
+const PARTY_RANKS=[['S',80],['A',50],['B',30],['C',15],['D',5],['E',0]];
+function partyRank(points){return PARTY_RANKS.find(([,min])=>Number(points)>=min)?.[0]||'E'}
+let expandedPartyRanks=new Set();
 function renderPartyRanking(rows){
-  const root=$('#fullRanking');root.innerHTML='';
-  if(!rows.length){root.innerHTML='<p class="muted">まだパーティーがありません。</p>';return;}
-  rows.slice(0,100).forEach((p,i)=>{
-    const row=document.createElement('button');row.type='button';row.className=`rank-item full-rank-item party-rank-item ${i===0?'rank-first':i===1?'rank-second':i===2?'rank-third':''}`;
-    row.innerHTML=`<span class="rank-num">${i+1}</span><span class="rank-name">${esc(p.name)}</span><strong><span class="rank-points">${Number(p.points).toLocaleString()}</span> <small>pt</small></strong>`;
-    row.addEventListener('click',()=>showPartyDetail(p.id));root.appendChild(row);
-  });
+  const root=$('#fullRanking');
+  const groups=Object.fromEntries(PARTY_RANKS.map(([rank])=>[rank,[]]));
+  rows.forEach(p=>groups[partyRank(p.points)].push(p));
+  root.innerHTML='';
+  for(const [rank,min] of PARTY_RANKS){
+    const details=document.createElement('details');details.className='party-rank-accordion';
+    details.open=expandedPartyRanks.has(rank);
+    details.addEventListener('toggle',()=>{if(details.open)expandedPartyRanks.add(rank);else expandedPartyRanks.delete(rank)});
+    const head=document.createElement('summary');head.className='party-rank-accordion-head';
+    head.innerHTML=`<span class="party-rank-letter rank-${rank.toLowerCase()}">${rank}</span><span class="party-rank-caption"><strong>${rank} RANK</strong><small>${min}pt以上</small></span><span class="party-rank-count">${groups[rank].length}組</span><span class="party-rank-chevron">⌄</span>`;
+    details.appendChild(head);
+    const content=document.createElement('div');content.className='party-rank-accordion-content';
+    const members=groups[rank].slice().sort((a,b)=>String(a.name).localeCompare(String(b.name),'ja'));
+    if(!members.length){content.innerHTML='<p class="muted">このランクのパーティーはまだありません。</p>'}
+    for(const party of members){const button=document.createElement('button');button.type='button';button.className='party-rank-entry';button.innerHTML=`<span>${esc(party.name)}</span><span aria-hidden="true">›</span>`;button.addEventListener('click',()=>showPartyDetail(party.id));content.appendChild(button)}
+    details.appendChild(content);root.appendChild(details);
+  }
 }
 async function showPartyDetail(id){
   const box=$('#partyDetail');box.hidden=false;$('#partyDetailName').textContent='パーティー詳細';$('#partyDetailPoints').textContent='—';$('#partyDetailBody').textContent='読み込み中...';
@@ -124,7 +148,7 @@ async function showPartyDetail(id){
       return `<article class="party-player-card"><div class="party-player-head"><strong>${esc(m.username)}</strong><span>貢献 ${Number(r.points)} pt</span></div><div class="party-player-summary">総合勝率 <strong>${rate(r)}</strong> <small>${Number(r.wins)}勝 ${Number(r.draws)}分 ${Number(r.losses)}敗</small></div>${gamesTable(r.byGame,false)}</article>`;
     };
     const old=players.filter(x=>!current.some(m=>x.userId!=null&&String(m.id)===String(x.userId)));
-    $('#partyDetailBody').innerHTML=`<h3>パーティー総合・ゲーム別戦績</h3>${gamesTable(stats.byGame)}<h3>所属メンバーの戦績</h3>${current.length?`<div class="party-detail-member-picker">${current.map((m,i)=>`<button type="button" class="${i===0?'selected':''}" data-party-member="${i}">${esc(m.username)}</button>`).join('')}</div><div id="partySelectedMember">${playerCard(current[0])}</div>`:'<p class="muted">現在所属しているメンバーはいません。</p>'}${old.length?`<h3>過去メンバーの貢献記録</h3>${old.map(x=>`<p class="party-detail-row">${esc(x.name)} <small>${Number(x.points)} pt / ${Number(x.wins)}勝 ${Number(x.draws)}分 ${Number(x.losses)}敗</small></p>`).join('')}`:''}<p class="muted">勝率は引き分けを除いて算出。対象は異なるパーティー間の対戦です。</p>`;
+    $('#partyDetailBody').innerHTML=`<h3>パーティー総合・ゲーム別戦績</h3>${gamesTable(stats.byGame)}<h3>所属メンバーの戦績</h3>${current.length?`<div class="party-detail-member-picker">${current.map((m,i)=>`<button type="button" class="${i===0?'selected':''}" data-party-member="${i}">${esc(m.username)}</button>`).join('')}</div><div id="partySelectedMember">${playerCard(current[0])}</div>`:'<p class="muted">現在所属しているメンバーはいません。</p>'}${old.length?`<h3>過去メンバーの貢献記録</h3>${old.map(x=>`<p class="party-detail-row">${esc(x.name)} <small>${Number(x.points)} pt / ${Number(x.wins)}勝 ${Number(x.draws)}分 ${Number(x.losses)}敗</small></p>`).join('')}`:''}<p class="muted">勝率は引き分けを除いて算出。異なるパーティー間、およびパーティー未所属者との対戦が対象です。同じパーティー内の対戦は対象外です。</p>`;
     $('#partyDetailBody').querySelectorAll('[data-party-member]').forEach(btn=>btn.addEventListener('click',()=>{
       const i=Number(btn.dataset.partyMember);
       if(!current[i])return;
@@ -134,16 +158,16 @@ async function showPartyDetail(id){
   }catch(e){$('#partyDetailBody').innerHTML=`<p class="error">${esc(e.message)}</p>`}
 }
 async function loadPartyRanking(){
-  const root=$('#fullRanking');if(!partyRows.length)root.innerHTML='<p class="muted">ランキングを読み込み中...</p>';
+  const root=$('#fullRanking');if(!partyRows.length)root.innerHTML='<p class="muted">パーティーランクを読み込み中...</p>';
   try{const r=await fetch('/api/party/ranking',{cache:'no-store'});const d=await r.json();if(!r.ok)throw Error(d.error||'取得に失敗しました');partyRows=d;renderPartyRanking(d)}
-  catch(e){root.innerHTML=`<p class="error">ランキングを取得できませんでした：${esc(e.message)}</p>`}
+  catch(e){root.innerHTML=`<p class="error">パーティーランクを取得できませんでした：${esc(e.message)}</p>`}
 }
 function setTab(tab){
   currentTab=tab;history.replaceState(null,'',tab==='party'?'/ranking?tab=party':'/ranking');
   $('#individualTab').classList.toggle('active',tab==='individual');$('#partyTab').classList.toggle('active',tab==='party');
   $('#individualTab').setAttribute('aria-pressed',String(tab==='individual'));$('#partyTab').setAttribute('aria-pressed',String(tab==='party'));
-  $('#rankingTitle').textContent=tab==='party'?'PARTY RANKING':'TOP 100 RANKING';
-  $('#rankingDescription').textContent=tab==='party'?'パーティーの上位100組を表示しています。':'現在の上位100名を表示しています。';
+  $('#rankingTitle').textContent=tab==='party'?'PARTY RANK':'TOP 100 RANKING';
+  $('#rankingDescription').textContent=tab==='party'?'ランクを押すと所属するパーティーが表示されます。':'現在の上位100名を表示しています。';
   $('#partyDetail').hidden=true;
   if(tab==='party')loadPartyRanking();else{rankingLoaded=false;$('#fullRanking').innerHTML='';loadRanking()}
 }

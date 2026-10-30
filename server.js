@@ -559,7 +559,7 @@ const TITLE_DEFS={
   party_s:{name:'PARTY RANK S',jp:'騎士団 Sランク',tier:'S',image:'/titles/party_s.webp?v=4',partyRank:true}
 };
 function titleMeta(key){const k=TITLE_DEFS[key]?key:'rookie';return {key:k,...TITLE_DEFS[k],image:TITLE_DEFS[k].image||null}}
-const PARTY_RANK_LIMITS=[['S',150],['A',100],['B',60],['C',30],['D',10],['E',0]];
+const PARTY_RANK_LIMITS=[['S',80],['A',50],['B',30],['C',15],['D',5],['E',0]];
 function partyRankForPoints(points){return PARTY_RANK_LIMITS.find(([r,minimum])=>Number(points)>=minimum)?.[0]||'E'}
 function partyTitleKey(points){return 'party_'+partyRankForPoints(points).toLowerCase()}
 async function currentPartyTitle(userId,client=pool){
