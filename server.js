@@ -291,6 +291,9 @@ async function initDb() {
 
   // QUICK BATTLE state columns.
   await query(`
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS random_wait_ready BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS challenger_screen_ready BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS opponent_screen_ready BOOLEAN NOT NULL DEFAULT FALSE;
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS live_selection VARCHAR(4) NOT NULL DEFAULT '';
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS turn_started_at TIMESTAMPTZ;
     ALTER TABLE quick_matches ADD COLUMN IF NOT EXISTS challenger_janken_choice VARCHAR(10);
@@ -1206,10 +1209,11 @@ async function finalizeRandomMatch(client,rm){
   const a=users.find(x=>Number(x.id)===Number(rm.player1_id)),b=users.find(x=>Number(x.id)===Number(rm.player2_id));
   if(!a||!b)throw new Error('RANDOM MATCH player missing');
   let status='setup',first=null,started=null,jstart=null;
-  if(selected==='janken'){status='in_progress';started=new Date();jstart=new Date(Date.now()+4000)}
-  else if(selected==='chinchiro'){status='in_progress';started=new Date();first=Math.random()<.5?Number(a.id):Number(b.id)}
+  if(selected==='janken'){status='setup'}
+  else if(selected==='chinchiro'){status='setup';first=Math.random()<.5?Number(a.id):Number(b.id)}
   else first=Math.random()<.5?Number(a.id):Number(b.id);
   const q=(await client.query(`INSERT INTO quick_matches(challenger_id,opponent_id,challenger_name,opponent_name,challenger_code,opponent_code,wager,game_type,opponent_approved,status,first_player_id,turn_player_id,matched_at,started_at,turn_started_at,janken_round,janken_round_started_at,chinchiro_round,chinchiro_attempt) VALUES($1,$2,$3,$4,$5,$6,$7,$8,TRUE,$9,$10,$11,NOW(),$12,$13,1,$14,1,0) RETURNING *`,[a.id,b.id,a.username,b.username,a.public_code,b.public_code,rm.wager,selected,status,first,selected==='chinchiro'?first:null,started,selected==='chinchiro'?new Date(Date.now()+4000):null,jstart])).rows[0];
+  await client.query('UPDATE quick_matches SET random_wait_ready=TRUE WHERE id=$1',[q.id]);
   return (await client.query(`UPDATE random_matches SET player1_choice=$1,player2_choice=$2,selected_game=$3,status='ready',quick_match_id=$4 WHERE id=$5 RETURNING *`,[p1,p2,selected,q.id,rm.id])).rows[0];
 }
 function publicRandomMatch(r,viewer){if(!r)return null;const mine=Number(r.player1_id)===Number(viewer),ready=r.status==='ready';return {id:Number(r.id),status:r.status,wager:Number(r.wager),myChoice:mine?r.player1_choice:r.player2_choice,rivalLocked:mine?!!r.player2_choice:!!r.player1_choice,rivalChoice:ready?(mine?r.player2_choice:r.player1_choice):null,selectedGame:r.selected_game||null,quickMatchId:r.quick_match_id?Number(r.quick_match_id):null,selectionStartedAt:r.selection_started_at,path:r.selected_game?randomGamePath(r.selected_game):null}}
@@ -1313,6 +1317,23 @@ app.get('/api/quick-matches/me',requireUser,async(req,res,next)=>{try{
   res.json({match:publicQuickMatch(r.rows[0]||null,req.userId)});
 }catch(e){next(e)}});
 
+// RANDOM MATCH: both clients must reach the game screen before any countdown begins.
+app.post('/api/quick-matches/:id/screen-ready',requireUser,async(req,res,next)=>{
+ const id=Number(req.params.id),client=await pool.connect();
+ try{await client.query('BEGIN');let m=(await client.query('SELECT * FROM quick_matches WHERE id=$1 FOR UPDATE',[id])).rows[0];
+ if(!m||![Number(m.challenger_id),Number(m.opponent_id)].includes(Number(req.userId))){await client.query('ROLLBACK');return res.status(404).json({error:'対戦が見つかりません'})}
+ if(!m.random_wait_ready){await client.query('COMMIT');return res.json({ok:true,match:publicQuickMatch(m,req.userId)})}
+ if(m.status==='setup'&&(m.game_type==='janken'||m.game_type==='chinchiro')){
+  const col=Number(m.challenger_id)===Number(req.userId)?'challenger_screen_ready':'opponent_screen_ready';
+  m=(await client.query(`UPDATE quick_matches SET ${col}=TRUE WHERE id=$1 RETURNING *`,[id])).rows[0];
+  if(m.challenger_screen_ready&&m.opponent_screen_ready){
+   if(m.game_type==='janken')m=(await client.query(`UPDATE quick_matches SET status='in_progress',started_at=NOW(),janken_round_started_at=NOW()+INTERVAL '6 seconds' WHERE id=$1 RETURNING *`,[id])).rows[0];
+   else m=(await client.query(`UPDATE quick_matches SET status='in_progress',started_at=NOW(),turn_started_at=NOW()+INTERVAL '6 seconds' WHERE id=$1 RETURNING *`,[id])).rows[0];
+  }
+ }
+ await client.query('COMMIT');res.json({ok:true,match:publicQuickMatch(m,req.userId)});
+ }catch(e){try{await client.query('ROLLBACK')}catch{}next(e)}finally{client.release()}
+});
 app.post('/api/quick-matches/:id/approve',requireUser,async(req,res,next)=>{
   const id=Number(req.params.id);const client=await pool.connect();
   try{
