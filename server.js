@@ -623,13 +623,23 @@ async function evaluateSecrets(userId){
    FROM hit_blow_guesses g JOIN quick_matches q ON q.id=g.match_id
    WHERE g.player_id=$1 AND q.completed_at >= $2 AND q.status='completed'`,[userId,epoch]);
  await unlock('secret_senrigan',guess.rows.some(x=>Number(x.guess_no)===1&&Number(x.hits)===4));
- const jr=await query(`SELECT r.result,r.winner_user_id,q.challenger_id,q.opponent_id FROM janken_rounds r
+ // Treat each completed match independently: one player's comeback cannot qualify the opponent.
+ // The sequence LLWWW must be the user's OWN round outcomes in that same match.
+ const jr=await query(`SELECT r.match_id,r.result,r.winner_user_id,q.challenger_id,q.opponent_id FROM janken_rounds r
    JOIN quick_matches q ON q.id=r.match_id WHERE q.status='completed' AND q.completed_at >= $2
    AND (q.challenger_id=$1 OR q.opponent_id=$1) ORDER BY q.completed_at,q.id,r.id`,[userId,epoch]);
- const nonDraw=jr.rows.filter(x=>x.result!=='draw').map(x=>Number(x.winner_user_id)===userId?'W':'L');
- await unlock('secret_revenger',hasSequence(nonDraw,['L','L','W','W','W']));
- await unlock('secret_twins',hasSequence(jr.rows.map(x=>x.result==='draw'?'D':'X'),['D','D','D','D','D']));
- const dr=await query('SELECT 1 FROM secret_chinchiro_draws WHERE user_id=$1 LIMIT 1',[userId]);
+ const roundsByMatch=new Map();
+ for(const round of jr.rows){
+   const key=String(round.match_id);
+   if(!roundsByMatch.has(key))roundsByMatch.set(key,[]);
+   roundsByMatch.get(key).push(round);
+ }
+ const personalRounds=rounds=>rounds.filter(r=>r.result!=='draw').map(r=>Number(r.winner_user_id)===Number(userId)?'W':'L');
+ await unlock('secret_revenger',[...roundsByMatch.values()].some(rounds=>hasSequence(personalRounds(rounds),['L','L','W','W','W'])));
+ // TWINS is a cooperative draw achievement; both players may qualify.
+ await unlock('secret_twins',[...roundsByMatch.values()].some(rounds=>hasSequence(rounds.map(r=>r.result==='draw'?'D':'X'),['D','D','D','D','D'])));
+ const dr=await query(`SELECT 1 FROM secret_chinchiro_draws d JOIN quick_matches q ON q.id=d.match_id
+   WHERE d.user_id=$1 AND q.created_at >= $2 LIMIT 1`,[userId,epoch]);
  await unlock('secret_synchro',dr.rowCount>0);
  const ch=rows.filter(x=>x.game_type==='chinchiro');
  await unlock('secret_steady',hasSequence(ch.map(x=>Number(x.wager)===10?'T':'X'),['T','T','T']));
