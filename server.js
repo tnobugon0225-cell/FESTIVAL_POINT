@@ -655,7 +655,12 @@ async function evaluateSecrets(userId){
  return [...eligible].filter(k=>k.startsWith('secret_'));
 }
 async function unlockTitle(userId,key,client=pool){if(!TITLE_DEFS[key])return;await client.query(`INSERT INTO user_titles(user_id,title_key) VALUES($1,$2) ON CONFLICT DO NOTHING`,[userId,key]);}
-async function ensureBaseTitle(userId,client=pool){await unlockTitle(userId,'rookie',client);}
+// Festival-wide HALLOWEEN gift: always owned, including accounts created later.
+// Idempotent, so repeated logins and redeploys never produce duplicate rows.
+async function ensureBaseTitle(userId,client=pool){
+ await unlockTitle(userId,'rookie',client);
+ await unlockTitle(userId,'secret_halloween',client);
+}
 // Missions v6.98: titles are claimed explicitly. Historical unlocks are preserved.
 async function awardPodiumTitles(){ /* claimed through /api/missions/claim */ }
 async function awardQuickBattleTitles(){ /* claimed through /api/missions/claim */ }
@@ -835,6 +840,7 @@ app.post('/api/staff/game-reset',requireAdmin,async(req,res,next)=>{
   }
   await client.query("UPDATE users SET points=$1,selected_title_key='rookie',avatar_key=NULL WHERE NOT is_official",[STARTING_POINTS]);
   await client.query("INSERT INTO user_titles(user_id,title_key) SELECT id,'rookie' FROM users ON CONFLICT DO NOTHING");
+  await client.query("INSERT INTO user_titles(user_id,title_key) SELECT id,'secret_halloween' FROM users ON CONFLICT DO NOTHING");
   await client.query("DELETE FROM app_settings WHERE setting_key IN ('podium_start_at','podium_last_slot','podium_paused_at')");
   await client.query("INSERT INTO app_settings(setting_key,setting_value,updated_at) VALUES('secret_epoch',NOW()::text,NOW()) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=NOW()");
   await client.query('INSERT INTO game_reset_log(staff_id,staff_name,player_count,starting_points) VALUES($1,$2,$3,$4)',[req.staff.id,req.staff.username,count,STARTING_POINTS]);
@@ -1845,6 +1851,8 @@ app.use((err,req,res,next)=>{console.error(err);if(res.headersSent)return next(e
 (async()=>{
   try{
     await initDb();
+    // One-time, idempotent bulk grant to every existing account on deploy.
+    await pool.query("INSERT INTO user_titles(user_id,title_key) SELECT id,'secret_halloween' FROM users ON CONFLICT DO NOTHING");
     await partyFeature.init(pool);
     setInterval(()=>{processPodiumAward().catch(e=>console.error(e))},20000).unref();
     app.listen(PORT,'0.0.0.0',()=>{
